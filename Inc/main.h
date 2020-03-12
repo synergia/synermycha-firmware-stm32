@@ -55,7 +55,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+extern void SystemClock_Config(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -131,8 +131,6 @@ void Error_Handler(void);
 #define VC53L0x_XSHUT_RIGHT_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
-#define WS2812B_IN_Pin GPIO_PIN_5
-#define WS2812B_IN_GPIO_Port GPIOB
 #define ENC_R_B_Pin GPIO_PIN_6
 #define ENC_R_B_GPIO_Port GPIOB
 #define ENC_R_A_Pin GPIO_PIN_7

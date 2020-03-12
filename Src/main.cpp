@@ -1,5 +1,57 @@
 /* USER CODE BEGIN Header */
 /**
+ *
+                     ,gKRMRKWw                                  ]M`"MKWw,
+                  zR"  ,,,,   `9w                              #M,R"*KWwJ"MNm,
+                ,K` aM"`  `"9W   *N                           #G,R      `"MNm,`K
+               ]M #M          "N,  9w                        #`,R       rY   1N K
+              ]M,K`             "N  "N                      K`,K     .m"      Vp1N
+              K K                 9p  K  ,w#MM""""""*RWw, ,K ,K      ] \/      K 9p
+             .N]N                  1m  R"`           ]R``*R ,K       A ]  ,/~  'N K
+             jN'N                   ]                K      9W    ,* a" z*`  ,gM` ]N
+              K 1W                ,K`                0       "K,A`,* `"`  ,aR" ,#M`
+               K,`Vw             #"                  'N        YN` /~   aK" z#M`
+                "Nw "Km,       ]M                     K         `9D  ,#*,wR"
+                   "RWw,J""*MMM`    ,gw              ]M   ,~~,    "K*,gR"
+                        ``""1M      KKKK             K    H         9C
+                           ]M        ""              K     ""`       9m
+                          ]M                         *Nw,        ,,wgR9p
+                         ,R                    ,www     `"*MMMM*"``    0
+                         #    -~^"``J2g       'KKKK       .w&J``"^~-    N
+                        ]N     .~^``,am#        "^        #mw,``"~.     ]H
+                        K        -^`                          `"-        K
+                       jN                                                ]H
+                       #                                                  N
+                       K                                                  K
+                       K                .  ,w#KKW,"KNw  ,-                $
+                      jN                  *KKKR*""M YKKM                  ]H
+                      ]N            .       ]N      #M       .            ]H
+                      ]H             `*Ww,,,]K      0W,,,w#M`             ]H
+                      ]H                 KKK`        ]KKK                 ]N
+                      ]H                 `KKN y,  ,w#KKR                  ]H
+                      ]N                   "KKw`9KKKKR^                   ]H
+                      ,K                      ``"                         K
+                ,,w#KKKKN                                                #
+          ,w#KKKKKKKRM"``N                                             ,#`
+       ,#KKKRM"``         YW                                          #M
+     ,KKR"                  YW,                                    ,dM
+    ]KK`                      `RNw                             ,w#M`
+    KKH                       gM` `"RWw,,               ,,,g#M"` `9w
+    1KN                      K      ,#` ``""***MMMM***""`` `N       K
+     "KKw                    `9WmmmR"                        "Nmmm#M`
+       `*KKNmw,
+            `""*MRRKKKN##mmmmmmmm<<<<<=-.
+
+
+  ____   ____  _ ___ ___
+/' _| `v' /  \| | __| _ \
+`._`.`. .'| | ' | _|| v /
+|___/ !_! |_|\__|___|_|_\
+ __ ____   __ ____  _  __
+|  V  \ `v' // _/ || |/  \
+| \_/ |`. .'| \_| >< | /\ |
+|_| |_| !_!  \__/_||_|_||_|
+ *
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
@@ -30,7 +82,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "fonts.h"
+#include "ssd1306.h"
+#include "synermycha-logo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,7 +127,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
+
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -105,7 +159,12 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
-
+  SSD1306_Init();  // initialise
+  SSD1306_Clear();
+  SSD1306_DrawBitmap(0,0,logo, 128, 64, SSD1306_COLOR_WHITE);
+  SSD1306_GotoXY(36,53);
+  SSD1306_Puts ("Starting", &Font_7x10, SSD1306_COLOR_WHITE);
+  SSD1306_UpdateScreen();
   /* USER CODE END 2 */
  
  
@@ -114,6 +173,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -131,17 +191,17 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage 
+  /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
@@ -150,13 +210,13 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Activate the Over-Drive mode 
+  /** Activate the Over-Drive mode
   */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -170,7 +230,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_TIM|RCC_PERIPHCLK_CLK48;
-  PeriphClkInitStruct.PLLSAI.PLLSAIM = 4;
+  PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 96;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
@@ -208,7 +268,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
