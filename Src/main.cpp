@@ -207,7 +207,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
-  setup_OLED();
+  //setup_OLED();
 
   HAL_ADC_Start(&hadc1);
 

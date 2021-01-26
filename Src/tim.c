@@ -9,10 +9,10 @@
   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -194,11 +194,11 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* tim_encoderHandle)
   /* USER CODE END TIM3_MspInit 0 */
     /* TIM3 clock enable */
     __HAL_RCC_TIM3_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    /**TIM3 GPIO Configuration    
+    /**TIM3 GPIO Configuration
     PA6     ------> TIM3_CH1
-    PA7     ------> TIM3_CH2 
+    PA7     ------> TIM3_CH2
     */
     GPIO_InitStruct.Pin = ENC_L_B_Pin|ENC_L_A_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -218,11 +218,11 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* tim_encoderHandle)
   /* USER CODE END TIM4_MspInit 0 */
     /* TIM4 clock enable */
     __HAL_RCC_TIM4_CLK_ENABLE();
-  
+
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**TIM4 GPIO Configuration    
+    /**TIM4 GPIO Configuration
     PB6     ------> TIM4_CH1
-    PB7     ------> TIM4_CH2 
+    PB7     ------> TIM4_CH2
     */
     GPIO_InitStruct.Pin = ENC_R_B_Pin|ENC_R_A_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -293,9 +293,9 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 
   /* USER CODE END TIM9_MspPostInit 0 */
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    /**TIM9 GPIO Configuration    
+    /**TIM9 GPIO Configuration
     PA2     ------> TIM9_CH1
-    PA3     ------> TIM9_CH2 
+    PA3     ------> TIM9_CH2
     */
     GPIO_InitStruct.Pin = LED_MOUSE_EYE_Pin|BUZZER_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -313,11 +313,11 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
   /* USER CODE BEGIN TIM12_MspPostInit 0 */
 
   /* USER CODE END TIM12_MspPostInit 0 */
-  
+
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**TIM12 GPIO Configuration    
+    /**TIM12 GPIO Configuration
     PB14     ------> TIM12_CH1
-    PB15     ------> TIM12_CH2 
+    PB15     ------> TIM12_CH2
     */
     GPIO_InitStruct.Pin = DRV8835_PWM_A_Pin|DRV8835_PWM_B_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -343,10 +343,10 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef* tim_encoderHandle)
   /* USER CODE END TIM3_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_TIM3_CLK_DISABLE();
-  
-    /**TIM3 GPIO Configuration    
+
+    /**TIM3 GPIO Configuration
     PA6     ------> TIM3_CH1
-    PA7     ------> TIM3_CH2 
+    PA7     ------> TIM3_CH2
     */
     HAL_GPIO_DeInit(GPIOA, ENC_L_B_Pin|ENC_L_A_Pin);
 
@@ -361,10 +361,10 @@ void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef* tim_encoderHandle)
   /* USER CODE END TIM4_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_TIM4_CLK_DISABLE();
-  
-    /**TIM4 GPIO Configuration    
+
+    /**TIM4 GPIO Configuration
     PB6     ------> TIM4_CH1
-    PB7     ------> TIM4_CH2 
+    PB7     ------> TIM4_CH2
     */
     HAL_GPIO_DeInit(GPIOB, ENC_R_B_Pin|ENC_R_A_Pin);
 
@@ -418,7 +418,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
   /* USER CODE END TIM14_MspDeInit 1 */
   }
-} 
+}
 
 /* USER CODE BEGIN 1 */
 

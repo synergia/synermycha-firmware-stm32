@@ -9,10 +9,10 @@
   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -30,9 +30,9 @@
 
 /* USER CODE END 1 */
 
-/** Configure pins as 
-        * Analog 
-        * Input 
+/** Configure pins as
+        * Analog
+        * Input
         * Output
         * EVENT_OUT
         * EXTI
@@ -50,8 +50,8 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, VC53L0x_XSHUT_FRONT_RIGHT_Pin|VC53L0x_XSHUT_FRONT_Pin|LED_5_Pin|LED_4_Pin 
-                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VL53L0x_XSHUT_LEFT_Pin 
+  HAL_GPIO_WritePin(GPIOC, VC53L0x_XSHUT_FRONT_RIGHT_Pin|VC53L0x_XSHUT_FRONT_Pin|LED_5_Pin|LED_4_Pin
+                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VL53L0x_XSHUT_LEFT_Pin
                           |DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -70,9 +70,9 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PCPin PCPin PCPin PCPin 
+  /*Configure GPIO pins : PCPin PCPin PCPin PCPin
                            PCPin PCPin */
-  GPIO_InitStruct.Pin = LED_5_Pin|LED_4_Pin|LED_3_Pin|LED_2_Pin 
+  GPIO_InitStruct.Pin = LED_5_Pin|LED_4_Pin|LED_3_Pin|LED_2_Pin
                           |LED_1_Pin|DRV8835_DIR_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
