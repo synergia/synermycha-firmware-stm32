@@ -73,13 +73,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-#include "usb_otg.h"
+#include "usb_device.h"
 #include "gpio.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "fonts.h"
@@ -88,7 +88,12 @@
 #include <stdio.h>
 #include <string>
 #include "VL53L0X.h"
-#include "nic.h"
+#include "led.h"
+#include "buzzer.hpp"
+#include "mario_theme.hpp"
+#include "usbd_cdc_if.h"
+#include <stdlib.h>
+#include "ws2812b.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,6 +103,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define RIGHT_MOTOR_BACKWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
+#define RIGHT_MOTOR_FORWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
+#define LEFT_MOTOR_BACKWARD	HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
+#define LEFT_MOTOR_FORWARD	HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -109,7 +118,9 @@
 
 /* USER CODE BEGIN PV */
 VL53L0X sensor1;
-
+uint8_t DataToSend[40]; // Tablica zawierajaca dane do wyslania
+uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
+uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -125,10 +136,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       PomiarADC = HAL_ADC_GetValue(&hadc1);
       HAL_ADC_Start(&hadc1);
     }
-    //char pomiar_string[3];
-    //sprintf(pomiar_string,"%d",PomiarADC/360);
-    //SSD1306_GotoXY(0,53);
-    //SSD1306_Puts (pomiar_string, &Font_7x10, SSD1306_COLOR_WHITE);
     SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
     if(PomiarADC/340 > 0){
       SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
@@ -193,21 +200,24 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_I2C3_Init();
-  MX_SPI1_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM9_Init();
   MX_TIM12_Init();
-  MX_TIM14_Init();
   MX_USART1_UART_Init();
-  MX_USB_OTG_FS_PCD_Init();
+  MX_TIM14_Init();
+  MX_USB_DEVICE_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
-  //setup_OLED();
+
+  setup_led();
+  setup_OLED();
 
   HAL_ADC_Start(&hadc1);
 
@@ -221,14 +231,81 @@ int main(void)
   HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
 
-  setup_VL53L0X(&sensor1);
+  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
+
+  // beep_on;
+  // HAL_Delay(500);
+  // beep_off;
+
+  // WS2812B_Init(&hspi1);
+  // WS2812B_Refresh();
+  // HAL_Delay(100);
+  // WS2812B_SetDiodeRGB(10,0,0,0);
+  // WS2812B_SetDiodeRGB(1,255,255,255);
+  // WS2812B_SetDiodeRGB(2,255,255,255);
+  // WS2812B_SetDiodeRGB(3,255,255,255);
+  // WS2812B_SetDiodeRGB(4,255,255,255);
+  // WS2812B_SetDiodeRGB(5,255,255,255);
+  // WS2812B_SetDiodeRGB(6,255,255,255);
+  // WS2812B_SetDiodeRGB(7,255,255,255);
+  // WS2812B_SetDiodeRGB(8,255,255,255);
+  // WS2812B_SetDiodeRGB(9,255,255,255);
+  // WS2812B_SetDiodeRGB(1,255,255,255);
+  // WS2812B_Refresh();
+  // HAL_Delay(100);
+  // WS2812B_SetDiodeRGB(10,0,0,0);
+  // WS2812B_SetDiodeRGB(1,255,255,255);
+  // WS2812B_SetDiodeRGB(2,255,255,255);
+  // WS2812B_SetDiodeRGB(3,255,255,255);
+  // WS2812B_SetDiodeRGB(4,255,255,255);
+  // WS2812B_SetDiodeRGB(5,255,255,255);
+  // WS2812B_SetDiodeRGB(6,255,255,255);
+  // WS2812B_SetDiodeRGB(7,255,255,255);
+  // WS2812B_SetDiodeRGB(8,255,255,255);
+  // WS2812B_SetDiodeRGB(9,255,255,255);
+  // WS2812B_SetDiodeRGB(1,255,255,255);
+  // WS2812B_Refresh();
+
+
+  setup_VL53L0X(&sensor1);
+  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port,VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
   HAL_Delay(100);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(20);
   init(&sensor1,true);
   startContinuous(&sensor1,0);
-  nic();
+  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
+
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_SET);
+  HAL_Delay(100);
+  init(&sensor1,true);
+  startContinuous(&sensor1,0);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
+
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
+  HAL_Delay(100);
+  init(&sensor1,true);
+  startContinuous(&sensor1,0);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
+
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
+  HAL_Delay(100);
+  init(&sensor1,true);
+  startContinuous(&sensor1,0);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
+
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
+  HAL_Delay(100);
+  init(&sensor1,true);
+  startContinuous(&sensor1,0);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(10);
   /* USER CODE END 2 */
 
 
@@ -237,10 +314,51 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+    // if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET) {
+    //   ++MessageCounter;
+		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		// 	CDC_Transmit_FS(DataToSend, MessageLength);
+    //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+    //   while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
+    //   {
+        
+    //   }
+    //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+		// }
+    // if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET) {
+		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		// 	CDC_Transmit_FS(DataToSend, MessageLength);
+    //   HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+    //   while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+    //   {
+        
+    //   }
+    //   HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+		// }
+    // if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET) {
+    //   --MessageCounter;
+		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		// 	CDC_Transmit_FS(DataToSend, MessageLength);
+    //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+    //   while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+    //   {
+        
+    //   }
+    //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+		// }
+    
     char pomiar_string[5];
+    SSD1306_Clear();
+
+    HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
+    HAL_Delay(100);
     sprintf(pomiar_string,"%05d",readRangeContinuousMillimeters(&sensor1));
-    SSD1306_GotoXY(0,53);
+    SSD1306_GotoXY(0,0);
     SSD1306_Puts (pomiar_string, &Font_7x10, SSD1306_COLOR_WHITE);
+    readRangeContinuousMillimeters(&sensor1);
+    HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+
 
     /* USER CODE END WHILE */
 
@@ -260,16 +378,17 @@ void SystemClock_Config(void)
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-   */
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-  /** Initializes the CPU, AHB and APB busses clocks
-   */
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
@@ -279,15 +398,15 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   /** Activate the Over-Drive mode
-   */
+  */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
-   */
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-      |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -298,7 +417,7 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_TIM|RCC_PERIPHCLK_CLK48;
-  PeriphClkInitStruct.PLLSAI.PLLSAIM = 4;
+  PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 96;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
@@ -316,14 +435,17 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 

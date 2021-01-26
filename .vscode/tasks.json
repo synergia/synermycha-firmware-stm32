@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "PlatformIO",
+			"task": "Pre-Debug (genericSTM32F446RE)",
+			"problemMatcher": [
+				"$platformio"
+			],
+			"label": "PlatformIO: Build in debug mode (genericSTM32F446RE)"
+		}
+	]
+}

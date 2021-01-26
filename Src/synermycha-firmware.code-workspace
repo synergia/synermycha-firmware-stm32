@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "synermycha-firmware-stm32",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"stm32-for-vscode.makePath": "make",
+		"stm32-for-vscode.openOCDPath": "openocd"
+	}
+}
