@@ -85,8 +85,8 @@ extern void SystemClock_Config(void);
 #define ENC_L_B_GPIO_Port GPIOA
 #define ENC_L_A_Pin GPIO_PIN_7
 #define ENC_L_A_GPIO_Port GPIOA
-#define VL53L0x_XSHUT_LEFT_Pin GPIO_PIN_4
-#define VL53L0x_XSHUT_LEFT_GPIO_Port GPIOC
+#define VC53L0x_XSHUT_LEFT_Pin GPIO_PIN_4
+#define VC53L0x_XSHUT_LEFT_GPIO_Port GPIOC
 #define BATT_VOLTAGE_Pin GPIO_PIN_0
 #define BATT_VOLTAGE_GPIO_Port GPIOB
 #define LCD_SCL_Pin GPIO_PIN_10

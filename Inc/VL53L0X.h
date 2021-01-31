@@ -173,5 +173,3 @@ typedef struct __VL53L0X
 	uint32_t calcMacroPeriod(uint8_t vcsel_period_pclks);
 
 #endif
-
-

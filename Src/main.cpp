@@ -117,10 +117,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-VL53L0X sensor1;
+VL53L0X sensorL,sensorFL,sensorF,sensorFR,sensorR;
 uint8_t DataToSend[40]; // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
 uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
+char pomiar_string[5][15];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -148,10 +149,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
       colour = !colour;
     }
-
-
-    SSD1306_UpdateScreen();
   }
+  SSD1306_UpdateScreen();
 }
 
 void setup_OLED(void){
@@ -161,7 +160,6 @@ void setup_OLED(void){
   SSD1306_GotoXY(36,53);
   SSD1306_Puts ((char*)"Starting", &Font_7x10, SSD1306_COLOR_WHITE);
   SSD1306_UpdateScreen();
-
 }
 
 /* USER CODE END PFP */
@@ -231,15 +229,12 @@ int main(void)
   HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
 
-  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
-
-  // beep_on;
-  // HAL_Delay(500);
-  // beep_off;
+  HAL_Delay(100);
 
   // WS2812B_Init(&hspi1);
   // WS2812B_Refresh();
@@ -271,41 +266,43 @@ int main(void)
   // WS2812B_Refresh();
 
 
-  setup_VL53L0X(&sensor1);
-  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port,VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(100);
-  init(&sensor1,true);
-  startContinuous(&sensor1,0);
-  HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(10);
+  setup_VL53L0X(&sensorL);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
+  HAL_Delay(2);
+  init(&sensorL,true);
+  setAddress(&sensorL, 0b0101010);
+  startContinuous(&sensorL,33);
 
+  setup_VL53L0X(&sensorFL);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(100);
-  init(&sensor1,true);
-  startContinuous(&sensor1,0);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(10);
+  HAL_Delay(2);
+  init(&sensorFL,true);
+  setAddress(&sensorFL, 0b0101011);
+  startContinuous(&sensorFL,33);
 
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
-  HAL_Delay(100);
-  init(&sensor1,true);
-  startContinuous(&sensor1,0);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(10);
+  // setup_VL53L0X(&sensorF);
+  // HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
+  // HAL_Delay(2);
+  // init(&sensorF,true);
+  // setAddress(&sensorF, 0b0101100);
+  // startContinuous(&sensorF,33);
 
+  setup_VL53L0X(&sensorFR);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(100);
-  init(&sensor1,true);
-  startContinuous(&sensor1,0);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(10);
+  HAL_Delay(2);
+  init(&sensorFR,true);
+  setAddress(&sensorFR, 0b0101101);
+  startContinuous(&sensorFR,33);
 
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(100);
-  init(&sensor1,true);
-  startContinuous(&sensor1,0);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(10);
+  // setup_VL53L0X(&sensorR);
+  // HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
+  // HAL_Delay(2);
+  // init(&sensorR,true);
+  // setAddress(&sensorR, 0b0101110);
+  // startContinuous(&sensorR,33);
+
+  SSD1306_Clear();
+  SSD1306_UpdateScreen();
   /* USER CODE END 2 */
 
 
@@ -348,16 +345,32 @@ int main(void)
     //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
 		// }
     
-    char pomiar_string[5];
-    SSD1306_Clear();
-
-    HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
-    HAL_Delay(100);
-    sprintf(pomiar_string,"%05d",readRangeContinuousMillimeters(&sensor1));
+    
+    
+    sprintf(pomiar_string[0],"L  dist: %05d",readRangeContinuousMillimeters(&sensorL));
     SSD1306_GotoXY(0,0);
-    SSD1306_Puts (pomiar_string, &Font_7x10, SSD1306_COLOR_WHITE);
-    readRangeContinuousMillimeters(&sensor1);
-    HAL_GPIO_WritePin(VL53L0x_XSHUT_LEFT_GPIO_Port, VL53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+    SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
+   
+    sprintf(pomiar_string[1],"FL dist: %05d",readRangeContinuousMillimeters(&sensorFL));
+    SSD1306_GotoXY(0,11);
+    SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
+
+    // sprintf(pomiar_string[2],"F  dist: %05d",readRangeContinuousMillimeters(&sensorF));
+    // SSD1306_GotoXY(0,22);
+    // SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
+
+    sprintf(pomiar_string[3],"FR dist: %05d",readRangeContinuousMillimeters(&sensorFR));
+    SSD1306_GotoXY(0,33);
+    SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
+
+    // sprintf(pomiar_string[4],"R  dist: %05d",readRangeContinuousMillimeters(&sensorR));
+    // SSD1306_GotoXY(0,44);
+    // SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
+
+    HAL_Delay(33);
+    // beep_on;
+    // HAL_Delay(500);
+    // beep_off;
 
 
     /* USER CODE END WHILE */

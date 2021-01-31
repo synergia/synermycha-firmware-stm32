@@ -1,6 +1,5 @@
 /*
  * I2CDev.h
-
  *
  *  Created on: 5 Apr 2018
  *      Author: Adam

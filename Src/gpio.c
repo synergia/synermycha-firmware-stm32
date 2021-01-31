@@ -52,7 +52,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, VC53L0x_XSHUT_FRONT_RIGHT_Pin|VC53L0x_XSHUT_FRONT_Pin|LED_5_Pin|LED_4_Pin
-                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VL53L0x_XSHUT_LEFT_Pin
+                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VC53L0x_XSHUT_LEFT_Pin
                           |DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -68,7 +68,7 @@ void MX_GPIO_Init(void)
                            PCPin PCPin PCPin PCPin
                            PCPin */
   GPIO_InitStruct.Pin = VC53L0x_XSHUT_FRONT_RIGHT_Pin|VC53L0x_XSHUT_FRONT_Pin|LED_5_Pin|LED_4_Pin
-                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VL53L0x_XSHUT_LEFT_Pin
+                          |LED_3_Pin|LED_2_Pin|LED_1_Pin|VC53L0x_XSHUT_LEFT_Pin
                           |DRV8835_DIR_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
