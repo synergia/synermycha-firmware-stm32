@@ -86,7 +86,7 @@
 #include "ssd1306.h"
 #include "synermycha-logo.h"
 #include <stdio.h>
-#include <string>
+#include "string.h"
 #include "VL53L0X.h"
 #include "led.h"
 #include "buzzer.hpp"
@@ -150,7 +150,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       colour = !colour;
     }
   }
-  SSD1306_UpdateScreen();
 }
 
 void setup_OLED(void){
@@ -163,6 +162,16 @@ void setup_OLED(void){
 }
 
 /* USER CODE END PFP */
+void debugPrint(UART_HandleTypeDef *huart, char _out[])
+{ 
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
+}
+void debugPrintln(UART_HandleTypeDef *huart, char _out[])
+{
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
+  char newline[3] = "\r\n"; 
+  HAL_UART_Transmit(huart, (uint8_t *) newline, 2, 10); 
+}
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
@@ -229,12 +238,16 @@ int main(void)
   HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
 
+  HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
+
   HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(100);
+  HAL_Delay(20);
 
   // WS2812B_Init(&hspi1);
   // WS2812B_Refresh();
@@ -268,38 +281,45 @@ int main(void)
 
   setup_VL53L0X(&sensorL);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(2);
+  HAL_Delay(10);
   init(&sensorL,true);
   setAddress(&sensorL, 0b0101010);
+  setTimeout(&sensorL,35);
   startContinuous(&sensorL,33);
 
   setup_VL53L0X(&sensorFL);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(2);
+  HAL_Delay(10);
   init(&sensorFL,true);
   setAddress(&sensorFL, 0b0101011);
+  setTimeout(&sensorFL,35);
   startContinuous(&sensorFL,33);
 
-  // setup_VL53L0X(&sensorF);
-  // HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
-  // HAL_Delay(2);
-  // init(&sensorF,true);
-  // setAddress(&sensorF, 0b0101100);
-  // startContinuous(&sensorF,33);
+  setup_VL53L0X(&sensorF);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorF,true);
+  setAddress(&sensorF, 0b0101100);
+  setTimeout(&sensorF,35);
+  startContinuous(&sensorF,33);
 
   setup_VL53L0X(&sensorFR);
   HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(2);
+  HAL_Delay(10);
   init(&sensorFR,true);
   setAddress(&sensorFR, 0b0101101);
+  setTimeout(&sensorFR,35);
   startContinuous(&sensorFR,33);
 
-  // setup_VL53L0X(&sensorR);
-  // HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
-  // HAL_Delay(2);
-  // init(&sensorR,true);
-  // setAddress(&sensorR, 0b0101110);
-  // startContinuous(&sensorR,33);
+  setup_VL53L0X(&sensorR);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorR,true);
+  setAddress(&sensorR, 0b0101111);
+  setTimeout(&sensorR,35);
+  startContinuous(&sensorR,33);
+
+  HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_RESET);
 
   SSD1306_Clear();
   SSD1306_UpdateScreen();
@@ -345,29 +365,39 @@ int main(void)
     //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
 		// }
     
-    
-    
     sprintf(pomiar_string[0],"L  dist: %05d",readRangeContinuousMillimeters(&sensorL));
+    if(timeoutOccurred(&sensorL))
+      startContinuous(&sensorL,33);
     SSD1306_GotoXY(0,0);
     SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
-   
+
     sprintf(pomiar_string[1],"FL dist: %05d",readRangeContinuousMillimeters(&sensorFL));
     SSD1306_GotoXY(0,11);
+    if(timeoutOccurred(&sensorFL))
+      startContinuous(&sensorFL,33);
     SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
 
-    // sprintf(pomiar_string[2],"F  dist: %05d",readRangeContinuousMillimeters(&sensorF));
-    // SSD1306_GotoXY(0,22);
-    // SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[2],"F  dist: %05d",readRangeContinuousMillimeters(&sensorF));
+    if(timeoutOccurred(&sensorF))
+      startContinuous(&sensorF,33);
+    SSD1306_GotoXY(0,22);
+    SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
 
     sprintf(pomiar_string[3],"FR dist: %05d",readRangeContinuousMillimeters(&sensorFR));
+    if(timeoutOccurred(&sensorFR))
+      startContinuous(&sensorFR,33);
     SSD1306_GotoXY(0,33);
     SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
 
-    // sprintf(pomiar_string[4],"R  dist: %05d",readRangeContinuousMillimeters(&sensorR));
-    // SSD1306_GotoXY(0,44);
-    // SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[4],"R  dist: %05d",readRangeContinuousMillimeters(&sensorR));
+    if(timeoutOccurred(&sensorR))
+      startContinuous(&sensorR,33);
+    SSD1306_GotoXY(0,44);
+    SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
 
-    HAL_Delay(33);
+    SSD1306_UpdateScreen();
+    HAL_Delay(35);
+    debugPrint(&huart1,"SynerMycha wita BLE\r\n");
     // beep_on;
     // HAL_Delay(500);
     // beep_off;
@@ -397,10 +427,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 180;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
