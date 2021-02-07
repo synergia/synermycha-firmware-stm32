@@ -94,6 +94,9 @@
 #include "usbd_cdc_if.h"
 #include <stdlib.h>
 #include "ws2812b.h"
+#include <pb_encode.h>
+#include <pb_decode.h>
+#include <PidSetReq.pb.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -329,8 +332,37 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  /* This is the buffer where we will store our message. */
+  uint8_t buffer[128];
+  size_t message_length;
+  bool status;
+
   while (1)
   {
+
+    PidSetReq pidReq = PidSetReq_init_zero;
+    //SimpleMessage message = SimpleMessage_init_zero;
+    
+    /* Create a stream that will write to our buffer. */
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+    pidReq.requestId = 0;
+    pidReq.p = 3.14;
+    
+    /* Now we are ready to encode the message! */
+    status = pb_encode(&stream, PidSetReq_fields, &pidReq);
+    message_length = stream.bytes_written;
+    
+    /* Then just check for any errors.. */
+    if (!status)
+    {
+        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+        //return 1;
+    }
+
+    // send buffer via UART
+
 
     // if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET) {
     //   ++MessageCounter;
