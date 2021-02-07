@@ -1,0 +1,3 @@
+[submodule "synermycha-messages"]
+	path = synermycha-messages
+	url = https://github.com/synergia/synermycha-messages.git
