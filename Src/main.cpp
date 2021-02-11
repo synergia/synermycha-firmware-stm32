@@ -118,7 +118,8 @@
 
 /* USER CODE BEGIN PV */
 VL53L0X sensorL,sensorFL,sensorF,sensorFR,sensorR;
-uint8_t DataToSend[40]; // Tablica zawierajaca dane do wyslania
+uint16_t distanceMeasured[5];
+uint8_t DataToSend[20]; // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
 uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
 char pomiar_string[5][15];
@@ -164,11 +165,11 @@ void setup_OLED(void){
 /* USER CODE END PFP */
 void debugPrint(UART_HandleTypeDef *huart, char _out[])
 { 
-  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out)-1, 10); 
 }
 void debugPrintln(UART_HandleTypeDef *huart, char _out[])
 {
-  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out)-1, 10); 
   char newline[3] = "\r\n"; 
   HAL_UART_Transmit(huart, (uint8_t *) newline, 2, 10); 
 }
@@ -221,10 +222,19 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t Received[3];
 
   setup_led();
   setup_OLED();
+  // HAL_Delay(1100);
+  // debugPrint(&huart1,"$$$");
+  // HAL_Delay(1100);
+  // HAL_UART_Receive_IT(&huart1, Received, 3);
+  // CDC_Transmit_FS(Received, 3);
+  // debugPrint(&huart1,"SN,Synermycha\r");
+  // HAL_Delay(10);
+  // debugPrint(&huart1,"R,1\r");
+  // HAL_Delay(10);
 
   HAL_ADC_Start(&hadc1);
 
@@ -252,17 +262,16 @@ int main(void)
   // WS2812B_Init(&hspi1);
   // WS2812B_Refresh();
   // HAL_Delay(100);
-  // WS2812B_SetDiodeRGB(10,0,0,0);
-  // WS2812B_SetDiodeRGB(1,255,255,255);
-  // WS2812B_SetDiodeRGB(2,255,255,255);
-  // WS2812B_SetDiodeRGB(3,255,255,255);
-  // WS2812B_SetDiodeRGB(4,255,255,255);
-  // WS2812B_SetDiodeRGB(5,255,255,255);
-  // WS2812B_SetDiodeRGB(6,255,255,255);
-  // WS2812B_SetDiodeRGB(7,255,255,255);
-  // WS2812B_SetDiodeRGB(8,255,255,255);
-  // WS2812B_SetDiodeRGB(9,255,255,255);
-  // WS2812B_SetDiodeRGB(1,255,255,255);
+  // WS2812B_SetDiodeRGB(0,255,0,0);
+  // WS2812B_SetDiodeRGB(1,255,127,0);
+  // WS2812B_SetDiodeRGB(2,255,255,0);
+  // WS2812B_SetDiodeRGB(3,127,255,0);
+  // WS2812B_SetDiodeRGB(4,0,255,0);
+  // WS2812B_SetDiodeRGB(5,0,255,127);
+  // WS2812B_SetDiodeRGB(6,0,255,255);
+  // WS2812B_SetDiodeRGB(7,0,127,255);
+  // WS2812B_SetDiodeRGB(8,0,0,255);
+  // WS2812B_SetDiodeRGB(9,255,0,255);
   // WS2812B_Refresh();
   // HAL_Delay(100);
   // WS2812B_SetDiodeRGB(10,0,0,0);
@@ -365,43 +374,43 @@ int main(void)
     //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
 		// }
     
-    sprintf(pomiar_string[0],"L  dist: %05d",readRangeContinuousMillimeters(&sensorL));
+    distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
     if(timeoutOccurred(&sensorL))
       startContinuous(&sensorL,33);
-    SSD1306_GotoXY(0,0);
-    SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
-
-    sprintf(pomiar_string[1],"FL dist: %05d",readRangeContinuousMillimeters(&sensorFL));
-    SSD1306_GotoXY(0,11);
+    distanceMeasured[1]=readRangeContinuousMillimeters(&sensorFL);
     if(timeoutOccurred(&sensorFL))
       startContinuous(&sensorFL,33);
-    SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
-
-    sprintf(pomiar_string[2],"F  dist: %05d",readRangeContinuousMillimeters(&sensorF));
+    distanceMeasured[2]=readRangeContinuousMillimeters(&sensorF);
     if(timeoutOccurred(&sensorF))
       startContinuous(&sensorF,33);
-    SSD1306_GotoXY(0,22);
-    SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
-
-    sprintf(pomiar_string[3],"FR dist: %05d",readRangeContinuousMillimeters(&sensorFR));
+    distanceMeasured[3]=readRangeContinuousMillimeters(&sensorFR);
     if(timeoutOccurred(&sensorFR))
       startContinuous(&sensorFR,33);
-    SSD1306_GotoXY(0,33);
-    SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
-
-    sprintf(pomiar_string[4],"R  dist: %05d",readRangeContinuousMillimeters(&sensorR));
+    distanceMeasured[4]=readRangeContinuousMillimeters(&sensorR);
     if(timeoutOccurred(&sensorR))
       startContinuous(&sensorR,33);
+
+    sprintf(pomiar_string[0],"L  dist: %05d",distanceMeasured[0]);
+    SSD1306_GotoXY(0,0);
+    SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[1],"FL dist: %05d",distanceMeasured[1]);
+    SSD1306_GotoXY(0,11);
+    SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[2],"F  dist: %05d",distanceMeasured[2]);
+    SSD1306_GotoXY(0,22);
+    SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[3],"FR dist: %05d",distanceMeasured[3]);
+    SSD1306_GotoXY(0,33);
+    SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
+    sprintf(pomiar_string[4],"R  dist: %05d",distanceMeasured[4]);
     SSD1306_GotoXY(0,44);
     SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
 
     SSD1306_UpdateScreen();
     HAL_Delay(35);
+    // sprintf((char*)DataToSend,"%05d\t%05d\t%05d",distanceMeasured[0],distanceMeasured[1],distanceMeasured[2]);
+    // debugPrintln(&huart1,(char*)DataToSend);
     debugPrint(&huart1,"SynerMycha wita BLE\r\n");
-    // beep_on;
-    // HAL_Delay(500);
-    // beep_off;
-
 
     /* USER CODE END WHILE */
 
