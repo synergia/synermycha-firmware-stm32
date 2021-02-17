@@ -163,13 +163,39 @@ void setup_OLED(void){
 }
 
 /* USER CODE END PFP */
+
+void RN487xEnterCMD()
+{
+  uint8_t command[4] = "$$$";
+  HAL_UART_Transmit(&huart1, command, 3, 10); 
+}
+
+void RN487xSendCMD(char _command[])
+{
+  HAL_UART_Transmit(&huart1, (uint8_t *) _command, strlen(_command), 10);
+  char carriageReturn = '\r';
+  HAL_UART_Transmit(&huart1, (uint8_t *) &carriageReturn, 1, 10); 
+}
+
+void RN487xRestartAndExitCMD()
+{
+  char command[] = "R,1";
+  RN487xSendCMD(command);
+}
+
+void RN487xExitCMD()
+{
+  char command[] = "---";
+  RN487xSendCMD(command);
+}
+
 void debugPrint(UART_HandleTypeDef *huart, char _out[])
 { 
-  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out)-1, 10); 
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
 }
 void debugPrintln(UART_HandleTypeDef *huart, char _out[])
 {
-  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out)-1, 10); 
+  HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10); 
   char newline[3] = "\r\n"; 
   HAL_UART_Transmit(huart, (uint8_t *) newline, 2, 10); 
 }
@@ -328,7 +354,161 @@ int main(void)
   setTimeout(&sensorR,35);
   startContinuous(&sensorR,33);
 
-  HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_RESET);
+
+  
+
+  // Setup RN4871 - do it once per hardware change
+  // RN487xEnterCMD();
+  // HAL_Delay(300);
+  // RN487xSendCMD("SS,C0"); // Transparent uart and info mask
+  // HAL_Delay(300);
+  // RN487xRestartAndExitCMD(); // Restart device
+  // HAL_Delay(5000);
+
+  // RN487xEnterCMD();
+  // HAL_Delay(300);
+
+  // RN487xSendCMD("SN,Synermycha BLE"); // Set device name
+  // HAL_Delay(300);
+  // RN487xSendCMD("SDH,2.0"); // Set hardware rev.
+  // HAL_Delay(300);
+  // RN487xSendCMD("SDM,Synermycha"); // Set model
+  // HAL_Delay(300);
+  // RN487xSendCMD("SDN,Synergia PWr PL"); // Set manufaturer
+  // HAL_Delay(300);
+  // RN487xSendCMD("SDS,SYNERMYCHA 2"); // Set serial number
+  // HAL_Delay(300);
+  // RN487xSendCMD("SDR,Developer"); // Set serial number
+  // HAL_Delay(300);
+  // RN487xRestartAndExitCMD(); // Restart device
+  // HAL_Delay(5000);
+
+  // RN487xEnterCMD();
+  // HAL_Delay(1000);
+  // RN487xSendCMD("SF,2");
+  // HAL_Delay(1000);
+  // RN487xSendCMD("SF,2");
+  // HAL_Delay(1000);
+  // RN487xSendCMD("SF,2");
+  // HAL_Delay(1000);
+  // RN487xSendCMD("SF,2");
+  // HAL_Delay(1000);
+  // RN487xEnterCMD();
+  // HAL_Delay(100);
+  // RN487xSendCMD("&R");
+  // HAL_Delay(100);
+  // RN487xSendCMD("&R");
+
+
+  // RN487xEnterCMD();
+  // HAL_Delay(15);
+  // RN487xSendCMD("PZ");
+  // HAL_Delay(100);
+  // RN487xRestartAndExitCMD(); // Restart device
+  // HAL_Delay(3000);
+  // RN487xSendCMD("PS,59c88760536411e7b114b2f933d5fe66");
+  // HAL_Delay(100);
+  // RN487xSendCMD("PC,59c889e0536411e7b114b2f933d5fe66,12,01");
+  // HAL_Delay(100);
+  // RN487xSendCMD("PC,59c88d6e536411e7b114b2f933d5fe66,16,01");
+  // HAL_Delay(100);
+  // RN487xSendCMD("SN,Synermycha BLE2"); // Set device name
+  // HAL_Delay(100);
+  // RN487xRestartAndExitCMD(); // Restart device
+  // HAL_Delay(3000);
+  // RN487xEnterCMD();
+  // HAL_Delay(15);
+  // RN487xSendCMD("SHW,0072,57");
+
+
+
+
+
+  // // New service
+  // RN487xSendCMD("PS,1bf9cd6a6e2511eb94390242ac130002");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9cf9a6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d08a6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d3466e2511eb94390242ac130002,12,20");
+  // HAL_Delay(200);
+  // RN487xSendCMD("PC,1bf9d60c6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d6de6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d7926e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d8466e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,1bf9d8fa6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+
+  // // New service
+  // RN487xSendCMD("PS,4fc838b66e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc83b726e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc83c6c6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc83d346e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc83ff06e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc840c26e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc8418a6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc8423e6e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,4fc842f26e2511eb94390242ac130002,12,20");
+  // HAL_Delay(500);
+
+  // // New service
+  // RN487xSendCMD("PS,53d568666e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d56b866e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d56cf86e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d56e4c6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d56f5a6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d570ae6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d571c66e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d573246e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,53d5740a6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+
+  // // New service
+  // RN487xSendCMD("PS,5b4eb6386e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4eb89a6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4eb98a6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebc286e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebcf06e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebdae6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebe6c6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebf2a6e2511eb94390242ac130002,1A,20");
+  // HAL_Delay(500);
+  // RN487xSendCMD("PC,5b4ebfe86e2511eb94390242ac130002,1A,20");
+  
+
+  // RN487xEnterCMD();
+  // HAL_Delay(15);
+
+
+
 
   SSD1306_Clear();
   SSD1306_UpdateScreen();
@@ -410,7 +590,7 @@ int main(void)
     HAL_Delay(35);
     // sprintf((char*)DataToSend,"%05d\t%05d\t%05d",distanceMeasured[0],distanceMeasured[1],distanceMeasured[2]);
     // debugPrintln(&huart1,(char*)DataToSend);
-    debugPrint(&huart1,"SynerMycha wita BLE\r\n");
+    //debugPrint(&huart1,"SynerMycha wita BLE\r\n");
 
     /* USER CODE END WHILE */
 
