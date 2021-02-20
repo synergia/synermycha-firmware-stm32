@@ -95,6 +95,9 @@
 #include "usbd_cdc_if.h"
 #include <stdlib.h>
 #include "ws2812b.h"
+#include "AllSignals.hh"
+#include "Signal.hh"
+#include "Observer.hh"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -296,6 +299,24 @@ void setupDistanceSensors()
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+class Led1 : public utils::Observer
+{
+  public:
+    Led1(utils::AllSignals& sig) : mAllSignals(sig)
+    {
+      mAllSignals.buttonEnter.connect<Led1, &Led1::onButtonEnter>(*this);
+    }
+
+    void onButtonEnter()
+    {
+      shine = !shine;
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, static_cast<GPIO_PinState>(shine));
+    }
+
+  private:
+    utils::AllSignals& mAllSignals;
+    bool shine = false;
+};
 
 /* USER CODE END 0 */
 
@@ -358,6 +379,8 @@ int main(void)
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  utils::AllSignals allSignals;
+  Led1 led1(allSignals);
   while (1)
   {
 
