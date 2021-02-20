@@ -153,7 +153,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   }
 }
 
-void setup_OLED(void){
+void setupOled(void){
   SSD1306_Init();  // initialise
   SSD1306_Clear();
   SSD1306_DrawBitmap(0,0,logo, 128, 64, SSD1306_COLOR_WHITE);
@@ -162,31 +162,11 @@ void setup_OLED(void){
   SSD1306_UpdateScreen();
 }
 
-/* USER CODE END PFP */
-
-void RN487xEnterCMD()
+void setupBLE()
 {
-  uint8_t command[4] = "$$$";
-  HAL_UART_Transmit(&huart1, command, 3, 10); 
-}
-
-void RN487xSendCMD(char _command[])
-{
-  HAL_UART_Transmit(&huart1, (uint8_t *) _command, strlen(_command), 10);
-  char carriageReturn = '\r';
-  HAL_UART_Transmit(&huart1, (uint8_t *) &carriageReturn, 1, 10); 
-}
-
-void RN487xRestartAndExitCMD()
-{
-  char command[] = "R,1";
-  RN487xSendCMD(command);
-}
-
-void RN487xExitCMD()
-{
-  char command[] = "---";
-  RN487xSendCMD(command);
+  HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
 }
 
 void debugPrint(UART_HandleTypeDef *huart, char _out[])
@@ -199,6 +179,76 @@ void debugPrintln(UART_HandleTypeDef *huart, char _out[])
   char newline[3] = "\r\n"; 
   HAL_UART_Transmit(huart, (uint8_t *) newline, 2, 10); 
 }
+
+void setupADC()
+{
+  HAL_ADC_Start(&hadc1);
+}
+
+void setupMotors()
+{
+  HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
+  HAL_TIM_Base_Start_IT(&htim14);
+  HAL_GPIO_WritePin(DRV8835_EN_GPIO_Port, DRV8835_EN_Pin, GPIO_PIN_SET);
+  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
+  TIM12->CCR1 = 0;
+  TIM12->CCR2 = 0;
+}
+
+void setupDistanceSensors()
+{
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
+  HAL_Delay(20);
+
+  setup_VL53L0X(&sensorL);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorL,true);
+  setAddress(&sensorL, 0b0101010);
+  setTimeout(&sensorL,35);
+  startContinuous(&sensorL,33);
+
+  setup_VL53L0X(&sensorFL);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorFL,true);
+  setAddress(&sensorFL, 0b0101011);
+  setTimeout(&sensorFL,35);
+  startContinuous(&sensorFL,33);
+
+  setup_VL53L0X(&sensorF);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorF,true);
+  setAddress(&sensorF, 0b0101100);
+  setTimeout(&sensorF,35);
+  startContinuous(&sensorF,33);
+
+  setup_VL53L0X(&sensorFR);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorFR,true);
+  setAddress(&sensorFR, 0b0101101);
+  setTimeout(&sensorFR,35);
+  startContinuous(&sensorFR,33);
+
+  setup_VL53L0X(&sensorR);
+  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
+  HAL_Delay(10);
+  init(&sensorR,true);
+  setAddress(&sensorR, 0b0101111);
+  setTimeout(&sensorR,35);
+  startContinuous(&sensorR,33);
+}
+/* USER CODE END PFP */
+
+
+
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
@@ -250,109 +300,22 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uint8_t Received[3];
 
-  setup_led();
-  setup_OLED();
-  // HAL_Delay(1100);
-  // debugPrint(&huart1,"$$$");
-  // HAL_Delay(1100);
-  // HAL_UART_Receive_IT(&huart1, Received, 3);
-  // CDC_Transmit_FS(Received, 3);
-  // debugPrint(&huart1,"SN,Synermycha\r");
-  // HAL_Delay(10);
-  // debugPrint(&huart1,"R,1\r");
-  // HAL_Delay(10);
+  // // Flash update of RN487x
+  // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_RESET);
+  // HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_RESET);
+  // HAL_Delay(20);
+  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
 
-  HAL_ADC_Start(&hadc1);
+  // Normal operation of RN487x
+  setupBLE();
+  setupOled();
+  setupLed();
+  setupADC();
+  setupMotors();
+  setupDistanceSensors();
 
-  HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
-  HAL_TIM_Base_Start_IT(&htim14);
-  HAL_GPIO_WritePin(DRV8835_EN_GPIO_Port, DRV8835_EN_Pin, GPIO_PIN_SET);
-  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
-  TIM12->CCR1 = 0;
-  TIM12->CCR2 = 0;
-  HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
-
-  HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
-
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_RESET);
-  HAL_Delay(20);
-
-  // WS2812B_Init(&hspi1);
-  // WS2812B_Refresh();
-  // HAL_Delay(100);
-  // WS2812B_SetDiodeRGB(0,255,0,0);
-  // WS2812B_SetDiodeRGB(1,255,127,0);
-  // WS2812B_SetDiodeRGB(2,255,255,0);
-  // WS2812B_SetDiodeRGB(3,127,255,0);
-  // WS2812B_SetDiodeRGB(4,0,255,0);
-  // WS2812B_SetDiodeRGB(5,0,255,127);
-  // WS2812B_SetDiodeRGB(6,0,255,255);
-  // WS2812B_SetDiodeRGB(7,0,127,255);
-  // WS2812B_SetDiodeRGB(8,0,0,255);
-  // WS2812B_SetDiodeRGB(9,255,0,255);
-  // WS2812B_Refresh();
-  // HAL_Delay(100);
-  // WS2812B_SetDiodeRGB(10,0,0,0);
-  // WS2812B_SetDiodeRGB(1,255,255,255);
-  // WS2812B_SetDiodeRGB(2,255,255,255);
-  // WS2812B_SetDiodeRGB(3,255,255,255);
-  // WS2812B_SetDiodeRGB(4,255,255,255);
-  // WS2812B_SetDiodeRGB(5,255,255,255);
-  // WS2812B_SetDiodeRGB(6,255,255,255);
-  // WS2812B_SetDiodeRGB(7,255,255,255);
-  // WS2812B_SetDiodeRGB(8,255,255,255);
-  // WS2812B_SetDiodeRGB(9,255,255,255);
-  // WS2812B_SetDiodeRGB(1,255,255,255);
-  // WS2812B_Refresh();
-
-
-  setup_VL53L0X(&sensorL);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(10);
-  init(&sensorL,true);
-  setAddress(&sensorL, 0b0101010);
-  setTimeout(&sensorL,35);
-  startContinuous(&sensorL,33);
-
-  setup_VL53L0X(&sensorFL);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin,GPIO_PIN_SET);
-  HAL_Delay(10);
-  init(&sensorFL,true);
-  setAddress(&sensorFL, 0b0101011);
-  setTimeout(&sensorFL,35);
-  startContinuous(&sensorFL,33);
-
-  setup_VL53L0X(&sensorF);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin,GPIO_PIN_SET);
-  HAL_Delay(10);
-  init(&sensorF,true);
-  setAddress(&sensorF, 0b0101100);
-  setTimeout(&sensorF,35);
-  startContinuous(&sensorF,33);
-
-  setup_VL53L0X(&sensorFR);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(10);
-  init(&sensorFR,true);
-  setAddress(&sensorFR, 0b0101101);
-  setTimeout(&sensorFR,35);
-  startContinuous(&sensorFR,33);
-
-  setup_VL53L0X(&sensorR);
-  HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin,GPIO_PIN_SET);
-  HAL_Delay(10);
-  init(&sensorR,true);
-  setAddress(&sensorR, 0b0101111);
-  setTimeout(&sensorR,35);
-  startContinuous(&sensorR,33);
+  
 
 
   
@@ -512,6 +475,7 @@ int main(void)
 
   SSD1306_Clear();
   SSD1306_UpdateScreen();
+
   /* USER CODE END 2 */
 
 

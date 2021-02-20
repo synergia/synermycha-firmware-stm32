@@ -8,9 +8,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-
-void setup_led();
-
+void setupLed();
 
 #ifdef __cplusplus
 }

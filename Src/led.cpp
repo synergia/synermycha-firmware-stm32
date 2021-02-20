@@ -1,6 +1,6 @@
 #include "led.h"
 
-void setup_led()
+void setupLed()
 {
     HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
