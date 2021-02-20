@@ -107,6 +107,8 @@
 #define RIGHT_MOTOR_FORWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
 #define LEFT_MOTOR_BACKWARD	HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
 #define LEFT_MOTOR_FORWARD	HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
+#define STRINGIFY(s) STRINGIFY1(s)
+#define STRINGIFY1(s) #s
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -157,8 +159,10 @@ void setupOled(void){
   SSD1306_Init();  // initialise
   SSD1306_Clear();
   SSD1306_DrawBitmap(0,0,logo, 128, 64, SSD1306_COLOR_WHITE);
-  SSD1306_GotoXY(36,53);
-  SSD1306_Puts ((char*)"Starting", &Font_7x10, SSD1306_COLOR_WHITE);
+  SSD1306_GotoXY(18,53);
+  char outStr[20]="OS:";
+  strcat(outStr, (char*)STRINGIFY(GIT_TAG));
+  SSD1306_Puts (outStr, &Font_7x10, SSD1306_COLOR_WHITE);
   SSD1306_UpdateScreen();
 }
 
@@ -167,6 +171,14 @@ void setupBLE()
   HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
+
+  // // Flash update of RN487x
+  // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_RESET);
+  // HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_RESET);
+  // HAL_Delay(20);
+  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
+  
 }
 
 void debugPrint(UART_HandleTypeDef *huart, char _out[])
@@ -300,14 +312,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uint8_t Received[3];
 
-  // // Flash update of RN487x
-  // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
-  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_RESET);
-  // HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_RESET);
-  // HAL_Delay(20);
-  // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
 
-  // Normal operation of RN487x
   setupBLE();
   setupOled();
   setupLed();
@@ -315,243 +320,82 @@ int main(void)
   setupMotors();
   setupDistanceSensors();
 
-  
-
-
-  
-
-  // Setup RN4871 - do it once per hardware change
-  // RN487xEnterCMD();
-  // HAL_Delay(300);
-  // RN487xSendCMD("SS,C0"); // Transparent uart and info mask
-  // HAL_Delay(300);
-  // RN487xRestartAndExitCMD(); // Restart device
-  // HAL_Delay(5000);
-
-  // RN487xEnterCMD();
-  // HAL_Delay(300);
-
-  // RN487xSendCMD("SN,Synermycha BLE"); // Set device name
-  // HAL_Delay(300);
-  // RN487xSendCMD("SDH,2.0"); // Set hardware rev.
-  // HAL_Delay(300);
-  // RN487xSendCMD("SDM,Synermycha"); // Set model
-  // HAL_Delay(300);
-  // RN487xSendCMD("SDN,Synergia PWr PL"); // Set manufaturer
-  // HAL_Delay(300);
-  // RN487xSendCMD("SDS,SYNERMYCHA 2"); // Set serial number
-  // HAL_Delay(300);
-  // RN487xSendCMD("SDR,Developer"); // Set serial number
-  // HAL_Delay(300);
-  // RN487xRestartAndExitCMD(); // Restart device
-  // HAL_Delay(5000);
-
-  // RN487xEnterCMD();
-  // HAL_Delay(1000);
-  // RN487xSendCMD("SF,2");
-  // HAL_Delay(1000);
-  // RN487xSendCMD("SF,2");
-  // HAL_Delay(1000);
-  // RN487xSendCMD("SF,2");
-  // HAL_Delay(1000);
-  // RN487xSendCMD("SF,2");
-  // HAL_Delay(1000);
-  // RN487xEnterCMD();
-  // HAL_Delay(100);
-  // RN487xSendCMD("&R");
-  // HAL_Delay(100);
-  // RN487xSendCMD("&R");
-
-
-  // RN487xEnterCMD();
-  // HAL_Delay(15);
-  // RN487xSendCMD("PZ");
-  // HAL_Delay(100);
-  // RN487xRestartAndExitCMD(); // Restart device
-  // HAL_Delay(3000);
-  // RN487xSendCMD("PS,59c88760536411e7b114b2f933d5fe66");
-  // HAL_Delay(100);
-  // RN487xSendCMD("PC,59c889e0536411e7b114b2f933d5fe66,12,01");
-  // HAL_Delay(100);
-  // RN487xSendCMD("PC,59c88d6e536411e7b114b2f933d5fe66,16,01");
-  // HAL_Delay(100);
-  // RN487xSendCMD("SN,Synermycha BLE2"); // Set device name
-  // HAL_Delay(100);
-  // RN487xRestartAndExitCMD(); // Restart device
-  // HAL_Delay(3000);
-  // RN487xEnterCMD();
-  // HAL_Delay(15);
-  // RN487xSendCMD("SHW,0072,57");
-
-
-
-
-
-  // // New service
-  // RN487xSendCMD("PS,1bf9cd6a6e2511eb94390242ac130002");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9cf9a6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d08a6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d3466e2511eb94390242ac130002,12,20");
-  // HAL_Delay(200);
-  // RN487xSendCMD("PC,1bf9d60c6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d6de6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d7926e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d8466e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,1bf9d8fa6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-
-  // // New service
-  // RN487xSendCMD("PS,4fc838b66e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc83b726e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc83c6c6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc83d346e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc83ff06e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc840c26e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc8418a6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc8423e6e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,4fc842f26e2511eb94390242ac130002,12,20");
-  // HAL_Delay(500);
-
-  // // New service
-  // RN487xSendCMD("PS,53d568666e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d56b866e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d56cf86e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d56e4c6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d56f5a6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d570ae6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d571c66e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d573246e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,53d5740a6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-
-  // // New service
-  // RN487xSendCMD("PS,5b4eb6386e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4eb89a6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4eb98a6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebc286e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebcf06e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebdae6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebe6c6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebf2a6e2511eb94390242ac130002,1A,20");
-  // HAL_Delay(500);
-  // RN487xSendCMD("PC,5b4ebfe86e2511eb94390242ac130002,1A,20");
-  
-
-  // RN487xEnterCMD();
-  // HAL_Delay(15);
-
-
-
-
-  SSD1306_Clear();
-  SSD1306_UpdateScreen();
+  // SSD1306_Clear();
+  // SSD1306_UpdateScreen();
 
   /* USER CODE END 2 */
-
-
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
 
-    // if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET) {
-    //   ++MessageCounter;
-		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-		// 	CDC_Transmit_FS(DataToSend, MessageLength);
-    //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-    //   while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
-    //   {
+    if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET) {
+      ++MessageCounter;
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
+      {
         
-    //   }
-    //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-		// }
-    // if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET) {
-		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-		// 	CDC_Transmit_FS(DataToSend, MessageLength);
-    //   HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-    //   while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-    //   {
+      }
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+		}
+    if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET) {
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+      {
         
-    //   }
-    //   HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-		// }
-    // if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET) {
-    //   --MessageCounter;
-		// 	MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-		// 	CDC_Transmit_FS(DataToSend, MessageLength);
-    //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-    //   while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-    //   {
+      }
+      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+		}
+    if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET) {
+      --MessageCounter;
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+      {
         
-    //   }
-    //   HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-		// }
+      }
+      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+		}
     
-    distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
-    if(timeoutOccurred(&sensorL))
-      startContinuous(&sensorL,33);
-    distanceMeasured[1]=readRangeContinuousMillimeters(&sensorFL);
-    if(timeoutOccurred(&sensorFL))
-      startContinuous(&sensorFL,33);
-    distanceMeasured[2]=readRangeContinuousMillimeters(&sensorF);
-    if(timeoutOccurred(&sensorF))
-      startContinuous(&sensorF,33);
-    distanceMeasured[3]=readRangeContinuousMillimeters(&sensorFR);
-    if(timeoutOccurred(&sensorFR))
-      startContinuous(&sensorFR,33);
-    distanceMeasured[4]=readRangeContinuousMillimeters(&sensorR);
-    if(timeoutOccurred(&sensorR))
-      startContinuous(&sensorR,33);
+    // distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
+    // if(timeoutOccurred(&sensorL))
+    //   startContinuous(&sensorL,33);
+    // distanceMeasured[1]=readRangeContinuousMillimeters(&sensorFL);
+    // if(timeoutOccurred(&sensorFL))
+    //   startContinuous(&sensorFL,33);
+    // distanceMeasured[2]=readRangeContinuousMillimeters(&sensorF);
+    // if(timeoutOccurred(&sensorF))
+    //   startContinuous(&sensorF,33);
+    // distanceMeasured[3]=readRangeContinuousMillimeters(&sensorFR);
+    // if(timeoutOccurred(&sensorFR))
+    //   startContinuous(&sensorFR,33);
+    // distanceMeasured[4]=readRangeContinuousMillimeters(&sensorR);
+    // if(timeoutOccurred(&sensorR))
+    //   startContinuous(&sensorR,33);
 
-    sprintf(pomiar_string[0],"L  dist: %05d",distanceMeasured[0]);
-    SSD1306_GotoXY(0,0);
-    SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
-    sprintf(pomiar_string[1],"FL dist: %05d",distanceMeasured[1]);
-    SSD1306_GotoXY(0,11);
-    SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
-    sprintf(pomiar_string[2],"F  dist: %05d",distanceMeasured[2]);
-    SSD1306_GotoXY(0,22);
-    SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
-    sprintf(pomiar_string[3],"FR dist: %05d",distanceMeasured[3]);
-    SSD1306_GotoXY(0,33);
-    SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
-    sprintf(pomiar_string[4],"R  dist: %05d",distanceMeasured[4]);
-    SSD1306_GotoXY(0,44);
-    SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
+    // sprintf(pomiar_string[0],"L  dist: %05d",distanceMeasured[0]);
+    // SSD1306_GotoXY(0,0);
+    // SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
+    // sprintf(pomiar_string[1],"FL dist: %05d",distanceMeasured[1]);
+    // SSD1306_GotoXY(0,11);
+    // SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
+    // sprintf(pomiar_string[2],"F  dist: %05d",distanceMeasured[2]);
+    // SSD1306_GotoXY(0,22);
+    // SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
+    // sprintf(pomiar_string[3],"FR dist: %05d",distanceMeasured[3]);
+    // SSD1306_GotoXY(0,33);
+    // SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
+    // sprintf(pomiar_string[4],"R  dist: %05d",distanceMeasured[4]);
+    // SSD1306_GotoXY(0,44);
+    // SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
 
-    SSD1306_UpdateScreen();
-    HAL_Delay(35);
+    // SSD1306_UpdateScreen();
+    // HAL_Delay(35);
     // sprintf((char*)DataToSend,"%05d\t%05d\t%05d",distanceMeasured[0],distanceMeasured[1],distanceMeasured[2]);
     // debugPrintln(&huart1,(char*)DataToSend);
     //debugPrint(&huart1,"SynerMycha wita BLE\r\n");

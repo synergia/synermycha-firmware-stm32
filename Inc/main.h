@@ -121,12 +121,12 @@ extern void SystemClock_Config(void);
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
 #define SWCLK_GPIO_Port GPIOA
-#define BUTTON_UP_Pin GPIO_PIN_15
-#define BUTTON_UP_GPIO_Port GPIOA
-#define BUTTON_OK_Pin GPIO_PIN_10
+#define BUTTON_DOWN_Pin GPIO_PIN_15
+#define BUTTON_DOWN_GPIO_Port GPIOA
+#define BUTTON_UP_Pin GPIO_PIN_10
+#define BUTTON_UP_GPIO_Port GPIOC
+#define BUTTON_OK_Pin GPIO_PIN_11
 #define BUTTON_OK_GPIO_Port GPIOC
-#define BUTTON_DOWN_Pin GPIO_PIN_11
-#define BUTTON_DOWN_GPIO_Port GPIOC
 #define LCD_SDA_Pin GPIO_PIN_12
 #define LCD_SDA_GPIO_Port GPIOC
 #define VC53L0x_XSHUT_RIGHT_Pin GPIO_PIN_2

@@ -12,9 +12,8 @@
 #define HANDLER_MOTOR_PWM       0084
 #define HANDLER_MAP             0092
 #define HANDLER_MODE_R_FI       00B2
-#define HANDLER_RGB_LED_0_4     00B5
-#define HANDLER_RGB_LED_5_9     00B8
-#define HANDLER_PID             00BB
+#define HANDLER_RGB_LED         00B5   
+#define HANDLER_PID             00B8
 
 #ifdef __cplusplus
 extern "C" {
