@@ -129,44 +129,57 @@ uint8_t DataToSend[20]; // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
 uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
 char pomiar_string[5][15];
+class Led1 : public utils::Observer
+{
+  public:
+    Led1(utils::AllSignals& sig) : mAllSignals(sig)
+    {
+      mAllSignals.buttonEnter.connect<Led1, &Led1::onButtonEnter>(*this);
+    }
+
+    void onButtonEnter()
+    {
+      shine = !shine;
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, static_cast<GPIO_PinState>(shine));
+    }
+
+  private:
+    utils::AllSignals& mAllSignals;
+    bool shine = false;
+};
+utils::AllSignals allSignals; 
+Led1 led1(allSignals); 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (GPIO_Pin == GPIO_PIN_11) {
-      ++MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-		}
-    if (GPIO_Pin == BUTTON_DOWN_Pin) {
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-		}
-    if (GPIO_Pin == BUTTON_UP_Pin) {
-      --MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-		}
+	if (GPIO_Pin == BUTTON_OK_Pin) {
+    if(HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
+      allSignals.buttonEnter.emit();
+	}
+  if (GPIO_Pin == BUTTON_DOWN_Pin) {
+		MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		CDC_Transmit_FS(DataToSend, MessageLength);
+    HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+    while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+    {
+      
+    }
+    HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+	}
+  if (GPIO_Pin == BUTTON_UP_Pin) {
+    --MessageCounter;
+		MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		CDC_Transmit_FS(DataToSend, MessageLength);
+    HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+    while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+    {
+      
+    }
+    HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+	}
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance == TIM14){ // Jeżeli przerwanie pochodzi od timera 14
@@ -299,24 +312,7 @@ void setupDistanceSensors()
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-class Led1 : public utils::Observer
-{
-  public:
-    Led1(utils::AllSignals& sig) : mAllSignals(sig)
-    {
-      mAllSignals.buttonEnter.connect<Led1, &Led1::onButtonEnter>(*this);
-    }
 
-    void onButtonEnter()
-    {
-      shine = !shine;
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, static_cast<GPIO_PinState>(shine));
-    }
-
-  private:
-    utils::AllSignals& mAllSignals;
-    bool shine = false;
-};
 
 /* USER CODE END 0 */
 
