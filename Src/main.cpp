@@ -80,6 +80,7 @@
 #include "usart.h"
 #include "usb_device.h"
 #include "gpio.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "fonts.h"
@@ -130,7 +131,40 @@ char pomiar_string[5][15];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if (GPIO_Pin == GPIO_PIN_11) {
+      ++MessageCounter;
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
+      {
+        
+      }
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+		}
+    if (GPIO_Pin == BUTTON_DOWN_Pin) {
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+      {
+        
+      }
+      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+		}
+    if (GPIO_Pin == BUTTON_UP_Pin) {
+      --MessageCounter;
+			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+			CDC_Transmit_FS(DataToSend, MessageLength);
+      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+      while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+      {
+        
+      }
+      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+		}
+}
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance == TIM14){ // Jeżeli przerwanie pochodzi od timera 14
     static bool colour = 0;
@@ -159,10 +193,8 @@ void setupOled(void){
   SSD1306_Init();  // initialise
   SSD1306_Clear();
   SSD1306_DrawBitmap(0,0,logo, 128, 64, SSD1306_COLOR_WHITE);
-  SSD1306_GotoXY(18,53);
-  char outStr[20]="OS:";
-  strcat(outStr, (char*)STRINGIFY(GIT_TAG));
-  SSD1306_Puts (outStr, &Font_7x10, SSD1306_COLOR_WHITE);
+  SSD1306_GotoXY(0,53);
+  SSD1306_Puts ((char*)STRINGIFY(GIT_TAG), &Font_7x10, SSD1306_COLOR_WHITE);
   SSD1306_UpdateScreen();
 }
 
@@ -306,16 +338,16 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM12_Init();
   MX_USART1_UART_Init();
-  MX_TIM14_Init();
   MX_USB_DEVICE_Init();
   MX_SPI1_Init();
+  MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
   uint8_t Received[3];
 
 
   setupBLE();
-  setupOled();
   setupLed();
+  setupOled();
   setupADC();
   setupMotors();
   setupDistanceSensors();
@@ -329,38 +361,7 @@ int main(void)
   while (1)
   {
 
-    if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET) {
-      ++MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-		}
-    if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET) {
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-		}
-    if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET) {
-      --MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-		}
+    
     
     // distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
     // if(timeoutOccurred(&sensorL))
