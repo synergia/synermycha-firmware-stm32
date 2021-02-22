@@ -100,6 +100,7 @@
 #include "AllSignals.hh"
 #include "Signal.hh"
 #include "Observer.hh"
+#include "UART_DMA.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,6 +131,7 @@ uint16_t distanceMeasured[5];
 uint8_t DataToSend[20]; // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
 uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
+UARTDMA_HandleTypeDef huartdma;
 char pomiar_string[5][15];
 class Led1 : public utils::Observer
 {
@@ -210,7 +212,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void setupOled(void){
   SSD1306_I2cInit(&hi2c2);
   SSD1306_Bitmap((uint8_t*)logo);
-  GFX_SetFont(font_8x5);
+  GFX_SetFont(font_6x4);
   GFX_SetFontSize(1);
   HAL_Delay(1000);
 }
@@ -220,6 +222,8 @@ void setupBLE()
   HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
+
+  
 
   // // Flash update of RN487x
   // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
@@ -360,7 +364,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
-
+  UARTDMA_Init(&huartdma, &huart1);
   uint8_t Received[3];
 
   setupOled();
