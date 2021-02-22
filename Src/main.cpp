@@ -212,7 +212,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 void setupOled(void){
   SSD1306_I2cInit(&hi2c2);
   SSD1306_Bitmap((uint8_t*)logo);
-  GFX_SetFont(font_6x4);
+  GFX_SetFont(font_8x5);
   GFX_SetFontSize(1);
   HAL_Delay(1000);
 }
