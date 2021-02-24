@@ -25,12 +25,12 @@
 #define AVR_USING 0
 #define STM32_USING 1
 
-#define GFX_DrawPixel(x,y,color) SSD1306_DrawPixel(x,y,color)
+#define GFX_DrawPixel(x, y, color) SSD1306_DrawPixel(x, y, color)
 #define WIDTH SSD1306_LCDWIDTH
 #define HEIGHT SSD1306_LCDHEIGHT
-#define PIXEL_BLACK	BLACK
-#define PIXEL_WHITE	WHITE
-#define PIXEL_INVERSE	INVERSE
+#define PIXEL_BLACK BLACK
+#define PIXEL_WHITE WHITE
+#define PIXEL_INVERSE INVERSE
 
 #define USING_STRINGS 1 // 0 - do not compile, 1 - compile
 
@@ -50,7 +50,8 @@
 #if ((USING_FILL_ROUND_RECTANGLE == 0) && (USING_STRINGS == 0))
 #define USING_FILL_RECTANGLE 0
 #endif
-#if (USING_RECTANGLE == 0) && (USING_FILL_RECTANGLE == 0) && (USING_FILL_CIRCLE == 0) && (USING_ROUND_RECTANGLE == 0) && (USING_TRIANGLE == 0) && (USING_FILL_TRIANGLE == 0)
+#if (USING_RECTANGLE == 0) && (USING_FILL_RECTANGLE == 0) && (USING_FILL_CIRCLE == 0) && \
+    (USING_ROUND_RECTANGLE == 0) && (USING_TRIANGLE == 0) && (USING_FILL_TRIANGLE == 0)
 #define USING_LINES 0
 #endif
 
@@ -59,7 +60,8 @@
 #if (USING_FILL_ROUND_RECTANGLE == 1 || USING_STRINGS == 1)
 #define USING_FILL_RECTANGLE 1
 #endif
-#if (USING_RECTANGLE == 1) || (USING_FILL_RECTANGLE == 1) || (USING_FILL_CIRCLE == 1) || (USING_ROUND_RECTANGLE == 1) || (USING_TRIANGLE == 1) || (USING_FILL_TRIANGLE == 1)
+#if (USING_RECTANGLE == 1) || (USING_FILL_RECTANGLE == 1) || (USING_FILL_CIRCLE == 1) || \
+    (USING_ROUND_RECTANGLE == 1) || (USING_TRIANGLE == 1) || (USING_FILL_TRIANGLE == 1)
 #define USING_LINES 1
 #endif
 #if USING_ROUND_RECTANGLE == 1
@@ -77,7 +79,7 @@ void GFX_SetFont(const uint8_t* font_t);
 void GFX_SetFontSize(uint8_t size_t);
 uint8_t GFX_GetFontHeight(void);
 uint8_t GFX_GetFontWidth(void);
-uint8_t  GFX_GetFontSize(void);
+uint8_t GFX_GetFontSize(void);
 void GFX_DrawChar(int x, int y, char chr, uint8_t color, uint8_t background);
 void GFX_DrawString(int x, int y, char* str, uint8_t color, uint8_t background);
 #endif
@@ -89,7 +91,7 @@ void GFX_DrawLine(int x_start, int y_start, int x_end, int y_end, uint8_t color)
 #if USING_RECTANGLE == 1
 void GFX_DrawRectangle(int x, int y, uint16_t w, uint16_t h, uint8_t color);
 #endif
-#if USING_FILL_RECTANGLE ==1
+#if USING_FILL_RECTANGLE == 1
 void GFX_DrawFillRectangle(int x, int y, uint16_t w, uint16_t h, uint8_t color);
 #endif
 #if USING_CIRCLE == 1
@@ -111,13 +113,14 @@ void GFX_DrawTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint8_t co
 void GFX_DrawFillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint8_t color);
 #endif
 #if USING_IMAGE == 1
-#if AVR_USING ==1
-void GFX_Image_P(int x, int y, uint8_t *img, uint8_t w, uint8_t h, uint8_t color);
+#if AVR_USING == 1
+void GFX_Image_P(int x, int y, uint8_t* img, uint8_t w, uint8_t h, uint8_t color);
 #endif
-#if STM32_USING ==1
-void GFX_Image(int x, int y, const uint8_t *img, uint8_t w, uint8_t h, uint8_t color);
+#if STM32_USING == 1
+void GFX_Image(int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color);
 #if USING_IMAGE_ROTATE == 1
-void GFX_ImageRotate(int x, int y, const uint8_t *img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle);
+void GFX_ImageRotate(
+    int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle);
 #endif
 #endif
 #endif

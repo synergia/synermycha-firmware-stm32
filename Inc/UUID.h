@@ -7,25 +7,25 @@
 // SDN,Synergia PWr
 // SDS,Synermycha 01/2020
 // SDR,0.1.0-alfa
-// //Telemetry service 
+// //Telemetry service
 // PS,1a7c321e723211eb94390242ac130002
 //     PC,1a7c3796723211eb94390242ac130002,12,01 // Batt %
-//     PC,1a7c38a4723211eb94390242ac130002,12,01 // Batt V  
+//     PC,1a7c38a4723211eb94390242ac130002,12,01 // Batt V
 //     PC,1a7c3976723211eb94390242ac130002,12,01 // Internal State
 //     PC,1a7c3afc723211eb94390242ac130002,12,06 // IMU Euler
 //     PC,1a7c3bb0723211eb94390242ac130002,12,0A // Distance RAW
 //     PC,1a7c3c6e723211eb94390242ac130002,12,04 // Encoder Tics
 //     PC,1a7c3f34723211eb94390242ac130002,12,04 // Motor PWM
-// // Map service 
+// // Map service
 // PS,1a7c4006723211eb94390242ac130002
 //     PC,1a7c40c4723211eb94390242ac130002,12,80 // Map chunk 1
-// // CTRL service 
+// // CTRL service
 // PS,1a7c4a4c723211eb94390242ac130002
 //     PC,1a7c4b28723211eb94390242ac130002,1A,06 // Mode, r, fi
 //     PC,1a7c4bf0723211eb94390242ac130002,1A,1E // RGB Led
 //     PC,1a7c4ff6723211eb94390242ac130002,1A,06 // PID
 
-// Redundant    
+// Redundant
 // 1a7c50be723211eb94390242ac130002
 // 1a7c5172723211eb94390242ac130002
 // 1a7c5226723211eb94390242ac130002

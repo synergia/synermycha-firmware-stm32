@@ -11,7 +11,7 @@
 #ifndef FONT_8X5_H_
 #define FONT_8X5_H_
 
-const uint8_t font_6x4[] =
+const uint8_t font_6x4[] = 
 {
   8, 4, /* height, width */
 	0x00, 0x00, 0x00, 0x00,

@@ -2,13 +2,14 @@
 #define __LED_H__
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-void setupLed();
+    void setupLed();
 
 #ifdef __cplusplus
 }

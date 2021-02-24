@@ -12,20 +12,19 @@ bool RN487x::EnterCMD()
 
 bool RN487x::SendCMD(char _command[])
 {
-  HAL_UART_Transmit(&huart1, (uint8_t *) _command, sizeof(_command)/sizeof(char), 10);
-  char carriageReturn = '\r';
-  HAL_UART_Transmit(&huart1, (uint8_t *) &carriageReturn, 1, 10); 
+    HAL_UART_Transmit(&huart1, (uint8_t*)_command, sizeof(_command) / sizeof(char), 10);
+    char carriageReturn = '\r';
+    HAL_UART_Transmit(&huart1, (uint8_t*)&carriageReturn, 1, 10);
 }
 
 bool RN487x::RestartAndExitCMD()
 {
-  char command[] = "R,1";
-  SendCMD(command);
-
+    char command[] = "R,1";
+    SendCMD(command);
 }
 
 void RN487x::ExitCMD()
 {
-  char command[] = "---";
-  SendCMD(command);
+    char command[] = "---";
+    SendCMD(command);
 }

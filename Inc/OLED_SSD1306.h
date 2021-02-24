@@ -23,7 +23,7 @@
 
 #ifdef SSD1306_I2C_CONTROL
 #define SSD1306_I2C_DMA_ENABLE
-#define SSD1306_I2C_ADDRESS   0x78
+#define SSD1306_I2C_ADDRESS 0x78
 #endif
 #ifdef SSD1306_SPI_CONTROL
 #define SSD1306_RESET_USE
@@ -34,8 +34,8 @@
 //
 // Resolution
 //
-#define SSD1306_LCDWIDTH                  128
-#define SSD1306_LCDHEIGHT                 64
+#define SSD1306_LCDWIDTH 128
+#define SSD1306_LCDHEIGHT 64
 
 /*
  * 		Please set what functionality you want to use.
@@ -70,7 +70,7 @@
 #define SSD1306_SETSTARTLINE 0x40
 #define SSD1306_MEMORYMODE 0x20
 #define SSD1306_COLUMNADDR 0x21
-#define SSD1306_PAGEADDR   0x22
+#define SSD1306_PAGEADDR 0x22
 #define SSD1306_COMSCANINC 0xC0
 #define SSD1306_COMSCANDEC 0xC8
 #define SSD1306_SEGREMAP 0xA0
@@ -107,26 +107,26 @@
 //
 typedef enum
 {
-	SCROLL_EVERY_5_FRAMES,
-	SCROLL_EVERY_64_FRAMES,
-	SCROLL_EVERY_128_FRAMES,
-	SCROLL_EVERY_256_FRAMES,
-	SCROLL_EVERY_3_FRAMES,
-	SCROLL_EVERY_4_FRAMES,
-	SCROLL_EVERY_25_FRAMES,
-	SCROLL_EVERY_2_FRAMES,
+    SCROLL_EVERY_5_FRAMES,
+    SCROLL_EVERY_64_FRAMES,
+    SCROLL_EVERY_128_FRAMES,
+    SCROLL_EVERY_256_FRAMES,
+    SCROLL_EVERY_3_FRAMES,
+    SCROLL_EVERY_4_FRAMES,
+    SCROLL_EVERY_25_FRAMES,
+    SCROLL_EVERY_2_FRAMES,
 } scroll_horizontal_speed;
 //
 // Functions
 //
 #ifdef SSD1306_I2C_CONTROL
-void SSD1306_I2cInit(I2C_HandleTypeDef *i2c);
+void SSD1306_I2cInit(I2C_HandleTypeDef* i2c);
 #endif
 #ifdef SSD1306_SPI_CONTROL
-void SSD1306_SpiInit(SPI_HandleTypeDef *spi);
+void SSD1306_SpiInit(SPI_HandleTypeDef* spi);
 #endif
 #if defined(SSD1306_SPI_CONTROL) && !defined(SSD1306_SPI_DMA_ENABLE)
-void SSD1306_DmaEndCallback(SPI_HandleTypeDef *hspi);
+void SSD1306_DmaEndCallback(SPI_HandleTypeDef* hspi);
 #endif
 
 //
@@ -143,7 +143,7 @@ void SSD1306_SetContrast(uint8_t Contrast);
 void SSD1306_DrawPixel(int16_t x, int16_t y, uint8_t Color);
 void SSD1306_Clear(uint8_t Color);
 void SSD1306_Display(void);
-void SSD1306_Bitmap(uint8_t *bitmap);
+void SSD1306_Bitmap(uint8_t* bitmap);
 
 #if GRAPHIC_ACCELERATION_COMMANDS == 1
 //
@@ -151,8 +151,10 @@ void SSD1306_Bitmap(uint8_t *bitmap);
 //
 void SSD1306_StartScrollRight(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed Speed);
 void SSD1306_StartScrollLeft(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed Speed);
-void SSD1306_StartScrollRightUp(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset);
-void SSD1306_StartScrollLeftUp(uint8_t StartPage, uint8_t EndPage, scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset);
+void SSD1306_StartScrollRightUp(uint8_t StartPage, uint8_t EndPage,
+    scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset);
+void SSD1306_StartScrollLeftUp(uint8_t StartPage, uint8_t EndPage,
+    scroll_horizontal_speed HorizontalSpeed, uint8_t VerticalOffset);
 void SSD1306_StopScroll(void);
 #endif
 
