@@ -5,5 +5,12 @@
         "string_view": "cpp"
     },
     "editor.formatOnSave": true,
-    "clang-format.executable": "/usr/bin/clang-format-10"
+    "clang-format.executable": "/usr/bin/clang-format-10",
+    "spellright.language": [
+        "Polish"
+    ],
+    "spellright.documentTypes": [
+        "latex",
+        "plaintext"
+    ]
 }

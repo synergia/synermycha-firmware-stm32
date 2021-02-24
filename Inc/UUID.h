@@ -1,25 +1,41 @@
+
+// Characteristics handles readed 
+// from LS command sent do RN4871
+#define BATT_PERCENT_HANDLE     "0072"
+#define BATT_VOLTAGE_HANDLE     "0075"
+#define INTERNAL_STATE_HANDLE   "0078"
+#define IMU_EULER_HANDLE        "007B"
+#define DISTANCE_RAW_HANDLE     "007E"
+#define ENCODER_TICS_HANDLE     "0081"
+#define MOTOR_PWM_HANDLE        "0084"
+#define MAP_HANDLE              "0092"
+#define MODE_R_FI_HANDLE        "00B2"
+#define RGB_LED_HANDLE          "00B5"
+#define PID_HANDLE              "00B8"
+
+// Commands to set up RN4871
 // SF,2
-// SS,C0
 // PZ
+// SS,C0
 // SN,Synermycha BLE
 // SDH,2.0
 // SDM,Synermycha
 // SDN,Synergia PWr
-// SDS,Synermycha 01/2020
+// SDS,01/2020
 // SDR,0.1.0-alfa
 // //Telemetry service
 // PS,1a7c321e723211eb94390242ac130002
 //     PC,1a7c3796723211eb94390242ac130002,12,01 // Batt %
-//     PC,1a7c38a4723211eb94390242ac130002,12,01 // Batt V
+//     PC,1a7c38a4723211eb94390242ac130002,12,01 // Batt V  
 //     PC,1a7c3976723211eb94390242ac130002,12,01 // Internal State
 //     PC,1a7c3afc723211eb94390242ac130002,12,06 // IMU Euler
 //     PC,1a7c3bb0723211eb94390242ac130002,12,0A // Distance RAW
 //     PC,1a7c3c6e723211eb94390242ac130002,12,04 // Encoder Tics
 //     PC,1a7c3f34723211eb94390242ac130002,12,04 // Motor PWM
-// // Map service
+// // Map service 
 // PS,1a7c4006723211eb94390242ac130002
 //     PC,1a7c40c4723211eb94390242ac130002,12,80 // Map chunk 1
-// // CTRL service
+// // CTRL service 
 // PS,1a7c4a4c723211eb94390242ac130002
 //     PC,1a7c4b28723211eb94390242ac130002,1A,06 // Mode, r, fi
 //     PC,1a7c4bf0723211eb94390242ac130002,1A,1E // RGB Led
