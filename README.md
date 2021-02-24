@@ -4,20 +4,6 @@
 
 _Welcome to the Synermycha Firmware repository!_
 
-## To do list:
-- [ ] Timer list (purpose, timing)
-- [ ] Create generic menu
-- [x] BLE services manual setup
-- [ ] BLE services setup from uC
-- [ ] IMU handling
-- [ ] STUSB controll 
-- [ ] Encapsulate display into class
-- [ ] Motor class
-- [ ] Encoder class
-- [x] Clang format
-- [x] Oled on DMA
-- [ ] PID Motor
-
 ## RN4871
 We've found that handling RN4871 communication don't have very good documentation, 
 especially in cases when module sends some messages about characteristic update. Below we present information about module behaviour that is not clearly stated in datasheet.
