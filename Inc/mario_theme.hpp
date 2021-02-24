@@ -23,7 +23,7 @@ int melody[] = {NOTE_E7, NOTE_E7, 0, NOTE_E7, 0, NOTE_C7, NOTE_E7, 0, NOTE_G7, 0
 // Mario main them tempo
 int tempo[] = {
     12,
-    12,
+    12, 
     12,
     12,
     12,

@@ -12,12 +12,11 @@ int32_t buzzerTime;
 void beep(int times)
 {
     int i;
-    buzzerTime =
-        140 * times; // this function takes about 140ms to finish when int times = 1, we have this
-                     // line here is because of the function void shortBeep(int duration, int freq)
-                     // below. we set buzzerTime to 140 multiply how many times to beep to prevent
-                     // the buzzer being turned off at the first millisecond.
-    setBuzzerFrequency(2000); // set buzzer beep at 4000Hz
+    buzzerTime = 140 * times;  // this function takes about 140ms to finish when int times = 1, we have this
+                               // line here is because of the function void shortBeep(int duration, int freq)
+                               // below. we set buzzerTime to 140 multiply how many times to beep to prevent
+                               // the buzzer being turned off at the first millisecond.
+    setBuzzerFrequency(2000);  // set buzzer beep at 4000Hz
     for (i = 0; i < times; i++)
     {
         beep_on;
@@ -49,7 +48,7 @@ void shortBeep(int duration, int freq)
 
 void tone(int duration, int freq)
 {
-    setBuzzerFrequency(freq); // set buzzer beep at 4000Hz
+    setBuzzerFrequency(freq);  // set buzzer beep at 4000Hz
     beep_on;
     HAL_Delay(duration);
     beep_off;

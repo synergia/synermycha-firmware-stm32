@@ -22,7 +22,7 @@ template <typename R, typename... Args> class FunctionPtr
         return {[](Observer* obj, Args... args) {
                     return (static_cast<T*>(obj)->*ptr)(std::forward<Args>(args)...);
                 },
-            obj};
+                obj};
     }
 
     template <typename... Aref> R operator()(Aref&&... args)
@@ -72,4 +72,4 @@ template <typename R, typename... Args> class signal<R(Args...)>
     int actualNrOfElems = 0;
 };
 
-} // namespace utils
+}  // namespace utils

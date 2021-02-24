@@ -15,7 +15,7 @@
 #include "OLED_SSD1306.h"
 
 #if USING_LINES == 1
-#include <stdlib.h> // for abs() function
+#include <stdlib.h>  // for abs() function
 #endif
 #if USING_IMAGE_ROTATE == 1
 #include <math.h>
@@ -61,7 +61,7 @@ uint8_t GFX_GetFontSize(void)
 void GFX_DrawChar(int x, int y, char chr, uint8_t color, uint8_t background)
 {
     if (chr > 0x7E)
-        return; // chr > '~'
+        return;  // chr > '~'
 
     for (uint8_t i = 0; i < font[1]; i++)
     {
@@ -290,8 +290,7 @@ void GFX_DrawCircleHelper(int x0, int y0, uint16_t r, uint8_t cornername, uint8_
 }
 #endif
 #ifdef FILL_CIRCLE_HELPER
-void GFX_DrawFillCircleHelper(
-    int x0, int y0, uint16_t r, uint8_t cornername, int16_t delta, uint8_t color)
+void GFX_DrawFillCircleHelper(int x0, int y0, uint16_t r, uint8_t cornername, int16_t delta, uint8_t color)
 {
 
     int16_t f     = 1 - r;
@@ -336,10 +335,10 @@ void GFX_DrawFillCircle(int x0, int y0, uint16_t r, uint8_t color)
 #if USING_ROUND_RECTANGLE == 1
 void GFX_DrawRoundRectangle(int x, int y, uint16_t w, uint16_t h, uint16_t r, uint8_t color)
 {
-    GFX_DrawFastHLine(x + r, y, w - 2 * r, color);         // Top
-    GFX_DrawFastHLine(x + r, y + h - 1, w - 2 * r, color); // Bottom
-    GFX_DrawFastVLine(x, y + r, h - 2 * r, color);         // Left
-    GFX_DrawFastVLine(x + w - 1, y + r, h - 2 * r, color); // Right
+    GFX_DrawFastHLine(x + r, y, w - 2 * r, color);          // Top
+    GFX_DrawFastHLine(x + r, y + h - 1, w - 2 * r, color);  // Bottom
+    GFX_DrawFastVLine(x, y + r, h - 2 * r, color);          // Left
+    GFX_DrawFastVLine(x + w - 1, y + r, h - 2 * r, color);  // Right
     // draw four corners
     GFX_DrawCircleHelper(x + r, y + r, r, 1, color);
     GFX_DrawCircleHelper(x + w - r - 1, y + r, r, 2, color);
@@ -391,7 +390,7 @@ void GFX_DrawFillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint8_
     }
 
     if (y0 == y2)
-    { // Handle awkward all-on-same-line case as its own thing
+    {  // Handle awkward all-on-same-line case as its own thing
         a = b = x0;
         if (x1 < a)
             a = x1;
@@ -405,8 +404,7 @@ void GFX_DrawFillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint8_
         return;
     }
 
-    int16_t dx01 = x1 - x0, dy01 = y1 - y0, dx02 = x2 - x0, dy02 = y2 - y0, dx12 = x2 - x1,
-            dy12 = y2 - y1;
+    int16_t dx01 = x1 - x0, dy01 = y1 - y0, dx02 = x2 - x0, dy02 = y2 - y0, dx12 = x2 - x1, dy12 = y2 - y1;
     int32_t sa = 0, sb = 0;
 
     // For upper part of triangle, find scanline crossings for segments
@@ -416,9 +414,9 @@ void GFX_DrawFillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, uint8_
     // in the second loop...which also avoids a /0 error here if y0=y1
     // (flat-topped triangle).
     if (y1 == y2)
-        last = y1; // Include y1 scanline
+        last = y1;  // Include y1 scanline
     else
-        last = y1 - 1; // Skip it
+        last = y1 - 1;  // Skip it
 
     for (y = y0; y <= last; y++)
     {
@@ -489,97 +487,13 @@ void GFX_Image(int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t c
 
 const double sinus_LUT[] = {
     // 0* to 90* = 91 valuse
-    0.0000,
-    0.0175,
-    0.0349,
-    0.0523,
-    0.0698,
-    0.0872,
-    0.1045,
-    0.1219,
-    0.1392,
-    0.1564,
-    0.1736,
-    0.1908,
-    0.2079,
-    0.2250,
-    0.2419,
-    0.2588,
-    0.2756,
-    0.2924,
-    0.3090,
-    0.3256,
-    0.3420,
-    0.3584,
-    0.3746,
-    0.3907,
-    0.4067,
-    0.4226,
-    0.4384,
-    0.4540,
-    0.4695,
-    0.4848,
-    0.5000,
-    0.5150,
-    0.5299,
-    0.5446,
-    0.5592,
-    0.5736,
-    0.5878,
-    0.6018,
-    0.6157,
-    0.6293,
-    0.6428,
-    0.6561,
-    0.6691,
-    0.6820,
-    0.6947,
-    0.7071,
-    0.7193,
-    0.7314,
-    0.7431,
-    0.7547,
-    0.7660,
-    0.7771,
-    0.7880,
-    0.7986,
-    0.8090,
-    0.8192,
-    0.8290,
-    0.8387,
-    0.8480,
-    0.8572,
-    0.8660,
-    0.8746,
-    0.8829,
-    0.8910,
-    0.8988,
-    0.9063,
-    0.9135,
-    0.9205,
-    0.9272,
-    0.9336,
-    0.9397,
-    0.9455,
-    0.9511,
-    0.9563,
-    0.9613,
-    0.9659,
-    0.9703,
-    0.9744,
-    0.9781,
-    0.9816,
-    0.9848,
-    0.9877,
-    0.9903,
-    0.9925,
-    0.9945,
-    0.9962,
-    0.9976,
-    0.9986,
-    0.9994,
-    0.9998,
-    1.0000,
+    0.0000, 0.0175, 0.0349, 0.0523, 0.0698, 0.0872, 0.1045, 0.1219, 0.1392, 0.1564, 0.1736, 0.1908, 0.2079,
+    0.2250, 0.2419, 0.2588, 0.2756, 0.2924, 0.3090, 0.3256, 0.3420, 0.3584, 0.3746, 0.3907, 0.4067, 0.4226,
+    0.4384, 0.4540, 0.4695, 0.4848, 0.5000, 0.5150, 0.5299, 0.5446, 0.5592, 0.5736, 0.5878, 0.6018, 0.6157,
+    0.6293, 0.6428, 0.6561, 0.6691, 0.6820, 0.6947, 0.7071, 0.7193, 0.7314, 0.7431, 0.7547, 0.7660, 0.7771,
+    0.7880, 0.7986, 0.8090, 0.8192, 0.8290, 0.8387, 0.8480, 0.8572, 0.8660, 0.8746, 0.8829, 0.8910, 0.8988,
+    0.9063, 0.9135, 0.9205, 0.9272, 0.9336, 0.9397, 0.9455, 0.9511, 0.9563, 0.9613, 0.9659, 0.9703, 0.9744,
+    0.9781, 0.9816, 0.9848, 0.9877, 0.9903, 0.9925, 0.9945, 0.9962, 0.9976, 0.9986, 0.9994, 0.9998, 1.0000,
 };
 
 double sinus(uint16_t angle)
@@ -593,11 +507,10 @@ double sinus(uint16_t angle)
         return -(sinus_LUT[angle - 180]);
     if ((angle >= 270) && (angle < 360))
         return -(sinus_LUT[180 - (angle - 180)]);
-    return 0; // will be never here
+    return 0;  // will be never here
 }
 
-void GFX_ImageRotate(
-    int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle)
+void GFX_ImageRotate(int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle)
 {
     angle %= 360;
 

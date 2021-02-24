@@ -7,4 +7,4 @@ class Observer
 {
 };
 
-} // namespace utils
+}  // namespace utils

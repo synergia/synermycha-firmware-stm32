@@ -17,7 +17,7 @@ char msg[64];
 
 void setup_VL53L0X(VL53L0X* lidar)
 {
-    lidar->address     = 0x29; // ADDRESS_DEFAULT;
+    lidar->address     = 0x29;  // ADDRESS_DEFAULT;
     lidar->io_timeout  = 0;
     lidar->did_timeout = false;
 }
@@ -54,7 +54,7 @@ bool init(VL53L0X* lidar, bool io_2v8)
     if (io_2v8)
     {
         writeReg(lidar, VHV_CONFIG_PAD_SCL_SDA__EXTSUP_HV,
-            readReg(lidar, (VHV_CONFIG_PAD_SCL_SDA__EXTSUP_HV) | 0x01)); // set bit 0
+                 readReg(lidar, (VHV_CONFIG_PAD_SCL_SDA__EXTSUP_HV) | 0x01));  // set bit 0
     }
 
     // "Set I2C standard mode"
@@ -106,7 +106,7 @@ bool init(VL53L0X* lidar, bool io_2v8)
     writeReg(lidar, 0xFF, 0x00);
     writeReg(lidar, GLOBAL_CONFIG_REF_EN_START_SELECT, 0xB4);
 
-    uint8_t first_spad_to_enable = spad_type_is_aperture ? 12 : 0; // 12 is the first aperture spad
+    uint8_t first_spad_to_enable = spad_type_is_aperture ? 12 : 0;  // 12 is the first aperture spad
     uint8_t spads_enabled        = 0;
 
     for (uint8_t i = 0; i < 48; i++)
@@ -230,8 +230,7 @@ bool init(VL53L0X* lidar, bool io_2v8)
     // -- VL53L0X_SetGpioConfig() begin
 
     writeReg(lidar, SYSTEM_INTERRUPT_CONFIG_GPIO, 0x04);
-    writeReg(lidar, GPIO_HV_MUX_ACTIVE_HIGH,
-        readReg(lidar, GPIO_HV_MUX_ACTIVE_HIGH) & ~0x10); // active low
+    writeReg(lidar, GPIO_HV_MUX_ACTIVE_HIGH, readReg(lidar, GPIO_HV_MUX_ACTIVE_HIGH) & ~0x10);  // active low
     writeReg(lidar, SYSTEM_INTERRUPT_CLEAR, 0x01);
 
     // -- VL53L0X_SetGpioConfig() end
@@ -386,7 +385,7 @@ bool setMeasurementTimingBudget(VL53L0X* lidar, uint32_t budget_us)
     SequenceStepEnables enables;
     SequenceStepTimeouts timeouts;
 
-    uint16_t const StartOverhead      = 1320; // note that this is different than the value in get_
+    uint16_t const StartOverhead      = 1320;  // note that this is different than the value in get_
     uint16_t const EndOverhead        = 960;
     uint16_t const MsrcOverhead       = 660;
     uint16_t const TccOverhead        = 590;
@@ -451,20 +450,19 @@ bool setMeasurementTimingBudget(VL53L0X* lidar, uint32_t budget_us)
         //  timeouts must be expressed in macro periods MClks
         //  because they have different vcsel periods."
 
-        uint16_t final_range_timeout_mclks = timeoutMicrosecondsToMclks(
-            final_range_timeout_us, timeouts.final_range_vcsel_period_pclks);
+        uint16_t final_range_timeout_mclks =
+            timeoutMicrosecondsToMclks(final_range_timeout_us, timeouts.final_range_vcsel_period_pclks);
 
         if (enables.pre_range)
         {
             final_range_timeout_mclks += timeouts.pre_range_mclks;
         }
 
-        writeReg16Bit(
-            lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI, encodeTimeout(final_range_timeout_mclks));
+        writeReg16Bit(lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI, encodeTimeout(final_range_timeout_mclks));
 
         // set_sequence_step_timeout() end
 
-        lidar->measurement_timing_budget_us = budget_us; // store for internal reuse
+        lidar->measurement_timing_budget_us = budget_us;  // store for internal reuse
     }
     return true;
 }
@@ -477,7 +475,7 @@ uint32_t getMeasurementTimingBudget(VL53L0X* lidar)
     SequenceStepEnables enables;
     SequenceStepTimeouts timeouts;
 
-    uint16_t const StartOverhead      = 1910; // note that this is different than the value in set_
+    uint16_t const StartOverhead      = 1910;  // note that this is different than the value in set_
     uint16_t const EndOverhead        = 960;
     uint16_t const MsrcOverhead       = 660;
     uint16_t const TccOverhead        = 590;
@@ -515,7 +513,7 @@ uint32_t getMeasurementTimingBudget(VL53L0X* lidar)
         budget_us += (timeouts.final_range_us + FinalRangeOverhead);
     }
 
-    lidar->measurement_timing_budget_us = budget_us; // store for internal reuse
+    lidar->measurement_timing_budget_us = budget_us;  // store for internal reuse
     return budget_us;
 }
 
@@ -583,22 +581,19 @@ bool setVcselPulsePeriod(VL53L0X* lidar, vcselPeriodType type, uint8_t period_pc
         // set_sequence_step_timeout() begin
         // (SequenceStepId == VL53L0X_SEQUENCESTEP_PRE_RANGE)
 
-        uint16_t new_pre_range_timeout_mclks =
-            timeoutMicrosecondsToMclks(timeouts.pre_range_us, period_pclks);
+        uint16_t new_pre_range_timeout_mclks = timeoutMicrosecondsToMclks(timeouts.pre_range_us, period_pclks);
 
-        writeReg16Bit(
-            lidar, PRE_RANGE_CONFIG_TIMEOUT_MACROP_HI, encodeTimeout(new_pre_range_timeout_mclks));
+        writeReg16Bit(lidar, PRE_RANGE_CONFIG_TIMEOUT_MACROP_HI, encodeTimeout(new_pre_range_timeout_mclks));
 
         // set_sequence_step_timeout() end
 
         // set_sequence_step_timeout() begin
         // (SequenceStepId == VL53L0X_SEQUENCESTEP_MSRC)
 
-        uint16_t new_msrc_timeout_mclks =
-            timeoutMicrosecondsToMclks(timeouts.msrc_dss_tcc_us, period_pclks);
+        uint16_t new_msrc_timeout_mclks = timeoutMicrosecondsToMclks(timeouts.msrc_dss_tcc_us, period_pclks);
 
         writeReg(lidar, MSRC_CONFIG_TIMEOUT_MACROP,
-            (new_msrc_timeout_mclks > 256) ? 255 : (new_msrc_timeout_mclks - 1));
+                 (new_msrc_timeout_mclks > 256) ? 255 : (new_msrc_timeout_mclks - 1));
 
         // set_sequence_step_timeout() end
     }
@@ -664,16 +659,14 @@ bool setVcselPulsePeriod(VL53L0X* lidar, vcselPeriodType type, uint8_t period_pc
         //  timeouts must be expressed in macro periods MClks
         //  because they have different vcsel periods."
 
-        uint16_t new_final_range_timeout_mclks =
-            timeoutMicrosecondsToMclks(timeouts.final_range_us, period_pclks);
+        uint16_t new_final_range_timeout_mclks = timeoutMicrosecondsToMclks(timeouts.final_range_us, period_pclks);
 
         if (enables.pre_range)
         {
             new_final_range_timeout_mclks += timeouts.pre_range_mclks;
         }
 
-        writeReg16Bit(lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI,
-            encodeTimeout(new_final_range_timeout_mclks));
+        writeReg16Bit(lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI, encodeTimeout(new_final_range_timeout_mclks));
 
         // set_sequence_step_timeout end
     }
@@ -750,14 +743,14 @@ void startContinuous(VL53L0X* lidar, uint32_t period_ms)
 
         // VL53L0X_SetInterMeasurementPeriodMilliSeconds() end
 
-        writeReg(lidar, SYSRANGE_START, 0x04); // VL53L0X_REG_SYSRANGE_MODE_TIMED
+        writeReg(lidar, SYSRANGE_START, 0x04);  // VL53L0X_REG_SYSRANGE_MODE_TIMED
     }
     else
     {
         // continuous back-to-back mode
         // snprintf(msg,sizeof(msg),"Starting continuous...\r\n");
         // HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), 0xFFFF);
-        writeReg(lidar, SYSRANGE_START, 0x02); // VL53L0X_REG_SYSRANGE_MODE_BACKTOBACK
+        writeReg(lidar, SYSRANGE_START, 0x02);  // VL53L0X_REG_SYSRANGE_MODE_BACKTOBACK
     }
 }
 
@@ -765,7 +758,7 @@ void startContinuous(VL53L0X* lidar, uint32_t period_ms)
 // based on VL53L0X_StopMeasurement()
 void stopContinuous(VL53L0X* lidar)
 {
-    writeReg(lidar, SYSRANGE_START, 0x01); // VL53L0X_REG_SYSRANGE_MODE_SINGLESHOT
+    writeReg(lidar, SYSRANGE_START, 0x01);  // VL53L0X_REG_SYSRANGE_MODE_SINGLESHOT
 
     writeReg(lidar, 0xFF, 0x01);
     writeReg(lidar, 0x00, 0x00);
@@ -911,32 +904,29 @@ void getSequenceStepEnables(VL53L0X* lidar, SequenceStepEnables* enables)
 // based on get_sequence_step_timeout(),
 // but gets all timeouts instead of just the requested one, and also stores
 // intermediate values
-void getSequenceStepTimeouts(
-    VL53L0X* lidar, SequenceStepEnables const* enables, SequenceStepTimeouts* timeouts)
+void getSequenceStepTimeouts(VL53L0X* lidar, SequenceStepEnables const* enables, SequenceStepTimeouts* timeouts)
 {
     timeouts->pre_range_vcsel_period_pclks = getVcselPulsePeriod(lidar, VcselPeriodPreRange);
 
     timeouts->msrc_dss_tcc_mclks = readReg(lidar, MSRC_CONFIG_TIMEOUT_MACROP) + 1;
-    timeouts->msrc_dss_tcc_us    = timeoutMclksToMicroseconds(
-        timeouts->msrc_dss_tcc_mclks, timeouts->pre_range_vcsel_period_pclks);
+    timeouts->msrc_dss_tcc_us =
+        timeoutMclksToMicroseconds(timeouts->msrc_dss_tcc_mclks, timeouts->pre_range_vcsel_period_pclks);
 
-    timeouts->pre_range_mclks =
-        decodeTimeout(readReg16Bit(lidar, PRE_RANGE_CONFIG_TIMEOUT_MACROP_HI));
-    timeouts->pre_range_us = timeoutMclksToMicroseconds(
-        timeouts->pre_range_mclks, timeouts->pre_range_vcsel_period_pclks);
+    timeouts->pre_range_mclks = decodeTimeout(readReg16Bit(lidar, PRE_RANGE_CONFIG_TIMEOUT_MACROP_HI));
+    timeouts->pre_range_us =
+        timeoutMclksToMicroseconds(timeouts->pre_range_mclks, timeouts->pre_range_vcsel_period_pclks);
 
     timeouts->final_range_vcsel_period_pclks = getVcselPulsePeriod(lidar, VcselPeriodFinalRange);
 
-    timeouts->final_range_mclks =
-        decodeTimeout(readReg16Bit(lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI));
+    timeouts->final_range_mclks = decodeTimeout(readReg16Bit(lidar, FINAL_RANGE_CONFIG_TIMEOUT_MACROP_HI));
 
     if (enables->pre_range)
     {
         timeouts->final_range_mclks -= timeouts->pre_range_mclks;
     }
 
-    timeouts->final_range_us = timeoutMclksToMicroseconds(
-        timeouts->final_range_mclks, timeouts->final_range_vcsel_period_pclks);
+    timeouts->final_range_us =
+        timeoutMclksToMicroseconds(timeouts->final_range_mclks, timeouts->final_range_vcsel_period_pclks);
 }
 
 // Decode sequence step timeout in MCLKs from register value
@@ -999,7 +989,7 @@ uint32_t timeoutMicrosecondsToMclks(uint32_t timeout_period_us, uint8_t vcsel_pe
 // based on VL53L0X_perform_single_ref_calibration()
 bool performSingleRefCalibration(VL53L0X* lidar, uint8_t vhv_init_byte)
 {
-    writeReg(lidar, SYSRANGE_START, 0x01 | vhv_init_byte); // VL53L0X_REG_SYSRANGE_MODE_START_STOP
+    writeReg(lidar, SYSRANGE_START, 0x01 | vhv_init_byte);  // VL53L0X_REG_SYSRANGE_MODE_START_STOP
 
     startTimeout(lidar);
 

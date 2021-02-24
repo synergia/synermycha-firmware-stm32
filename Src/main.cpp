@@ -81,7 +81,6 @@
 #include "usart.h"
 #include "usb_device.h"
 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "AllSignals.hh"
@@ -111,16 +110,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RIGHT_MOTOR_BACKWARD \
-    HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
-#define RIGHT_MOTOR_FORWARD \
-    HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
-#define LEFT_MOTOR_BACKWARD \
-    HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
-#define LEFT_MOTOR_FORWARD \
-    HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
-#define STRINGIFY(s) STRINGIFY1(s)
-#define STRINGIFY1(s) #s
+#define RIGHT_MOTOR_BACKWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
+#define RIGHT_MOTOR_FORWARD  HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
+#define LEFT_MOTOR_BACKWARD  HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
+#define LEFT_MOTOR_FORWARD   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
+#define STRINGIFY(s)         STRINGIFY1(s)
+#define STRINGIFY1(s)        #s
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -133,9 +128,9 @@
 /* USER CODE BEGIN PV */
 VL53L0X sensorL, sensorFL, sensorF, sensorFR, sensorR;
 uint16_t distanceMeasured[5];
-uint8_t DataToSend[20];     // Tablica zawierajaca dane do wyslania
-uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
-uint8_t MessageLength  = 0; // Zawiera dlugosc wysylanej wiadomosci
+uint8_t DataToSend[20];      // Tablica zawierajaca dane do wyslania
+uint8_t MessageCounter = 0;  // Licznik wyslanych wiadomosci
+uint8_t MessageLength  = 0;  // Zawiera dlugosc wysylanej wiadomosci
 UARTDMA_HandleTypeDef huartdma;
 char pomiar_string[5][15];
 class Led1 : public utils::Observer
@@ -196,7 +191,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM14)
-    { // Jeżeli przerwanie pochodzi od timera 14
+    {  // Jeżeli przerwanie pochodzi od timera 14
         static bool colour = 0;
         uint16_t PomiarADC = 0;
         if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
@@ -272,11 +267,9 @@ void setupMotors()
 void setupDistanceSensors()
 {
     HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(
-        VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(
-        VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_RESET);
     HAL_Delay(20);
 
@@ -289,8 +282,7 @@ void setupDistanceSensors()
     startContinuous(&sensorL, 33);
 
     setup_VL53L0X(&sensorFL);
-    HAL_GPIO_WritePin(
-        VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_SET);
     HAL_Delay(10);
     init(&sensorFL, true);
     setAddress(&sensorFL, 0b0101011);
@@ -306,8 +298,7 @@ void setupDistanceSensors()
     startContinuous(&sensorF, 33);
 
     setup_VL53L0X(&sensorFR);
-    HAL_GPIO_WritePin(
-        VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_SET);
     HAL_Delay(10);
     init(&sensorFR, true);
     setAddress(&sensorFR, 0b0101101);
@@ -524,8 +515,7 @@ void SystemClock_Config(void)
     }
     /** Initializes the CPU, AHB and APB buses clocks
      */
-    RCC_ClkInitStruct.ClockType =
-        RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;

@@ -14,38 +14,33 @@
 
 #define I2CTIMEOUT 0x100
 
-static int8_t readBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum,
-    uint8_t* data, uint16_t timeout);
-static int8_t readBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr,
-    uint8_t bitStart, uint8_t length, uint8_t* data, uint16_t timeout);
-static int8_t readByte(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t* data, uint16_t timeout);
-static int8_t readWord(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t* data, uint16_t timeout);
-static int8_t readBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr,
-    uint8_t length, uint8_t* data, uint16_t timeout);
+static int8_t readBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t* data,
+                      uint16_t timeout);
+static int8_t readBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length,
+                       uint8_t* data, uint16_t timeout);
+static int8_t readByte(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t* data, uint16_t timeout);
+static int8_t readWord(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t* data, uint16_t timeout);
+static int8_t readBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data,
+                        uint16_t timeout);
 // static int8_t readWords(I2C_HandleTypeDef *handler, uint8_t devAddr, uint8_t regAddr, uint8_t
 // length, uint16_t *data, uint16_t timeout);
-static int8_t read32Bits(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t* data, uint16_t timeout);
+static int8_t read32Bits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t* data,
+                         uint16_t timeout);
 
-static bool writeBit(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data);
-static bool writeBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr,
-    uint8_t bitStart, uint8_t length, uint8_t data);
+static bool writeBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data);
+static bool writeBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length,
+                      uint8_t data);
 static bool writeByte(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t data);
 static bool writeWord(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t data);
-static bool writeBytes(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data);
-static bool write32Bits(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t data);
+static bool writeBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data);
+static bool write32Bits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t data);
 // static bool writeWords(I2C_HandleTypeDef *handler, uint8_t devAddr, uint8_t regAddr, uint8_t
 // length, uint16_t *data);
 
-#endif //_I2C_DEV_H_
+#endif  //_I2C_DEV_H_
 
-int8_t readBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum,
-    uint8_t* data, uint16_t timeout)
+int8_t readBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t* data,
+               uint16_t timeout)
 {
     uint8_t b;
     uint8_t count = readByte(handler, devAddr, regAddr, &b, timeout);
@@ -53,8 +48,8 @@ int8_t readBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uin
     return count;
 }
 
-int8_t readBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart,
-    uint8_t length, uint8_t* data, uint16_t timeout)
+int8_t readBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length,
+                uint8_t* data, uint16_t timeout)
 {
     // 01101001 read byte
     // 76543210 bit numbers
@@ -72,23 +67,20 @@ int8_t readBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, ui
     return count;
 }
 
-int8_t readByte(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t* data, uint16_t timeout)
+int8_t readByte(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t* data, uint16_t timeout)
 {
     return readBytes(handler, devAddr, regAddr, 1, data, timeout);
 }
 
-int8_t readBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length,
-    uint8_t* data, uint16_t timeout)
+int8_t readBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data,
+                 uint16_t timeout)
 {
     int8_t count = length;
-    HAL_I2C_Mem_Read(
-        handler, devAddr << 1, (uint16_t)regAddr, 1, data, (uint16_t)length, (uint32_t)timeout);
+    HAL_I2C_Mem_Read(handler, devAddr << 1, (uint16_t)regAddr, 1, data, (uint16_t)length, (uint32_t)timeout);
     return count;
 }
 
-int8_t readWord(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t* data, uint16_t timeout)
+int8_t readWord(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t* data, uint16_t timeout)
 {
     int8_t count = 2;
     uint8_t temp[4];
@@ -97,8 +89,7 @@ int8_t readWord(
     return count;
 }
 
-int8_t read32Bits(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t* data, uint16_t timeout)
+int8_t read32Bits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t* data, uint16_t timeout)
 {
     int8_t count = 4;
     uint8_t temp[8];
@@ -110,8 +101,7 @@ int8_t read32Bits(
     return count;
 }
 
-bool writeBit(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data)
+bool writeBit(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data)
 {
     uint8_t b;
     readByte(handler, devAddr, regAddr, &b, 100);
@@ -119,8 +109,8 @@ bool writeBit(
     return writeByte(handler, devAddr, regAddr, b);
 }
 
-bool writeBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart,
-    uint8_t length, uint8_t data)
+bool writeBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length,
+               uint8_t data)
 {
     //      010 value to write
     // 76543210 bit numbers
@@ -133,10 +123,10 @@ bool writeBits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uin
     if (readByte(handler, devAddr, regAddr, &b, 100) != 0)
     {
         uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
-        data <<= (bitStart - length + 1); // shift data into correct position
-        data &= mask;                     // zero all non-important bits in data
-        b &= ~(mask);                     // zero all important bits in existing byte
-        b |= data;                        // combine data with existing byte
+        data <<= (bitStart - length + 1);  // shift data into correct position
+        data &= mask;                      // zero all non-important bits in data
+        b &= ~(mask);                      // zero all important bits in existing byte
+        b |= data;                         // combine data with existing byte
         return writeByte(handler, devAddr, regAddr, b);
     }
     else
@@ -150,26 +140,24 @@ bool writeByte(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uin
     return writeBytes(handler, devAddr, regAddr, 1, &data);
 }
 
-bool writeBytes(
-    I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data)
+bool writeBytes(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data)
 {
     uint8_t status = 0;
-    HAL_I2C_Mem_Write(
-        handler, devAddr << 1, (uint16_t)regAddr, 1, data, (uint16_t)length, (uint32_t)100);
+    HAL_I2C_Mem_Write(handler, devAddr << 1, (uint16_t)regAddr, 1, data, (uint16_t)length, (uint32_t)100);
     return status == 0;
 }
 bool writeWord(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint16_t data)
 {
     uint8_t towrite[2];
-    towrite[0] = (uint8_t)(data >> 8) & 0xFF; // MSB
-    towrite[1] = (uint8_t)data & 0xFF;        // LSB
+    towrite[0] = (uint8_t)(data >> 8) & 0xFF;  // MSB
+    towrite[1] = (uint8_t)data & 0xFF;         // LSB
     writeBytes(handler, devAddr, regAddr, 2, (uint8_t*)towrite);
     return true;
 }
 bool write32Bits(I2C_HandleTypeDef* handler, uint8_t devAddr, uint8_t regAddr, uint32_t data)
 {
     uint8_t towrite[4];
-    towrite[0] = (uint8_t)data >> 24 & 0xFF; // MSB
+    towrite[0] = (uint8_t)data >> 24 & 0xFF;  // MSB
     towrite[1] = (uint8_t)data >> 16 & 0xFF;
     towrite[2] = (uint8_t)data >> 8 & 0xFF;
     towrite[3] = (uint8_t)data & 0xFF;

@@ -22,17 +22,17 @@
  * 		0 - won't be compiled
  *
  * */
-#define AVR_USING 0
+#define AVR_USING   0
 #define STM32_USING 1
 
 #define GFX_DrawPixel(x, y, color) SSD1306_DrawPixel(x, y, color)
-#define WIDTH SSD1306_LCDWIDTH
-#define HEIGHT SSD1306_LCDHEIGHT
-#define PIXEL_BLACK BLACK
-#define PIXEL_WHITE WHITE
-#define PIXEL_INVERSE INVERSE
+#define WIDTH                      SSD1306_LCDWIDTH
+#define HEIGHT                     SSD1306_LCDHEIGHT
+#define PIXEL_BLACK                BLACK
+#define PIXEL_WHITE                WHITE
+#define PIXEL_INVERSE              INVERSE
 
-#define USING_STRINGS 1 // 0 - do not compile, 1 - compile
+#define USING_STRINGS 1  // 0 - do not compile, 1 - compile
 
 #define USING_IMAGE 1
 #if USING_IMAGE == 1
@@ -40,13 +40,13 @@
 #endif
 
 // Trygonometric graphic functions
-#define USING_RECTANGLE 1
-#define USING_CIRCLE 1
-#define USING_FILL_CIRCLE 1
-#define USING_ROUND_RECTANGLE 1
+#define USING_RECTANGLE            1
+#define USING_CIRCLE               1
+#define USING_FILL_CIRCLE          1
+#define USING_ROUND_RECTANGLE      1
 #define USING_FILL_ROUND_RECTANGLE 1
-#define USING_TRIANGLE 1
-#define USING_FILL_TRIANGLE 1
+#define USING_TRIANGLE             1
+#define USING_FILL_TRIANGLE        1
 #if ((USING_FILL_ROUND_RECTANGLE == 0) && (USING_STRINGS == 0))
 #define USING_FILL_RECTANGLE 0
 #endif
@@ -119,8 +119,7 @@ void GFX_Image_P(int x, int y, uint8_t* img, uint8_t w, uint8_t h, uint8_t color
 #if STM32_USING == 1
 void GFX_Image(int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color);
 #if USING_IMAGE_ROTATE == 1
-void GFX_ImageRotate(
-    int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle);
+void GFX_ImageRotate(int x, int y, const uint8_t* img, uint8_t w, uint8_t h, uint8_t color, uint16_t angle);
 #endif
 #endif
 #endif

@@ -14,4 +14,4 @@ struct AllSignals
     signal<void(void)> displayBuffor;
 };
 
-} // namespace utils
+}  // namespace utils

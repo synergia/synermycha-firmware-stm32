@@ -1,24 +1,16 @@
 ﻿---
-AlignAfterOpenBracket: DontAlign
+BasedOnStyle: Microsoft
+AlignConsecutiveMacros: 'true'
 AlignConsecutiveAssignments: 'true'
 AlignEscapedNewlines: Left
-AllowShortBlocksOnASingleLine: 'false'
-AllowShortCaseLabelsOnASingleLine: 'false'
-AllowShortFunctionsOnASingleLine: 'false'
-AllowShortIfStatementsOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: 'false'
-BreakBeforeBraces: Allman
-BreakBeforeInheritanceComma: 'false'
 BreakConstructorInitializers: BeforeComma
-ColumnLimit: '100'
-ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 ConstructorInitializerIndentWidth: '4'
-IndentWidth: '4'
-Language: Cpp
 PointerAlignment: Left
-SpaceBeforeParens: ControlStatements
-SpaceInEmptyParentheses: 'false'
-SpacesInParentheses: 'false'
+SpacesBeforeTrailingComments: '2'
 TabWidth: '4'
 UseTab: Never
 

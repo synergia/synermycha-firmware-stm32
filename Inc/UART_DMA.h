@@ -13,14 +13,14 @@
 #include "stm32f4xx_hal.h"
 
 #define DMA_RX_BUFFER_SIZE 64
-#define UART_BUFFER_SIZE 256
+#define UART_BUFFER_SIZE   256
 
 typedef struct
 {
-    UART_HandleTypeDef* huart; // UART handler
+    UART_HandleTypeDef* huart;  // UART handler
 
-    uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE]; // DMA direct buffer
-    uint8_t UART_Buffer[UART_BUFFER_SIZE];     // UART working circular buffer
+    uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];  // DMA direct buffer
+    uint8_t UART_Buffer[UART_BUFFER_SIZE];      // UART working circular buffer
 
     uint16_t UartBufferHead;
     uint16_t UartBufferTail;
