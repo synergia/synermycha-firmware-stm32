@@ -84,7 +84,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "fonts.h"
-#include "ssd1306.h"
+#include "OLED_SSD1306.h"
+#include "GFX_BW.h"
+#include "fonts.h"
 #include "synermycha-logo.h"
 #include <stdio.h>
 #include "string.h"
@@ -95,6 +97,10 @@
 #include "usbd_cdc_if.h"
 #include <stdlib.h>
 #include "ws2812b.h"
+#include "AllSignals.hh"
+#include "Signal.hh"
+#include "Observer.hh"
+#include "UART_DMA.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -125,45 +131,59 @@ uint16_t distanceMeasured[5];
 uint8_t DataToSend[20]; // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0; // Licznik wyslanych wiadomosci
 uint8_t MessageLength = 0; // Zawiera dlugosc wysylanej wiadomosci
+UARTDMA_HandleTypeDef huartdma;
 char pomiar_string[5][15];
+class Led1 : public utils::Observer
+{
+  public:
+    Led1(utils::AllSignals& sig) : mAllSignals(sig)
+    {
+      mAllSignals.buttonEnter.connect<Led1, &Led1::onButtonEnter>(*this);
+    }
+
+    void onButtonEnter()
+    {
+      shine = !shine;
+      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, static_cast<GPIO_PinState>(shine));
+    }
+
+  private:
+    utils::AllSignals& mAllSignals;
+    bool shine = false;
+};
+utils::AllSignals allSignals; 
+Led1 led1(allSignals); 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (GPIO_Pin == GPIO_PIN_11) {
-      ++MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-		}
-    if (GPIO_Pin == BUTTON_DOWN_Pin) {
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-		}
-    if (GPIO_Pin == BUTTON_UP_Pin) {
-      --MessageCounter;
-			MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-			CDC_Transmit_FS(DataToSend, MessageLength);
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-      while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-      {
-        
-      }
-      HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-		}
+	if (GPIO_Pin == BUTTON_OK_Pin) {
+    if(HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
+      allSignals.buttonEnter.emit();
+	}
+  if (GPIO_Pin == BUTTON_DOWN_Pin) {
+		MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		CDC_Transmit_FS(DataToSend, MessageLength);
+    HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+    while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+    {
+      
+    }
+    HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+	}
+  if (GPIO_Pin == BUTTON_UP_Pin) {
+    --MessageCounter;
+		MessageLength = sprintf((char *)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
+		CDC_Transmit_FS(DataToSend, MessageLength);
+    HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+    while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+    {
+      
+    }
+    HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+	}
 }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   if(htim->Instance == TIM14){ // Jeżeli przerwanie pochodzi od timera 14
@@ -174,28 +194,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
       PomiarADC = HAL_ADC_GetValue(&hadc1);
       HAL_ADC_Start(&hadc1);
     }
-    SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
-    if(PomiarADC/340 > 0){
-      SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
-      SSD1306_DrawLine(127,3,127,5,SSD1306_COLOR_WHITE);
-      SSD1306_DrawFilledRectangle(112,2,PomiarADC/340,4,SSD1306_COLOR_WHITE);
-    }
-    else
-    {
-      SSD1306_DrawRectangle(110,0,16,8,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK );
-      SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
-      colour = !colour;
-    }
+    // SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
+    // if(PomiarADC/340 > 0){
+    //   SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
+    //   SSD1306_DrawLine(127,3,127,5,SSD1306_COLOR_WHITE);
+    //   SSD1306_DrawFilledRectangle(112,2,PomiarADC/340,4,SSD1306_COLOR_WHITE);
+    // }
+    // else
+    // {
+    //   SSD1306_DrawRectangle(110,0,16,8,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK );
+    //   SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
+    //   colour = !colour;
+    // }
   }
 }
 
 void setupOled(void){
-  SSD1306_Init();  // initialise
-  SSD1306_Clear();
-  SSD1306_DrawBitmap(0,0,logo, 128, 64, SSD1306_COLOR_WHITE);
-  SSD1306_GotoXY(0,53);
-  SSD1306_Puts ((char*)STRINGIFY(GIT_TAG), &Font_7x10, SSD1306_COLOR_WHITE);
-  SSD1306_UpdateScreen();
+  SSD1306_I2cInit(&hi2c2);
+  SSD1306_Bitmap((uint8_t*)logo);
+  GFX_SetFont(font_8x5);
+  GFX_SetFontSize(1);
+  HAL_Delay(1000);
 }
 
 void setupBLE()
@@ -203,6 +222,8 @@ void setupBLE()
   HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
+
+  
 
   // // Flash update of RN487x
   // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
@@ -297,6 +318,7 @@ void setupDistanceSensors()
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
 /* USER CODE END 0 */
 
 /**
@@ -342,25 +364,67 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
+  UARTDMA_Init(&huartdma, &huart1);
   uint8_t Received[3];
 
+  setupOled();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,0,STRINGIFY(GIT_TAG), WHITE, BLACK);
+  GFX_DrawString(0,9,"OLED     initialized", WHITE, BLACK);
+  SSD1306_Display();
 
   setupBLE();
-  setupLed();
-  setupOled();
-  setupADC();
-  setupMotors();
-  setupDistanceSensors();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,18,"BLE      initialized", WHITE, BLACK);
+  SSD1306_Display();
 
-  // SSD1306_Clear();
-  // SSD1306_UpdateScreen();
+  setupLed();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,27,"LED      initialized", WHITE, BLACK);
+  SSD1306_Display();
+  
+  setupADC();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,36,"ADC      initialized", WHITE, BLACK);
+  SSD1306_Display();
+
+  setupMotors();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,45,"Motors   initialized", WHITE, BLACK);
+  SSD1306_Display();
+
+  setupDistanceSensors();
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  GFX_DrawString(0,54,"Distance initialized", WHITE, BLACK);
+  SSD1306_Display();
+
+
+  HAL_Delay(1000);
+
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  SSD1306_Clear(BLACK);
+  GFX_DrawString(0,0,"Press OK to continue....", WHITE, BLACK);
+  SSD1306_Display();
+
+  while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) != GPIO_PIN_RESET);
+
 
   /* USER CODE END 2 */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  utils::AllSignals allSignals;
+  Led1 led1(allSignals);
+  while(hi2c2.hdmatx->State != HAL_DMA_STATE_READY);
+  SSD1306_Clear(BLACK);
   while (1)
   {
-
+    if(hi2c2.hdmatx->State == HAL_DMA_STATE_READY)
+	  {
+      SSD1306_Clear(BLACK);
+      GFX_DrawString(0,0,"Place menu ", WHITE, BLACK);
+      GFX_DrawString(13*5,0,"here", WHITE, BLACK);
+      SSD1306_Display();
+    }
     
     
     // distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
