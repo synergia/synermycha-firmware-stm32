@@ -1,3 +1,5 @@
+![Build](https://github.com/synergia/synermycha-firmware-stm32/actions/workflows/main.yml/badge.svg)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 # Synermycha Firmware for embedded STM32
 
 _Welcome to the Synermycha Firmware repository!_
