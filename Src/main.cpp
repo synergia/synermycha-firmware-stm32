@@ -435,7 +435,7 @@ int main(void)
             HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
 
           }
-          else if(strcmp(ParseBuffer, "Err\n") == 0)
+          else if(strcmp(ParseBuffer, "Err\r") == 0)
           {
             HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
             HAL_Delay(1000);
