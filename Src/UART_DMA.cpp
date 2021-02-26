@@ -11,6 +11,7 @@ void UARTDMA_UartIrqHandler(UARTDMA_HandleTypeDef* huartdma)
         huartdma->huart->hdmarx->Instance->CR &=
             ~DMA_SxCR_EN;  // Disable DMA - it will force Transfer Complete interrupt if it's enabled
         tmp = tmp;         // For unused warning
+
     }
 }
 
@@ -19,6 +20,7 @@ void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma)
     uint8_t *UartBufferPointer, *DmaBufferPointer;
     uint32_t Length;
     uint16_t i, TempHead;
+    uint8_t FirstDelimeterOccured = 0;
 
     typedef struct
     {
@@ -51,9 +53,18 @@ void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma)
             else
             {
                 UartBufferPointer[TempHead] = DmaBufferPointer[i];
-                if (UartBufferPointer[TempHead] == '\n')
+                if (UartBufferPointer[TempHead] == '\n'|| UartBufferPointer[TempHead] == 0x20)
                 {
-                    huartdma->UartBufferLines++;
+                    huartdma->UartBufferCommands++;
+                } else if (UartBufferPointer[TempHead] == '%')
+                {
+                    if (FirstDelimeterOccured)
+                    {
+                        FirstDelimeterOccured = 1;
+                    } else {
+                        FirstDelimeterOccured = 0;
+                        huartdma->UartBufferData++;
+                    }
                 }
                 huartdma->UartBufferHead = TempHead;
             }
@@ -78,19 +89,27 @@ int UARTDMA_GetCharFromBuffer(UARTDMA_HandleTypeDef* huartdma)
     return huartdma->UART_Buffer[huartdma->UartBufferTail];
 }
 
-uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma)
+uint8_t UARTDMA_IsCommandReady(UARTDMA_HandleTypeDef* huartdma)
 {
-    if (huartdma->UartBufferLines)
+    if (huartdma->UartBufferCommands)
         return 1;
     else
         return 0;
 }
 
-int UARTDMA_GetLineFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
+uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma)
+{
+    if (huartdma->UartBufferData)
+        return 1;
+    else
+        return 0;
+}
+
+int UARTDMA_GetCommandFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
 {
     char TempChar;
     char* LinePointer = OutBuffer;
-    if (huartdma->UartBufferLines)
+    if (huartdma->UartBufferCommands)
     {
         while ((TempChar = UARTDMA_GetCharFromBuffer(huartdma)))
         {
@@ -98,11 +117,43 @@ int UARTDMA_GetLineFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
             {
                 break;
             }
+            if (TempChar == ' ')
+            {
+                break;
+            }
             *LinePointer = TempChar;
             LinePointer++;
         }
         *LinePointer = 0;             // end of cstring
-        huartdma->UartBufferLines--;  // decrement line counter
+        huartdma->UartBufferCommands--;  // decrement line counter
+    }
+    return 0;
+}
+
+int UARTDMA_GetDataFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
+{
+    char TempChar;
+    char* LinePointer = OutBuffer;
+    uint8_t FirstDelimeterOccured = 0;
+    if (huartdma->UartBufferData)
+    {
+        while ((TempChar = UARTDMA_GetCharFromBuffer(huartdma)))
+        {
+            if (TempChar == '%')
+            {
+                if (FirstDelimeterOccured)
+                {
+                    FirstDelimeterOccured = 1;
+                } else {
+                    FirstDelimeterOccured = 0;
+                    break;
+                }
+            }
+            *LinePointer = TempChar;
+            LinePointer++;
+        }
+        *LinePointer = 0;             // end of cstring
+        huartdma->UartBufferData--;  // decrement line counter
     }
     return 0;
 }

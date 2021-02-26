@@ -24,13 +24,16 @@ typedef struct
 
     uint16_t UartBufferHead;
     uint16_t UartBufferTail;
-    uint8_t UartBufferLines;
+    uint8_t UartBufferCommands;
+    uint8_t UartBufferData;
 } UARTDMA_HandleTypeDef;
 
 void UARTDMA_UartIrqHandler(UARTDMA_HandleTypeDef* huartdma);
 void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma);
 
+uint8_t UARTDMA_IsCommandReady(UARTDMA_HandleTypeDef* huartdma);
 uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma);
-int UARTDMA_GetLineFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
+int UARTDMA_GetDataFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
+int UARTDMA_GetCommandFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
 
 void UARTDMA_Init(UARTDMA_HandleTypeDef* huartdma, UART_HandleTypeDef* huart);

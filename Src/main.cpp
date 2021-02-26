@@ -404,14 +404,14 @@ int main(void)
 
     HAL_Delay(1000);
 
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    SSD1306_Clear(BLACK);
-    GFX_DrawString(0, 0, "Press OK to continue....", WHITE, BLACK);
-    SSD1306_Display();
+    // while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
+    //     ;
+    // SSD1306_Clear(BLACK);
+    // GFX_DrawString(0, 0, "Press OK to continue....", WHITE, BLACK);
+    // SSD1306_Display();
 
-    while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) != GPIO_PIN_RESET)
-        ;
+    // // while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) != GPIO_PIN_RESET)
+    // //     ;
 
     /* USER CODE END 2 */
     /* Infinite loop */
@@ -421,15 +421,52 @@ int main(void)
     while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
         ;
     SSD1306_Clear(BLACK);
+    char ParseBuffer[100];
+    memset(ParseBuffer, 0, sizeof(ParseBuffer)); // clear ParseBuffer
     while (1)
     {
-        if (hi2c2.hdmatx->State == HAL_DMA_STATE_READY)
+        if(UARTDMA_IsCommandReady(&huartdma))
         {
-            SSD1306_Clear(BLACK);
-            GFX_DrawString(0, 0, "Place menu ", WHITE, BLACK);
-            GFX_DrawString(13 * 5, 0, "here", WHITE, BLACK);
-            SSD1306_Display();
+          UARTDMA_GetCommandFromBuffer(&huartdma, ParseBuffer);
+          if(strcmp(ParseBuffer, "AOK\r") == 0)
+          {
+            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+            HAL_Delay(1000);
+            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+
+          }
+          else if(strcmp(ParseBuffer, "Err\n") == 0)
+          {
+            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+            HAL_Delay(1000);
+            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+          }
+          else if(strcmp(ParseBuffer, "CMD>") == 0)
+          {
+            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+            HAL_Delay(1000);
+            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+          }
         }
+        if(UARTDMA_IsDataReady(&huartdma))
+        {
+            UARTDMA_GetDataFromBuffer(&huartdma, ParseBuffer);
+            if(strcmp(ParseBuffer, "REBOOT") == 0)
+            {
+              HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
+              HAL_Delay(1000);
+              HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
+
+            }
+        }
+       
+        // if (hi2c2.hdmatx->State == HAL_DMA_STATE_READY)
+        // {
+        //     SSD1306_Clear(BLACK);
+        //     GFX_DrawString(0, 0, "Place menu ", WHITE, BLACK);
+        //     GFX_DrawString(13 * 5, 0, "here", WHITE, BLACK);
+        //     SSD1306_Display();
+        // }
 
         // distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
         // if(timeoutOccurred(&sensorL))
