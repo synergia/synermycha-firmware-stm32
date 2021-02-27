@@ -55,7 +55,7 @@ void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma)
                 UartBufferPointer[TempHead] = DmaBufferPointer[i];
                 if (UartBufferPointer[TempHead] == '\n'|| UartBufferPointer[TempHead] == 0x20)
                 {
-                    huartdma->UartBufferCommands++;
+                    huartdma->UartBufferCommandResponses++;
                 } else if (UartBufferPointer[TempHead] == '%')
                 {
                     if (FirstDelimeterOccured)
@@ -63,7 +63,7 @@ void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma)
                         FirstDelimeterOccured = 1;
                     } else {
                         FirstDelimeterOccured = 0;
-                        huartdma->UartBufferData++;
+                        huartdma->UartBufferCommandResponses++;
                     }
                 }
                 huartdma->UartBufferHead = TempHead;
@@ -89,27 +89,27 @@ int UARTDMA_GetCharFromBuffer(UARTDMA_HandleTypeDef* huartdma)
     return huartdma->UART_Buffer[huartdma->UartBufferTail];
 }
 
-uint8_t UARTDMA_IsCommandReady(UARTDMA_HandleTypeDef* huartdma)
+uint8_t UARTDMA_IsCommandResponseReady(UARTDMA_HandleTypeDef* huartdma)
 {
-    if (huartdma->UartBufferCommands)
+    if (huartdma->UartBufferCommandResponses)
         return 1;
     else
         return 0;
 }
 
-uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma)
+uint8_t UARTDMA_IsDataNotificationReady(UARTDMA_HandleTypeDef* huartdma)
 {
-    if (huartdma->UartBufferData)
+    if (huartdma->UartBufferDataNotifications)
         return 1;
     else
         return 0;
 }
 
-int UARTDMA_GetCommandFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
+int UARTDMA_GetCommandResponseFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
 {
     char TempChar;
     char* LinePointer = OutBuffer;
-    if (huartdma->UartBufferCommands)
+    if (huartdma->UartBufferCommandResponses)
     {
         while ((TempChar = UARTDMA_GetCharFromBuffer(huartdma)))
         {
@@ -125,17 +125,17 @@ int UARTDMA_GetCommandFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffe
             LinePointer++;
         }
         *LinePointer = 0;             // end of cstring
-        huartdma->UartBufferCommands--;  // decrement line counter
+        huartdma->UartBufferCommandResponses--;  // decrement line counter
     }
     return 0;
 }
 
-int UARTDMA_GetDataFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
+int UARTDMA_GetDataNotificationFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
 {
     char TempChar;
     char* LinePointer = OutBuffer;
     uint8_t FirstDelimeterOccured = 0;
-    if (huartdma->UartBufferData)
+    if (huartdma->UartBufferDataNotifications)
     {
         while ((TempChar = UARTDMA_GetCharFromBuffer(huartdma)))
         {
@@ -153,7 +153,7 @@ int UARTDMA_GetDataFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer)
             LinePointer++;
         }
         *LinePointer = 0;             // end of cstring
-        huartdma->UartBufferData--;  // decrement line counter
+        huartdma->UartBufferDataNotifications--;  // decrement line counter
     }
     return 0;
 }

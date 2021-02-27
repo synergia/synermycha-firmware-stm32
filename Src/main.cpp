@@ -425,38 +425,43 @@ int main(void)
     memset(ParseBuffer, 0, sizeof(ParseBuffer)); // clear ParseBuffer
     while (1)
     {
-        if(UARTDMA_IsCommandReady(&huartdma))
+        if(UARTDMA_IsCommandResponseReady(&huartdma))
         {
-          UARTDMA_GetCommandFromBuffer(&huartdma, ParseBuffer);
+          UARTDMA_GetCommandResponseFromBuffer(&huartdma, ParseBuffer);
           if(strcmp(ParseBuffer, "AOK\r") == 0)
           {
-            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+            // HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+            // HAL_Delay(1000);
+            // HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
 
           }
           else if(strcmp(ParseBuffer, "Err\r") == 0)
           {
-            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+            // HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+            // HAL_Delay(1000);
+            // HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
           }
           else if(strcmp(ParseBuffer, "CMD>") == 0)
           {
-            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+            // HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+            // HAL_Delay(1000);
+            // HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
           }
         }
-        if(UARTDMA_IsDataReady(&huartdma))
+        if(UARTDMA_IsDataNotificationReady(&huartdma))
         {
-            UARTDMA_GetDataFromBuffer(&huartdma, ParseBuffer);
+            UARTDMA_GetDataNotificationFromBuffer(&huartdma, ParseBuffer);
             if(strcmp(ParseBuffer, "REBOOT") == 0)
             {
-              HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
-              HAL_Delay(1000);
-              HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
-
+            //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
+            //   HAL_Delay(1000);
+            //   HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
+            }
+            if(strcmp(ParseBuffer, "N/A\r") == 0)
+            {
+                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+                HAL_Delay(1000);
+                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
             }
         }
        
