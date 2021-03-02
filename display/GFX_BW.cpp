@@ -11,7 +11,7 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
-#include "../Inc/GFX_BW.h"
+#include "GFX_BW.h"
 #include "OLED_SSD1306.h"
 
 #if USING_LINES == 1
@@ -29,8 +29,8 @@
     }
 
 #if USING_STRINGS == 1
-const uint8_t* font;
-uint8_t size = 1;
+static const uint8_t* font;
+static uint8_t size = 1;
 
 void GFX_SetFont(const uint8_t* font_t)
 {

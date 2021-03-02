@@ -23,12 +23,13 @@
 #include "string.h"
 
 #ifdef SSD1306_I2C_CONTROL
-I2C_HandleTypeDef* ssd1306_i2c;
+static I2C_HandleTypeDef* ssd1306_i2c;
 #endif
 #ifdef SSD1306_SPI_CONTROL
-SPI_HandleTypeDef* ssd1306_spi;
+static SPI_HandleTypeDef* ssd1306_spi;
 #endif
 static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8];
+static uint8_t bufferToDisplay[sizeof(buffer)];
 
 void SSD1306_Command(uint8_t com)
 {
@@ -319,15 +320,16 @@ void SSD1306_Display(void)
     SSD1306_Command(0x22);
     SSD1306_Command(0x00);
     SSD1306_Command(0x07);
+    memcpy(&bufferToDisplay, &buffer, sizeof(bufferToDisplay));
 #ifdef SSD1306_I2C_CONTROL
 #ifdef SSD1306_I2C_DMA_ENABLE
     if (ssd1306_i2c->hdmatx->State == HAL_DMA_STATE_READY)
     {
-        HAL_I2C_Mem_Write_DMA(ssd1306_i2c, SSD1306_I2C_ADDRESS, 0x40, 1, (uint8_t*)&buffer,
+        HAL_I2C_Mem_Write_DMA(ssd1306_i2c, SSD1306_I2C_ADDRESS, 0x40, 1, (uint8_t*)&bufferToDisplay,
                               (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8));
     }
 #else
-    HAL_I2C_Mem_Write(ssd1306_i2c, SSD1306_I2C_ADDRESS, 0x40, 1, (uint8_t*)&buffer,
+    HAL_I2C_Mem_Write(ssd1306_i2c, SSD1306_I2C_ADDRESS, 0x40, 1, (uint8_t*)&bufferToDisplay,
                       (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8), 100);
 #endif
 #endif
@@ -339,14 +341,14 @@ void SSD1306_Display(void)
 #endif
     if (ssd1306_spi->hdmatx->State == HAL_DMA_STATE_READY)
     {
-        HAL_SPI_Transmit_DMA(ssd1306_spi, (uint8_t*)&buffer, (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8));
+        HAL_SPI_Transmit_DMA(ssd1306_spi, (uint8_t*)&bufferToDisplay, (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8));
     }
 #else
     HAL_GPIO_WritePin(SSD1306_DC_GPIO_Port, SSD1306_DC_Pin, GPIO_PIN_SET);
 #ifndef SPI_CS_HARDWARE_CONTROL
     HAL_GPIO_WritePin(SSD1306_CS_GPIO_Port, SSD1306_CS_Pin, GPIO_PIN_RESET);
 #endif
-    HAL_SPI_Transmit(ssd1306_spi, (uint8_t*)&buffer, (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8), 100);
+    HAL_SPI_Transmit(ssd1306_spi, (uint8_t*)&bufferToDisplay, (SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8), 100);
 #ifndef SPI_CS_HARDWARE_CONTROL
     HAL_GPIO_WritePin(SSD1306_CS_GPIO_Port, SSD1306_CS_Pin, GPIO_PIN_SET);
 #endif

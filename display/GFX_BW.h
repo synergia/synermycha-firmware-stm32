@@ -11,6 +11,7 @@
 #ifndef GFX_BW_H_
 #define GFX_BW_H_
 
+#include <cstdint>
 /***************************************************************
  *
  * 		SETTINGS

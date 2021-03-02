@@ -83,20 +83,21 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "AllSignals.hh"
-#include "GFX_BW.h"
-#include "OLED_SSD1306.h"
-#include "Observer.hh"
-#include "Signal.hh"
 #include "UART_DMA.h"
 #include "VL53L0X.h"
 #include "buzzer.hpp"
-#include "fonts.h"
+#include "display/Display.hh"
+#include "display/GFX_BW.h"
+#include "display/OLED_SSD1306.h"
+#include "display/fonts.h"
 #include "led.h"
 #include "mario_theme.hpp"
 #include "string.h"
 #include "synermycha-logo.h"
 #include "usbd_cdc_if.h"
+#include "utils/AllSignals.hh"
+#include "utils/Observer.hh"
+#include "utils/Signal.hh"
 #include "ws2812b.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,6 +134,13 @@ uint8_t MessageCounter = 0;  // Licznik wyslanych wiadomosci
 uint8_t MessageLength  = 0;  // Zawiera dlugosc wysylanej wiadomosci
 UARTDMA_HandleTypeDef huartdma;
 char pomiar_string[5][15];
+
+void debugPrintln(UART_HandleTypeDef* huart, char _out[]);
+
+// @TODO find way to avoid global variables,
+// tmp solution
+static utils::AllSignals allSignals;
+
 class Led1 : public utils::Observer
 {
   public:
@@ -152,8 +160,7 @@ class Led1 : public utils::Observer
     utils::AllSignals& mAllSignals;
     bool shine = false;
 };
-utils::AllSignals allSignals;
-Led1 led1(allSignals);
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -171,9 +178,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         MessageLength = sprintf((char*)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
         CDC_Transmit_FS(DataToSend, MessageLength);
         HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-        while (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-        {
-        }
+        if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
+            allSignals.buttonDown.emit();
         HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
     }
     if (GPIO_Pin == BUTTON_UP_Pin)
@@ -182,9 +188,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         MessageLength = sprintf((char*)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
         CDC_Transmit_FS(DataToSend, MessageLength);
         HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-        while (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-        {
-        }
+        if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
+            allSignals.buttonUp.emit();
         HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
     }
 }
@@ -212,15 +217,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
         //   colour = !colour;
         // }
     }
-}
-
-void setupOled(void)
-{
-    SSD1306_I2cInit(&hi2c2);
-    SSD1306_Bitmap((uint8_t*)logo);
-    GFX_SetFont(font_8x5);
-    GFX_SetFontSize(1);
-    HAL_Delay(1000);
 }
 
 void setupBLE()
@@ -367,42 +363,32 @@ int main(void)
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];
 
-    setupOled();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 0, STRINGIFY(GIT_TAG), WHITE, BLACK);
-    GFX_DrawString(0, 9, "OLED     initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display::Display display(allSignals, &hi2c2, logo, font_8x5, 1);
+    HAL_Delay(1000);
+
+    display.writeLine(0, STRINGIFY(GIT_TAG));
+    display.writeLine(1, "OLED     initialized");
+    display.show();
 
     setupBLE();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 18, "BLE      initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display.writeLine(2, "BLE      initialized");
+    display.show();
 
     setupLed();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 27, "LED      initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display.writeLine(3, "LED      initialized");
+    display.show();
 
     setupADC();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 36, "ADC      initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display.writeLine(4, "ADC      initialized");
+    display.show();
 
     setupMotors();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 45, "Motors   initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display.writeLine(5, "Motors   initialized");
+    display.show();
 
     setupDistanceSensors();
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    GFX_DrawString(0, 54, "Distance initialized", WHITE, BLACK);
-    SSD1306_Display();
+    display.writeLine(6, "Distance initialized");
+    display.show();
 
     HAL_Delay(1000);
 
@@ -418,45 +404,44 @@ int main(void)
     /* USER CODE END 2 */
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    utils::AllSignals allSignals;
     Led1 led1(allSignals);
-    while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
-        ;
-    SSD1306_Clear(BLACK);
+
+    // SSD1306_Clear(BLACK);
     char ParseBuffer[100];
-    memset(ParseBuffer, 0, sizeof(ParseBuffer)); // clear ParseBuffer
+    memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
     while (1)
     {
-        if(UARTDMA_IsDataReady(&huartdma))
+        /*
+        if (UARTDMA_IsDataReady(&huartdma))
         {
-          UARTDMA_GetFrameFromBuffer(&huartdma, ParseBuffer);
-          if(strstr(ParseBuffer, "AOK") != NULL)
-          {
-            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
-
-          }
-          else if(strstr(ParseBuffer, "Err") != NULL)
-          {
-            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-          }
-          else if(strstr(ParseBuffer, "CMD") != NULL)
-          {
-            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-            HAL_Delay(1000);
-            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-          }
-          else if(strstr(ParseBuffer, "REBOOT") != NULL)
+            UARTDMA_GetFrameFromBuffer(&huartdma, ParseBuffer);
+            if (strstr(ParseBuffer, "AOK") != NULL)
             {
-              HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
-              HAL_Delay(1000);
-              HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
+                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+                HAL_Delay(1000);
+                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+            }
+            else if (strstr(ParseBuffer, "Err") != NULL)
+            {
+                HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+                HAL_Delay(1000);
+                HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+            }
+            else if (strstr(ParseBuffer, "CMD") != NULL)
+            {
+                HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+                HAL_Delay(1000);
+                HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+            }
+            else if (strstr(ParseBuffer, "REBOOT") != NULL)
+            {
+                HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
+                HAL_Delay(1000);
+                HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
             }
         }
-       
+        */
+
         // if (hi2c2.hdmatx->State == HAL_DMA_STATE_READY)
         // {
         //     SSD1306_Clear(BLACK);
