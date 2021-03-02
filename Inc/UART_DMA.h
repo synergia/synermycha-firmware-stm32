@@ -4,6 +4,7 @@
  *  Created on: 27.10.2019
  *      Author: Mateusz Salamon
  *		www.msalamon.pl
+ *  Modified by: Sebastian Mróz
  *
  *      Website: https://msalamon.pl/odbieranie-uart-po-dma-to-bulka-z-maslem-lekcja-z-kursu-stm32/
  *      GitHub:  https://github.com/lamik/UART_DMA_receiving
@@ -24,16 +25,13 @@ typedef struct
 
     uint16_t UartBufferHead;
     uint16_t UartBufferTail;
-    uint8_t UartBufferCommandResponses;
-    uint8_t UartBufferDataNotifications;
+    uint8_t UartBufferDataFrames;
 } UARTDMA_HandleTypeDef;
 
 void UARTDMA_UartIrqHandler(UARTDMA_HandleTypeDef* huartdma);
 void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma);
 
-uint8_t UARTDMA_IsCommandResponseReady(UARTDMA_HandleTypeDef* huartdma);
-uint8_t UARTDMA_IsDataNotificationReady(UARTDMA_HandleTypeDef* huartdma);
-int UARTDMA_GetDataNotificationFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
-int UARTDMA_GetCommandResponseFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
+uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma);
+int UARTDMA_GetFrameFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
 
 void UARTDMA_Init(UARTDMA_HandleTypeDef* huartdma, UART_HandleTypeDef* huart);

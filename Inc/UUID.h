@@ -23,6 +23,7 @@
 // SDN,Synergia PWr
 // SDS,01/2020
 // SDR,0.1.0-alfa
+// S%,,%
 // //Telemetry service
 // PS,1a7c321e723211eb94390242ac130002
 //     PC,1a7c3796723211eb94390242ac130002,12,01 // Batt %
