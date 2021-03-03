@@ -92,6 +92,8 @@
 #include "display/fonts.h"
 #include "led.h"
 #include "mario_theme.hpp"
+#include "menu/Menu.hh"
+#include "menu/config_inline/ConfigInlineSingleValue.hh"
 #include "string.h"
 #include "synermycha-logo.h"
 #include "usbd_cdc_if.h"
@@ -390,7 +392,7 @@ int main(void)
     display.writeLine(6, "Distance initialized");
     display.show();
 
-    HAL_Delay(1000);
+    HAL_Delay(2000);
 
     // while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
     //     ;
@@ -405,6 +407,38 @@ int main(void)
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     Led1 led1(allSignals);
+
+    // MENU
+    using namespace menu;
+
+    Menu menu(allSignals);
+    MenuPage pageFirst;
+    MenuPage pagePid;
+    MenuPage pageCos;
+
+    config_inline::ConfigInlineSingleValue<int> configP("P", 5, 2);
+    config_inline::ConfigInlineSingleValue<int> configI("I", -2, 1);
+    config_inline::ConfigInlineSingleValue<double> configD("D", 8.5, 0.1);
+
+    config_inline::ConfigInlineSingleValue<int> configCos("cos", -55, 5);
+    config_inline::ConfigInlineSingleValue<bool> configBool("win?", true);
+
+    auto dummy = [](utils::AllSignals&) {
+    };
+    pageFirst.AddOption(MenuOption("PID", OptionType::Page, &pagePid));
+    pageFirst.AddOption(MenuOption("cos", OptionType::Page, &pageCos));
+    pageFirst.AddOption(MenuOption("Opcja 2", OptionType::ConfigCallback, dummy));
+
+    pagePid.AddOption(MenuOption("Set P", OptionType::ConfigInline, &configP));
+    pagePid.AddOption(MenuOption("Set I", OptionType::ConfigInline, &configI));
+    pagePid.AddOption(MenuOption("Set D", OptionType::ConfigInline, &configD));
+    pagePid.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
+
+    pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
+    pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
+    pageCos.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
+
+    menu.setDefaultMenuPage(&pageFirst);
 
     // SSD1306_Clear(BLACK);
     char ParseBuffer[100];
