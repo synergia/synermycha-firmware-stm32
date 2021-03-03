@@ -429,14 +429,14 @@ int main(void)
     pageFirst.AddOption(MenuOption("cos", OptionType::Page, &pageCos));
     pageFirst.AddOption(MenuOption("Opcja 2", OptionType::ConfigCallback, dummy));
 
+    pagePid.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
     pagePid.AddOption(MenuOption("Set P", OptionType::ConfigInline, &configP));
     pagePid.AddOption(MenuOption("Set I", OptionType::ConfigInline, &configI));
     pagePid.AddOption(MenuOption("Set D", OptionType::ConfigInline, &configD));
-    pagePid.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
 
+    pageCos.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
-    pageCos.AddOption(MenuOption("Return", OptionType::Page, &pageFirst));
 
     menu.setDefaultMenuPage(&pageFirst);
 
