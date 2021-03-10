@@ -1,4 +1,5 @@
 #include "Mycha.hh"
+#include <adc.h>
 
 Mycha::Mycha(utils::AllSignals& signals)
     : mSignals(signals)
@@ -7,15 +8,58 @@ Mycha::Mycha(utils::AllSignals& signals)
     , mSensorF(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, 0b0101100)
     , mSensorFR(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, 0b0101101)
     , mSensorR(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, 0b0101111)
+    , mLed1(signals, LED_1_GPIO_Port, LED_1_Pin)
+    , mLed2(signals, LED_2_GPIO_Port, LED_2_Pin)
+    , mLed3(signals, LED_3_GPIO_Port, LED_3_Pin)
+    , mLed4(signals, LED_4_GPIO_Port, LED_4_Pin)
+    , mLed5(signals, LED_5_GPIO_Port, LED_5_Pin)
 {
     mSignals.interruptDistance.connect<Mycha, &Mycha::onInterruptDistance>(*this);
-    mSignals.interruptControll.connect<Mycha, &Mycha::onInterruptControll>(*this);
+    mSignals.interruptController.connect<Mycha, &Mycha::onInterruptController>(*this);
+
+    mSignals.buttonDown.connect<Mycha, &Mycha::buttonDown>(*this);
+    mSignals.buttonUp.connect<Mycha, &Mycha::buttonUp>(*this);
+    mSignals.tim14Elapsed.connect<Mycha, &Mycha::tim14Elapsed>(*this);
 }
 
 void Mycha::onInterruptDistance()
 {
 }
 
-void Mycha::onInterruptControll()
+void Mycha::onInterruptController()
 {
+    // super PID
+}
+
+void Mycha::buttonUp()
+{
+    mLed1.toggle();
+}
+
+void Mycha::buttonDown()
+{
+    mLed2.toggle();
+}
+
+void Mycha::tim14Elapsed()
+{
+    static bool colour = 0;
+    uint16_t PomiarADC = 0;
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+    {
+        PomiarADC = HAL_ADC_GetValue(&hadc1);
+        HAL_ADC_Start(&hadc1);
+    }
+    // SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
+    // if(PomiarADC/340 > 0){
+    //   SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
+    //   SSD1306_DrawLine(127,3,127,5,SSD1306_COLOR_WHITE);
+    //   SSD1306_DrawFilledRectangle(112,2,PomiarADC/340,4,SSD1306_COLOR_WHITE);
+    // }
+    // else
+    // {
+    //   SSD1306_DrawRectangle(110,0,16,8,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK );
+    //   SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
+    //   colour = !colour;
+    // }
 }

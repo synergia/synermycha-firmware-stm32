@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Led.hh"
 #include "sensors/DistanceTof.hh"
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
@@ -11,7 +12,11 @@ class Mycha : public utils::Observer
 
   private:
     void onInterruptDistance();
-    void onInterruptControll();
+    void onInterruptController();
+
+    void buttonUp();
+    void buttonDown();
+    void tim14Elapsed();
 
     utils::AllSignals& mSignals;
 
@@ -20,4 +25,10 @@ class Mycha : public utils::Observer
     DistanceTof mSensorF;
     DistanceTof mSensorFR;
     DistanceTof mSensorR;
+
+    Led mLed1;
+    Led mLed2;
+    Led mLed3;
+    Led mLed4;
+    Led mLed5;
 };

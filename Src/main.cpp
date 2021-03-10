@@ -93,6 +93,8 @@
 #include "mario_theme.hpp"
 #include "menu/Menu.hh"
 #include "menu/config_inline/ConfigInlineSingleValue.hh"
+#include "mycha/EventHandler.hh"
+#include "mycha/Mycha.hh"
 #include "sensors/DistanceTof.hh"
 #include "string.h"
 #include "synermycha-logo.h"
@@ -140,85 +142,12 @@ void debugPrintln(UART_HandleTypeDef* huart, char _out[]);
 
 // @TODO find way to avoid global variables,
 // tmp solution
-static utils::AllSignals allSignals;
-
-class Led1 : public utils::Observer
-{
-  public:
-    Led1(utils::AllSignals& sig)
-        : mAllSignals(sig)
-    {
-        mAllSignals.buttonEnter.connect<Led1, &Led1::onButtonEnter>(*this);
-    }
-
-    void onButtonEnter()
-    {
-        shine = !shine;
-        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, static_cast<GPIO_PinState>(shine));
-    }
-
-  private:
-    utils::AllSignals& mAllSignals;
-    bool shine = false;
-};
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if (GPIO_Pin == BUTTON_OK_Pin)
-    {
-        if (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) == GPIO_PIN_RESET)
-            allSignals.buttonEnter.emit();
-    }
-    if (GPIO_Pin == BUTTON_DOWN_Pin)
-    {
-        MessageLength = sprintf((char*)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-        CDC_Transmit_FS(DataToSend, MessageLength);
-        HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
-        if (HAL_GPIO_ReadPin(BUTTON_DOWN_GPIO_Port, BUTTON_DOWN_Pin) == GPIO_PIN_RESET)
-            allSignals.buttonDown.emit();
-        HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
-    }
-    if (GPIO_Pin == BUTTON_UP_Pin)
-    {
-        --MessageCounter;
-        MessageLength = sprintf((char*)DataToSend, "Wiadomosc nr %d\n\r", MessageCounter);
-        CDC_Transmit_FS(DataToSend, MessageLength);
-        HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
-        if (HAL_GPIO_ReadPin(BUTTON_UP_GPIO_Port, BUTTON_UP_Pin) == GPIO_PIN_RESET)
-            allSignals.buttonUp.emit();
-        HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
-    }
-}
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
-{
-    if (htim->Instance == TIM14)
-    {  // Jeżeli przerwanie pochodzi od timera 14
-        static bool colour = 0;
-        uint16_t PomiarADC = 0;
-        if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
-        {
-            PomiarADC = HAL_ADC_GetValue(&hadc1);
-            HAL_ADC_Start(&hadc1);
-        }
-        // SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
-        // if(PomiarADC/340 > 0){
-        //   SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
-        //   SSD1306_DrawLine(127,3,127,5,SSD1306_COLOR_WHITE);
-        //   SSD1306_DrawFilledRectangle(112,2,PomiarADC/340,4,SSD1306_COLOR_WHITE);
-        // }
-        // else
-        // {
-        //   SSD1306_DrawRectangle(110,0,16,8,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK );
-        //   SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
-        //   colour = !colour;
-        // }
-    }
-}
 
 void setupBLE()
 {
@@ -263,55 +192,6 @@ void setupMotors()
     TIM12->CCR2 = 0;
 }
 
-// void setupDistanceSensors()
-// {
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_RESET);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_RESET);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_RESET);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_RESET);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_RESET);
-//     HAL_Delay(20);
-
-//     setup_VL53L0X(&sensorL);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_SET);
-//     HAL_Delay(10);
-//     init(&sensorL, true);
-//     setAddress(&sensorL, 0b0101010);
-//     setTimeout(&sensorL, 35);
-//     startContinuous(&sensorL, 33);
-
-//     setup_VL53L0X(&sensorFL);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_SET);
-//     HAL_Delay(10);
-//     init(&sensorFL, true);
-//     setAddress(&sensorFL, 0b0101011);
-//     setTimeout(&sensorFL, 35);
-//     startContinuous(&sensorFL, 33);
-
-//     setup_VL53L0X(&sensorF);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_SET);
-//     HAL_Delay(10);
-//     init(&sensorF, true);
-//     setAddress(&sensorF, 0b0101100);
-//     setTimeout(&sensorF, 35);
-//     startContinuous(&sensorF, 33);
-
-//     setup_VL53L0X(&sensorFR);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_SET);
-//     HAL_Delay(10);
-//     init(&sensorFR, true);
-//     setAddress(&sensorFR, 0b0101101);
-//     setTimeout(&sensorFR, 35);
-//     startContinuous(&sensorFR, 33);
-
-//     setup_VL53L0X(&sensorR);
-//     HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_SET);
-//     HAL_Delay(10);
-//     init(&sensorR, true);
-//     setAddress(&sensorR, 0b0101111);
-//     setTimeout(&sensorR, 35);
-//     startContinuous(&sensorR, 33);
-// }
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -364,6 +244,8 @@ int main(void)
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];
 
+    utils::AllSignals allSignals;
+
     display::Display display(allSignals, &hi2c2, logo, font_8x5, 1);
     HAL_Delay(1000);
 
@@ -387,10 +269,7 @@ int main(void)
     display.writeLine(5, "Motors   initialized");
     display.show();
 
-    // setupDistanceSensors();
-    DistanceTof sensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
-    DistanceTof sensorR(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, 0b0101111);
-
+    // done in Mycha
     display.writeLine(6, "Distance initialized");
     display.show();
 
@@ -409,7 +288,6 @@ int main(void)
     /* USER CODE END 2 */
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    Led1 led1(allSignals);
 
     // MENU
     using namespace menu;
@@ -428,7 +306,7 @@ int main(void)
 
     auto dummy = [](utils::AllSignals&) {
     };
-    pageFirst.AddOption(MenuOption("PID  \96", OptionType::Page, &pagePid));
+    pageFirst.AddOption(MenuOption("PID  -->", OptionType::Page, &pagePid));
     pageFirst.AddOption(MenuOption("cos", OptionType::Page, &pageCos));
     pageFirst.AddOption(MenuOption("Opcja 2", OptionType::ConfigCallback, dummy));
 
@@ -441,11 +319,17 @@ int main(void)
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
 
-    // menu.setDefaultMenuPage(&pageFirst);
+    menu.setDefaultMenuPage(&pageFirst);
 
     // SSD1306_Clear(BLACK);
     char ParseBuffer[100];
     memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
+
+    Mycha myszunia(allSignals);
+
+    EventHandler eventHandler(allSignals);
+    eventHandler.HandleEvents();
+
     while (1)
     {
         /*
@@ -487,16 +371,16 @@ int main(void)
         //     SSD1306_Display();
         // }
 
-        distanceMeasured[0] = sensorL.readDistance();
-        distanceMeasured[1] = sensorR.readDistance();
+        // distanceMeasured[0] = sensorL.readDistance();
+        // distanceMeasured[1] = sensorR.readDistance();
 
-        sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
-        display.writeLine(2, pomiar_string[0]);
+        // sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
+        // display.writeLine(2, pomiar_string[0]);
 
-        sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
-        display.writeLine(4, pomiar_string[1]);
+        // sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
+        // display.writeLine(4, pomiar_string[1]);
 
-        display.show();
+        // display.show();
 
         // SSD1306_UpdateScreen();
         // HAL_Delay(35);

@@ -5,7 +5,13 @@
         "string_view": "cpp",
         "*.tcc": "cpp",
         "unordered_map": "cpp",
-        "stm32f4xx_hal_gpio.c": "cpp"
+        "stm32f4xx_hal_gpio.c": "cpp",
+        "gpio.h": "c",
+        "main.h": "c",
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx_hal_conf.h": "c",
+        "stm32f4xx_hal_dsi.h": "c",
+        "stm32f4xx_hal_def.h": "c"
     },
     "editor.formatOnSave": true,
     "clang-format.executable": "/usr/bin/clang-format-10",

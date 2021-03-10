@@ -14,7 +14,10 @@ struct AllSignals
     signal<void(void)> displayBuffor;
 
     signal<void(void)> interruptDistance;
-    signal<void(void)> interruptControll;
+    signal<void(void)> tim14Elapsed;
+
+    // special signal, called directly from interupt routine
+    signal<void(void)> interruptController;
 };
 
 }  // namespace utils
