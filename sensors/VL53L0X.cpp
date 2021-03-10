@@ -3,9 +3,9 @@
 // or paraphrased from the API source code, API user manual (UM2039), and the
 // VL53L0X datasheet.
 
+#include "VL53L0X.h"
 #include "stm32f4xx_hal.h"
 #include <I2CDev.h>
-#include <VL53L0X.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

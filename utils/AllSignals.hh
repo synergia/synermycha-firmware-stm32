@@ -12,6 +12,9 @@ struct AllSignals
     signal<void(void)> buttonEnter;
 
     signal<void(void)> displayBuffor;
+
+    signal<void(void)> interruptDistance;
+    signal<void(void)> interruptControll;
 };
 
-}
+}  // namespace utils

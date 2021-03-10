@@ -84,7 +84,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "UART_DMA.h"
-#include "VL53L0X.h"
 #include "buzzer.hpp"
 #include "display/Display.hh"
 #include "display/GFX_BW.h"
@@ -94,6 +93,7 @@
 #include "mario_theme.hpp"
 #include "menu/Menu.hh"
 #include "menu/config_inline/ConfigInlineSingleValue.hh"
+#include "sensors/DistanceTof.hh"
 #include "string.h"
 #include "synermycha-logo.h"
 #include "usbd_cdc_if.h"
@@ -129,7 +129,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-VL53L0X sensorL, sensorFL, sensorF, sensorFR, sensorR;
 uint16_t distanceMeasured[5];
 uint8_t DataToSend[20];      // Tablica zawierajaca dane do wyslania
 uint8_t MessageCounter = 0;  // Licznik wyslanych wiadomosci
@@ -264,55 +263,55 @@ void setupMotors()
     TIM12->CCR2 = 0;
 }
 
-void setupDistanceSensors()
-{
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_RESET);
-    HAL_Delay(20);
+// void setupDistanceSensors()
+// {
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_RESET);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_RESET);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_RESET);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_RESET);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_RESET);
+//     HAL_Delay(20);
 
-    setup_VL53L0X(&sensorL);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-    init(&sensorL, true);
-    setAddress(&sensorL, 0b0101010);
-    setTimeout(&sensorL, 35);
-    startContinuous(&sensorL, 33);
+//     setup_VL53L0X(&sensorL);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, GPIO_PIN_SET);
+//     HAL_Delay(10);
+//     init(&sensorL, true);
+//     setAddress(&sensorL, 0b0101010);
+//     setTimeout(&sensorL, 35);
+//     startContinuous(&sensorL, 33);
 
-    setup_VL53L0X(&sensorFL);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-    init(&sensorFL, true);
-    setAddress(&sensorFL, 0b0101011);
-    setTimeout(&sensorFL, 35);
-    startContinuous(&sensorFL, 33);
+//     setup_VL53L0X(&sensorFL);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, GPIO_PIN_SET);
+//     HAL_Delay(10);
+//     init(&sensorFL, true);
+//     setAddress(&sensorFL, 0b0101011);
+//     setTimeout(&sensorFL, 35);
+//     startContinuous(&sensorFL, 33);
 
-    setup_VL53L0X(&sensorF);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-    init(&sensorF, true);
-    setAddress(&sensorF, 0b0101100);
-    setTimeout(&sensorF, 35);
-    startContinuous(&sensorF, 33);
+//     setup_VL53L0X(&sensorF);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, GPIO_PIN_SET);
+//     HAL_Delay(10);
+//     init(&sensorF, true);
+//     setAddress(&sensorF, 0b0101100);
+//     setTimeout(&sensorF, 35);
+//     startContinuous(&sensorF, 33);
 
-    setup_VL53L0X(&sensorFR);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-    init(&sensorFR, true);
-    setAddress(&sensorFR, 0b0101101);
-    setTimeout(&sensorFR, 35);
-    startContinuous(&sensorFR, 33);
+//     setup_VL53L0X(&sensorFR);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, GPIO_PIN_SET);
+//     HAL_Delay(10);
+//     init(&sensorFR, true);
+//     setAddress(&sensorFR, 0b0101101);
+//     setTimeout(&sensorFR, 35);
+//     startContinuous(&sensorFR, 33);
 
-    setup_VL53L0X(&sensorR);
-    HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_SET);
-    HAL_Delay(10);
-    init(&sensorR, true);
-    setAddress(&sensorR, 0b0101111);
-    setTimeout(&sensorR, 35);
-    startContinuous(&sensorR, 33);
-}
+//     setup_VL53L0X(&sensorR);
+//     HAL_GPIO_WritePin(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, GPIO_PIN_SET);
+//     HAL_Delay(10);
+//     init(&sensorR, true);
+//     setAddress(&sensorR, 0b0101111);
+//     setTimeout(&sensorR, 35);
+//     startContinuous(&sensorR, 33);
+// }
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -388,11 +387,15 @@ int main(void)
     display.writeLine(5, "Motors   initialized");
     display.show();
 
-    setupDistanceSensors();
+    // setupDistanceSensors();
+    DistanceTof sensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
+    DistanceTof sensorR(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, 0b0101111);
+
     display.writeLine(6, "Distance initialized");
     display.show();
 
-    HAL_Delay(2000);
+    WaitMs(2000);
+    display.clear();
 
     // while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
     //     ;
@@ -425,7 +428,7 @@ int main(void)
 
     auto dummy = [](utils::AllSignals&) {
     };
-    pageFirst.AddOption(MenuOption("PID", OptionType::Page, &pagePid));
+    pageFirst.AddOption(MenuOption("PID  \96", OptionType::Page, &pagePid));
     pageFirst.AddOption(MenuOption("cos", OptionType::Page, &pageCos));
     pageFirst.AddOption(MenuOption("Opcja 2", OptionType::ConfigCallback, dummy));
 
@@ -438,7 +441,7 @@ int main(void)
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
 
-    menu.setDefaultMenuPage(&pageFirst);
+    // menu.setDefaultMenuPage(&pageFirst);
 
     // SSD1306_Clear(BLACK);
     char ParseBuffer[100];
@@ -484,37 +487,16 @@ int main(void)
         //     SSD1306_Display();
         // }
 
-        // distanceMeasured[0]=readRangeContinuousMillimeters(&sensorL);
-        // if(timeoutOccurred(&sensorL))
-        //   startContinuous(&sensorL,33);
-        // distanceMeasured[1]=readRangeContinuousMillimeters(&sensorFL);
-        // if(timeoutOccurred(&sensorFL))
-        //   startContinuous(&sensorFL,33);
-        // distanceMeasured[2]=readRangeContinuousMillimeters(&sensorF);
-        // if(timeoutOccurred(&sensorF))
-        //   startContinuous(&sensorF,33);
-        // distanceMeasured[3]=readRangeContinuousMillimeters(&sensorFR);
-        // if(timeoutOccurred(&sensorFR))
-        //   startContinuous(&sensorFR,33);
-        // distanceMeasured[4]=readRangeContinuousMillimeters(&sensorR);
-        // if(timeoutOccurred(&sensorR))
-        //   startContinuous(&sensorR,33);
+        distanceMeasured[0] = sensorL.readDistance();
+        distanceMeasured[1] = sensorR.readDistance();
 
-        // sprintf(pomiar_string[0],"L  dist: %05d",distanceMeasured[0]);
-        // SSD1306_GotoXY(0,0);
-        // SSD1306_Puts (pomiar_string[0], &Font_7x10, SSD1306_COLOR_WHITE);
-        // sprintf(pomiar_string[1],"FL dist: %05d",distanceMeasured[1]);
-        // SSD1306_GotoXY(0,11);
-        // SSD1306_Puts (pomiar_string[1], &Font_7x10, SSD1306_COLOR_WHITE);
-        // sprintf(pomiar_string[2],"F  dist: %05d",distanceMeasured[2]);
-        // SSD1306_GotoXY(0,22);
-        // SSD1306_Puts (pomiar_string[2], &Font_7x10, SSD1306_COLOR_WHITE);
-        // sprintf(pomiar_string[3],"FR dist: %05d",distanceMeasured[3]);
-        // SSD1306_GotoXY(0,33);
-        // SSD1306_Puts (pomiar_string[3], &Font_7x10, SSD1306_COLOR_WHITE);
-        // sprintf(pomiar_string[4],"R  dist: %05d",distanceMeasured[4]);
-        // SSD1306_GotoXY(0,44);
-        // SSD1306_Puts (pomiar_string[4], &Font_7x10, SSD1306_COLOR_WHITE);
+        sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
+        display.writeLine(2, pomiar_string[0]);
+
+        sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
+        display.writeLine(4, pomiar_string[1]);
+
+        display.show();
 
         // SSD1306_UpdateScreen();
         // HAL_Delay(35);
