@@ -83,28 +83,29 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "UART_DMA.h"
-#include "buzzer.hpp"
+#include "buzzer/buzzer.hpp"
 #include "display/Display.hh"
 #include "display/GFX_BW.h"
 #include "display/OLED_SSD1306.h"
-#include "display/fonts.h"
-#include "led.h"
-#include "mario_theme.hpp"
+#include "led/led.h"
 #include "menu/Menu.hh"
 #include "menu/config_inline/ConfigInlineSingleValue.hh"
 #include "mycha/EventHandler.hh"
 #include "mycha/Mycha.hh"
 #include "sensors/DistanceTof.hh"
+#include "static/fonts.h"
+#include "static/mario_theme.hpp"
+#include "static/synermycha-logo.h"
 #include "string.h"
-#include "synermycha-logo.h"
+#include "uartdma/UART_DMA.h"
 #include "usbd_cdc_if.h"
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
 #include "utils/Signal.hh"
-#include "ws2812b.h"
+#include "ws2812b/ws2812b.h"
 #include <stdio.h>
 #include <stdlib.h>
+
 
 /* USER CODE END Includes */
 
@@ -156,7 +157,7 @@ void setupBLE()
     HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
 
     HAL_Delay(100);
-    uint8_t CMD[3] = {'$','$','$'};
+    uint8_t CMD[3] = {'$', '$', '$'};
     // HAL_UART_Transmit(&huart1, CMD, 3, 10); // uncoment for CMD mode
     HAL_Delay(100);
     // // Flash update of RN487x
@@ -233,19 +234,19 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_I2C3_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
-  MX_TIM9_Init();
-  MX_TIM12_Init();
-  MX_USART1_UART_Init();
-  MX_USB_DEVICE_Init();
-  MX_SPI1_Init();
-  MX_TIM14_Init();
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_I2C1_Init();
+    MX_I2C2_Init();
+    MX_I2C3_Init();
+    MX_TIM3_Init();
+    MX_TIM4_Init();
+    MX_TIM9_Init();
+    MX_TIM12_Init();
+    MX_USART1_UART_Init();
+    MX_USB_DEVICE_Init();
+    MX_SPI1_Init();
+    MX_TIM14_Init();
     /* USER CODE BEGIN 2 */
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];

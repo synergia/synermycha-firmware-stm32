@@ -2,9 +2,9 @@
 
 #include "GFX_BW.h"
 #include "OLED_SSD1306.h"
-#include "fonts.h"
 #include "i2c.h"
-#include "synermycha-logo.h"
+#include "static/fonts.h"
+#include "static/synermycha-logo.h"
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
 
