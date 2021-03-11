@@ -14,13 +14,22 @@ Motor::Motor(TimHandler* handler, PwmCcrPtr ccr, uint32_t channel, GpioPort port
     , mCurrentPwm(0)
     , isForward(true)
 {
-    GpioWrite(mPortDir, mPinDir, mIsPinHighWhenForward);
+}
+
+void Motor::initialize()
+{
+    HAL_TIM_PWM_Start(mHandler, mChannel);
+    setDir(true);
+    *mCcr = 0;
 }
 
 void Motor::setPwm(float speed)
 {
     if (speed > MAX_PWM_RANGE)
         return;
+
+    if (speed > MAX_PWM)
+        speed = MAX_PWM;
 
     mCurrentPwm = speed;
 

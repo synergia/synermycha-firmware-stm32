@@ -1,5 +1,6 @@
 #include "Mycha.hh"
 #include <adc.h>
+#include <tim.h>
 
 Mycha::Mycha(utils::AllSignals& signals)
     : mSignals(signals)
@@ -13,6 +14,64 @@ Mycha::Mycha(utils::AllSignals& signals)
     , mLed3(signals, LED_3_GPIO_Port, LED_3_Pin)
     , mLed4(signals, LED_4_GPIO_Port, LED_4_Pin)
     , mLed5(signals, LED_5_GPIO_Port, LED_5_Pin)
+    , mHBridge(DRV8835_EN_GPIO_Port, DRV8835_EN_Pin)
+    , mMotorL(&htim12, &(htim12.Instance->CCR2), TIM_CHANNEL_2, DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, false)
+    , mMotorR(&htim12, &(htim12.Instance->CCR1), TIM_CHANNEL_1, DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, true)
+    , mEncoderL(&htim3)
+    , mEncoderR(&htim4)
+{
+    connectSignals();
+
+    initializeMycha();
+}
+
+void Mycha::initializeMycha()
+{
+    initBle();
+    initLed();
+    initAdc();
+    initMotors();
+    initDistance();
+}
+
+void Mycha::initBle()
+{
+}
+
+void Mycha::initLed()
+{
+    mLed1.initialize();
+    mLed2.initialize();
+    mLed3.initialize();
+    mLed4.initialize();
+    mLed5.initialize();
+}
+
+void Mycha::initAdc()
+{
+}
+
+void Mycha::initMotors()
+{
+    mHBridge.initialize();
+
+    mMotorL.initialize();
+    mMotorR.initialize();
+
+    mEncoderL.initialize();
+    mEncoderR.initialize();
+}
+
+void Mycha::initDistance()
+{
+    mSensorL.initialize();
+    mSensorFL.initialize();
+    mSensorF.initialize();
+    mSensorFR.initialize();
+    mSensorR.initialize();
+}
+
+void Mycha::connectSignals()
 {
     mSignals.interruptDistance.connect<Mycha, &Mycha::onInterruptDistance>(*this);
     mSignals.interruptController.connect<Mycha, &Mycha::onInterruptController>(*this);

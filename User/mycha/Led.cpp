@@ -6,7 +6,13 @@ Led::Led(utils::AllSignals& sig, GpioPort port, GpioPin pin, bool isOn)
     , mPin(pin)
     , mIsOn(isOn)
 {
-    set(mIsOn);
+}
+
+void Led::initialize()
+{
+    on();
+    WaitMs(100);
+    off();
 }
 
 void Led::on()

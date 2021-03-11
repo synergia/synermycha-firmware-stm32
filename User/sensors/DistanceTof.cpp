@@ -6,6 +6,10 @@ DistanceTof::DistanceTof(GpioPort port, GpioPin pin, TofAddress address)
     , mAddress(address)
     , mLastMeasurement(0)
 {
+}
+
+void DistanceTof::initialize()
+{
     memset(&mHandler, 0, sizeof(mHandler));
 
     GpioWrite(mPort, mPin, false);

@@ -8,6 +8,7 @@ class Led : public utils::Observer
 {
   public:
     Led(utils::AllSignals& sig, GpioPort port, GpioPin pin, bool isOn = false);
+    void initialize();
 
     void on();
     void off();

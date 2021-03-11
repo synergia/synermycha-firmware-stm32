@@ -11,7 +11,11 @@
         "stm32f4xx_hal.h": "c",
         "stm32f4xx_hal_conf.h": "c",
         "stm32f4xx_hal_dsi.h": "c",
-        "stm32f4xx_hal_def.h": "c"
+        "stm32f4xx_hal_def.h": "c",
+        "functional": "cpp",
+        "memory": "cpp",
+        "optional": "cpp",
+        "sstream": "cpp"
     },
     "editor.formatOnSave": true,
     "clang-format.executable": "/usr/bin/clang-format-10",

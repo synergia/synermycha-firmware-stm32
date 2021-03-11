@@ -6,6 +6,11 @@ HBridge::HBridge(GpioPort portEnable, GpioPin pinEnable)
 {
 }
 
+void HBridge::initialize()
+{
+    enable();
+}
+
 void HBridge::enable()
 {
     GpioWrite(mPortEnable, mPinEnable, true);

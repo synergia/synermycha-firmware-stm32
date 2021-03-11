@@ -9,6 +9,8 @@ class DistanceTof
 
   public:
     DistanceTof(GpioPort port, GpioPin pin, TofAddress address);
+    void initialize();
+
     uint16_t getLastMeasurement() const;
     uint16_t readDistance();
 

@@ -265,7 +265,7 @@ int main(void)
     display.writeLine(2, "BLE      initialized");
     display.show();
 
-    setupLed();
+    // setupLed();
     display.writeLine(3, "LED      initialized");
     display.show();
 
@@ -273,7 +273,7 @@ int main(void)
     display.writeLine(4, "ADC      initialized");
     display.show();
 
-    setupMotors();
+    // setupMotors();
     display.writeLine(5, "Motors   initialized");
     display.show();
 
@@ -281,7 +281,7 @@ int main(void)
     display.writeLine(6, "Distance initialized");
     display.show();
 
-    WaitMs(2000);
+    WaitMs(1000);
     display.clear();
 
     // while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
@@ -343,6 +343,7 @@ int main(void)
 
     while (1)
     {
+
         /*
         if (UARTDMA_IsDataReady(&huartdma))
         {

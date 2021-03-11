@@ -6,6 +6,8 @@ class HBridge
 {
   public:
     HBridge(GpioPort portEnable, GpioPin pinEnable);
+    void initialize();
+
     void enable();
     void disable();
 
