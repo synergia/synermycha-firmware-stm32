@@ -115,10 +115,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define RIGHT_MOTOR_BACKWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
-#define RIGHT_MOTOR_FORWARD  HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
-#define LEFT_MOTOR_BACKWARD  HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
-#define LEFT_MOTOR_FORWARD   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
+#define RIGHT_MOTOR_BACKWARD HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_RESET);
+#define RIGHT_MOTOR_FORWARD  HAL_GPIO_WritePin(DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, GPIO_PIN_SET);
+#define LEFT_MOTOR_BACKWARD  HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_SET);
+#define LEFT_MOTOR_FORWARD   HAL_GPIO_WritePin(DRV8835_DIR_B_GPIO_Port, DRV8835_DIR_B_Pin, GPIO_PIN_RESET);
 #define STRINGIFY(s)         STRINGIFY1(s)
 #define STRINGIFY1(s)        #s
 /* USER CODE END PD */
@@ -155,6 +155,10 @@ void setupBLE()
     HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
 
+    HAL_Delay(100);
+    uint8_t CMD[3] = {'$','$','$'};
+    // HAL_UART_Transmit(&huart1, CMD, 3, 10); // uncoment for CMD mode
+    HAL_Delay(100);
     // // Flash update of RN487x
     // HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
     // HAL_GPIO_WritePin(RN4871_NRESET_GPIO_Port, RN4871_NRESET_Pin, GPIO_PIN_RESET);
@@ -165,13 +169,13 @@ void setupBLE()
 
 void debugPrint(UART_HandleTypeDef* huart, char _out[])
 {
-    HAL_UART_Transmit(huart, (uint8_t*)_out, strlen(_out), 10);
+    HAL_UART_Transmit_DMA(huart, (uint8_t*)_out, strlen(_out));
 }
 void debugPrintln(UART_HandleTypeDef* huart, char _out[])
 {
-    HAL_UART_Transmit(huart, (uint8_t*)_out, strlen(_out), 10);
-    char newline[3] = "\r\n";
-    HAL_UART_Transmit(huart, (uint8_t*)newline, 2, 10);
+    HAL_UART_Transmit_IT(huart, (uint8_t*)_out, strlen(_out));
+    char newline[3] = "\r";
+    HAL_UART_Transmit_IT(huart, (uint8_t*)newline, 2);
 }
 
 void setupADC()
@@ -186,6 +190,8 @@ void setupMotors()
     HAL_GPIO_WritePin(DRV8835_EN_GPIO_Port, DRV8835_EN_Pin, GPIO_PIN_SET);
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+    RIGHT_MOTOR_FORWARD;
+    LEFT_MOTOR_FORWARD;
     HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
     TIM12->CCR1 = 0;
@@ -227,19 +233,19 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    MX_DMA_Init();
-    MX_ADC1_Init();
-    MX_I2C1_Init();
-    MX_I2C2_Init();
-    MX_I2C3_Init();
-    MX_TIM3_Init();
-    MX_TIM4_Init();
-    MX_TIM9_Init();
-    MX_TIM12_Init();
-    MX_USART1_UART_Init();
-    MX_USB_DEVICE_Init();
-    MX_SPI1_Init();
-    MX_TIM14_Init();
+  MX_DMA_Init();
+  MX_ADC1_Init();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_I2C3_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
+  MX_TIM9_Init();
+  MX_TIM12_Init();
+  MX_USART1_UART_Init();
+  MX_USB_DEVICE_Init();
+  MX_SPI1_Init();
+  MX_TIM14_Init();
     /* USER CODE BEGIN 2 */
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];
@@ -306,7 +312,7 @@ int main(void)
 
     auto dummy = [](utils::AllSignals&) {
     };
-    pageFirst.AddOption(MenuOption("PID  -->", OptionType::Page, &pagePid));
+    pageFirst.AddOption(MenuOption("PID    \x7F", OptionType::Page, &pagePid));
     pageFirst.AddOption(MenuOption("cos", OptionType::Page, &pageCos));
     pageFirst.AddOption(MenuOption("Opcja 2", OptionType::ConfigCallback, dummy));
 
@@ -335,12 +341,31 @@ int main(void)
         /*
         if (UARTDMA_IsDataReady(&huartdma))
         {
-            UARTDMA_GetFrameFromBuffer(&huartdma, ParseBuffer);
-            if (strstr(ParseBuffer, "AOK") != NULL)
+          UARTDMA_GetFrameFromBuffer(&huartdma, ParseBuffer);
+          if(strstr(ParseBuffer, "AOK") != NULL)
+          {
+            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+            HAL_Delay(100);
+            HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+
+          }
+          else if(strstr(ParseBuffer, "Err") != NULL)
+          {
+            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_SET);
+            HAL_Delay(100);
+            HAL_GPIO_WritePin(LED_2_GPIO_Port, LED_2_Pin, GPIO_PIN_RESET);
+          }
+          else if(strstr(ParseBuffer, "CMD") != NULL)
+          {
+            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_SET);
+            HAL_Delay(100);
+            HAL_GPIO_WritePin(LED_3_GPIO_Port, LED_3_Pin, GPIO_PIN_RESET);
+          }
+          else if(strstr(ParseBuffer, "REBOOT") != NULL)
             {
-                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
-                HAL_Delay(1000);
-                HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
+              HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_SET);
+              HAL_Delay(100);
+              HAL_GPIO_WritePin(LED_4_GPIO_Port, LED_4_Pin, GPIO_PIN_RESET);
             }
             else if (strstr(ParseBuffer, "Err") != NULL)
             {
@@ -384,8 +409,12 @@ int main(void)
 
         // SSD1306_UpdateScreen();
         // HAL_Delay(35);
-        // sprintf((char*)DataToSend,"%05d\t%05d\t%05d",distanceMeasured[0],distanceMeasured[1],distanceMeasured[2]);
-        // debugPrintln(&huart1,(char*)DataToSend);
+        // sprintf((char*)DataToSend,"SHW,0081,%.4x%.4x\r",TIM3->CNT,TIM4->CNT);
+        // GFX_DrawString(0, 0, (char*)DataToSend, WHITE, BLACK);
+        // SSD1306_Display();
+        // while (huart1.hdmatx->State != HAL_DMA_STATE_READY)
+        // ;
+        // HAL_UART_Transmit(&huart1, DataToSend, 18, 10);
         // debugPrint(&huart1,"SynerMycha wita BLE\r\n");
 
         /* USER CODE END WHILE */

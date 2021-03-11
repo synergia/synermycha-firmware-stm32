@@ -60,8 +60,8 @@ uint8_t GFX_GetFontSize(void)
 
 void GFX_DrawChar(int x, int y, char chr, uint8_t color, uint8_t background)
 {
-    if (chr > 0x7E)
-        return;  // chr > '~'
+    if (chr > 0x7E + 1)
+        return;  // extra char added
 
     for (uint8_t i = 0; i < font[1]; i++)
     {

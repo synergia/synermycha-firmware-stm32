@@ -32,7 +32,7 @@ void Display::writeLine(int nr, char* line)
 {
     while (mHi2c->hdmatx->State != HAL_DMA_STATE_READY)
         ;
-    GFX_DrawString(0, nr * 9, const_cast<char*>(line), WHITE, BLACK);
+    GFX_DrawString(0, (nr + 2) * 9 -1, const_cast<char*>(line), WHITE, BLACK);
 }
 
 void Display::ShowDisplayBuffor()
