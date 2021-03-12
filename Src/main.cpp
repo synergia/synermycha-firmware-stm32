@@ -106,7 +106,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,7 +139,6 @@ UARTDMA_HandleTypeDef huartdma;
 char pomiar_string[5][15];
 
 void debugPrintln(UART_HandleTypeDef* huart, char _out[]);
-
 // @TODO find way to avoid global variables,
 // tmp solution
 
@@ -247,6 +245,9 @@ int main(void)
     MX_USB_DEVICE_Init();
     MX_SPI1_Init();
     MX_TIM14_Init();
+    MX_TIM10_Init();
+    MX_TIM11_Init();
+    MX_TIM13_Init();
     /* USER CODE BEGIN 2 */
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];
@@ -326,16 +327,19 @@ int main(void)
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
 
-    menu.setDefaultMenuPage(&pageFirst);
+    // menu.setDefaultMenuPage(&pageFirst);
 
-    // SSD1306_Clear(BLACK);
-    char ParseBuffer[100];
-    memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
+    // // SSD1306_Clear(BLACK);
+    // char ParseBuffer[100];
+    // memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
 
-    Mycha myszunia(allSignals);
+    // Mycha myszunia(allSignals);
 
-    EventHandler eventHandler(allSignals);
-    eventHandler.HandleEvents();
+    // EventHandler eventHandler(allSignals);
+    // eventHandler.HandleEvents();
+
+    DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
+    DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
 
     while (1)
     {
@@ -397,16 +401,16 @@ int main(void)
         //     SSD1306_Display();
         // }
 
-        // distanceMeasured[0] = sensorL.readDistance();
-        // distanceMeasured[1] = sensorR.readDistance();
+        distanceMeasured[0] = mSensorL.readDistance();
+        distanceMeasured[1] = mSensorFL.readDistance();
 
-        // sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
-        // display.writeLine(2, pomiar_string[0]);
+        sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
+        display.writeLine(2, pomiar_string[0]);
 
-        // sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
-        // display.writeLine(4, pomiar_string[1]);
+        sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
+        display.writeLine(4, pomiar_string[1]);
 
-        // display.show();
+        display.show();
 
         // SSD1306_UpdateScreen();
         // HAL_Delay(35);
@@ -503,6 +507,9 @@ void Error_Handler(void)
     __disable_irq();
     while (1)
     {
+        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_SET);
+        HAL_Delay(500);
+        HAL_GPIO_WritePin(LED_1_GPIO_Port, LED_1_Pin, GPIO_PIN_RESET);
     }
     /* USER CODE END Error_Handler_Debug */
 }

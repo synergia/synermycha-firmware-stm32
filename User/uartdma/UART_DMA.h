@@ -16,22 +16,31 @@
 #define DMA_RX_BUFFER_SIZE 64
 #define UART_BUFFER_SIZE   256
 
-typedef struct
+#ifdef __cplusplus
+extern "C"
 {
-    UART_HandleTypeDef* huart;  // UART handler
+#endif
 
-    uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];  // DMA direct buffer
-    uint8_t UART_Buffer[UART_BUFFER_SIZE];      // UART working circular buffer
+    typedef struct
+    {
+        UART_HandleTypeDef* huart;  // UART handler
 
-    uint16_t UartBufferHead;
-    uint16_t UartBufferTail;
-    uint8_t UartBufferDataFrames;
-} UARTDMA_HandleTypeDef;
+        uint8_t DMA_RX_Buffer[DMA_RX_BUFFER_SIZE];  // DMA direct buffer
+        uint8_t UART_Buffer[UART_BUFFER_SIZE];      // UART working circular buffer
 
-void UARTDMA_UartIrqHandler(UARTDMA_HandleTypeDef* huartdma);
-void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma);
+        uint16_t UartBufferHead;
+        uint16_t UartBufferTail;
+        uint8_t UartBufferDataFrames;
+    } UARTDMA_HandleTypeDef;
 
-uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma);
-int UARTDMA_GetFrameFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
+    void UARTDMA_UartIrqHandler(UARTDMA_HandleTypeDef* huartdma);
+    void UARTDMA_DmaIrqHandler(UARTDMA_HandleTypeDef* huartdma);
 
-void UARTDMA_Init(UARTDMA_HandleTypeDef* huartdma, UART_HandleTypeDef* huart);
+    uint8_t UARTDMA_IsDataReady(UARTDMA_HandleTypeDef* huartdma);
+    int UARTDMA_GetFrameFromBuffer(UARTDMA_HandleTypeDef* huartdma, char* OutBuffer);
+
+    void UARTDMA_Init(UARTDMA_HandleTypeDef* huartdma, UART_HandleTypeDef* huart);
+
+#ifdef __cplusplus
+}
+#endif
