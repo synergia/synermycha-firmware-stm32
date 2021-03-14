@@ -5,6 +5,18 @@
 
 _Welcome to the Synermycha Firmware repository!_
 
+## Timer configuration:
+| Timer         | Freq      | Used by               |
+| ------------- | --------- | --------------------- |
+| TIM3          | X         | Encoders              |
+| TIM4          | X         | Encoders              |
+| TIM9          | vary      | Eye led, buzzer       |
+| TIM10         | 1kHz      | PID                   |
+| TIM11         | 100Hz     | Trajectory            |
+| TIM12         | 180kHz    | Motors                |
+| TIM13         | 60Hz      | BLE, display, debug   |
+| TIM14         | 2Hz       | ADC                   |
+
 ## RN4871
 We've found that handling RN4871 communication don't have very good documentation, 
 especially in cases when module sends some messages about characteristic update. Below we present information about module behaviour that is not clearly stated in datasheet.
