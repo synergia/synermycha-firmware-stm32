@@ -7,6 +7,17 @@
 #include "sensors/Encoder.hh"
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
+#include <cmath>
+
+namespace mechanic
+{
+// all data in SI
+constexpr double PI = 3.14159265358979323846;
+// meters
+constexpr double radius = 0.012;
+// meters
+constexpr double circumference = 2 * PI * radius;
+}  // namespace mechanic
 
 class Mycha : public utils::Observer
 {

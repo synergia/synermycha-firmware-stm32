@@ -87,7 +87,10 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
-    // super PID
+    constexpr float distanceToReach = 1;  // 1 meter
+    static float currentDistance    = 0;
+    static uint32_t lastTickL;
+    static uint32_t lastTickR;
 }
 
 void Mycha::buttonUp()

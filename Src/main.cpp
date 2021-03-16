@@ -327,16 +327,16 @@ int main(void)
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
 
-    // menu.setDefaultMenuPage(&pageFirst);
+    menu.setDefaultMenuPage(&pageFirst);
 
     // // SSD1306_Clear(BLACK);
     // char ParseBuffer[100];
     // memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
 
-    // Mycha myszunia(allSignals);
+    Mycha myszunia(allSignals);
 
-    // EventHandler eventHandler(allSignals);
-    // eventHandler.HandleEvents();
+    EventHandler eventHandler(allSignals);
+    eventHandler.HandleEvents();
 
     DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
     DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
@@ -402,16 +402,16 @@ int main(void)
         //     SSD1306_Display();
         // }
 
-        distanceMeasured[0] = mSensorL.readDistance();
-        distanceMeasured[1] = mSensorFL.readDistance();
+        // distanceMeasured[0] = mSensorL.readDistance();
+        // distanceMeasured[1] = mSensorFL.readDistance();
 
-        sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
-        display.writeLine(2, pomiar_string[0]);
+        // sprintf(pomiar_string[0], "L  dist: %05d", distanceMeasured[0]);
+        // display.writeLine(2, pomiar_string[0]);
 
-        sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
-        display.writeLine(4, pomiar_string[1]);
+        // sprintf(pomiar_string[1], "R  dist: %05d", distanceMeasured[1]);
+        // display.writeLine(4, pomiar_string[1]);
 
-        display.show();
+        // display.show();
 
         // SSD1306_UpdateScreen();
         // HAL_Delay(35);

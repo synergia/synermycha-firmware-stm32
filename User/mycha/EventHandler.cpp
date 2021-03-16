@@ -35,10 +35,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
     // if TIM9 is used as controll loop, it should looks like follow
-    if (htim->Instance == TIM9)
+    if (htim->Instance == TIM10)
     {
-        // if (allSignalsPtr)
-        //     allSignalsPtr->interruptController.emit();
+        if (allSignalsPtr)
+            allSignalsPtr->interruptController.emit();
     }
 
     // rest of timers
