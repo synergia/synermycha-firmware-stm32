@@ -9,3 +9,4 @@ Middlewares/
 Drivers/
 STM32F446RETx_FLASH.ld
 startup_stm32f446xx.s
+Src/main.c
