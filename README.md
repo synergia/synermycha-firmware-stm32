@@ -6,16 +6,16 @@
 _Welcome to the Synermycha Firmware repository!_
 
 ## Timer configuration:
-| Timer         | Freq      | Used by               |
-| ------------- | --------- | --------------------- |
-| TIM3          | X         | Encoders              |
-| TIM4          | X         | Encoders              |
-| TIM9          | vary      | Eye led, buzzer       |
-| TIM10         | 1kHz      | PID                   |
-| TIM11         | 100Hz     | Trajectory            |
-| TIM12         | 180kHz    | Motors                |
-| TIM13         | 60Hz      | BLE, display, debug   |
-| TIM14         | 2Hz       | ADC                   |
+| Timer         | Bus       | Freq      | Used by               |
+| ------------- | --------- | --------- | --------------------- | 
+| TIM3          | APB1      | X         | Encoders              | 
+| TIM4          | APB1      | X         | Encoders              | 
+| TIM9          | APB2      | vary      | Eye led, buzzer       | 
+| TIM10         | APB2      | 1kHz      | PID                   | 
+| TIM11         | APB2      | 100Hz     | Trajectory            | 
+| TIM12         | APB1      | 180kHz    | Motors                | 
+| TIM13         | APB1      | 60Hz      | BLE, display, debug   | 
+| TIM14         | APB1      | 2Hz       | ADC                   | 
 
 ## RN4871
 We've found that handling RN4871 communication don't have very good documentation, 
