@@ -333,13 +333,16 @@ int main(void)
     // char ParseBuffer[100];
     // memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
 
-    Mycha myszunia(allSignals);
+    HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+    HAL_TIM_Base_Start_IT(&htim10);
 
-    EventHandler eventHandler(allSignals);
+    mycha::Mycha myszunia(allSignals);
+
+    mycha::EventHandler eventHandler(allSignals);
     eventHandler.HandleEvents();
 
-    DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
-    DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
+    sensors::DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
+    sensors::DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
 
     while (1)
     {

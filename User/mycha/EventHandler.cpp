@@ -47,10 +47,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
         flagTim14Elapsed = true;
     }
 }
+
 //**************************************************************
 
 //**************************************************************
-// EVENT HANDLER
+
+namespace mycha
+{
+
 EventHandler::EventHandler(utils::AllSignals& signals)
     : mSignals(signals)
 {
@@ -85,3 +89,5 @@ void EventHandler::HandleEvents()
         }
     }
 }
+
+}  // namespace mycha

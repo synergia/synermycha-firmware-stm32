@@ -2,6 +2,9 @@
 #include <adc.h>
 #include <tim.h>
 
+namespace mycha
+{
+
 Mycha::Mycha(utils::AllSignals& signals)
     : mSignals(signals)
     , mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010)
@@ -19,6 +22,7 @@ Mycha::Mycha(utils::AllSignals& signals)
     , mMotorR(&htim12, &(htim12.Instance->CCR1), TIM_CHANNEL_1, DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, true)
     , mEncoderL(&htim3)
     , mEncoderR(&htim4)
+    , mTrajectory(1, 0.6, 0.6)  // testing only
 {
     connectSignals();
 
@@ -87,6 +91,17 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
+    // position controller 10 times slower
+    // in this configuration 20Hz
+    static int loopCnt = 0;
+    if (++loopCnt == 10)
+    {
+        loopCnt = 0;
+    }
+    static double timeFromStart = 0.0;
+
+    timeFromStart += mechanic::controllerPeriod;
+
     constexpr float distanceToReach = 1;  // 1 meter
     static float currentDistance    = 0;
     static uint32_t lastTickL;
@@ -95,12 +110,10 @@ void Mycha::onInterruptController()
 
 void Mycha::buttonUp()
 {
-    mLed1.toggle();
 }
 
 void Mycha::buttonDown()
 {
-    mLed2.toggle();
 }
 
 void Mycha::tim14Elapsed()
@@ -125,3 +138,5 @@ void Mycha::tim14Elapsed()
     //   colour = !colour;
     // }
 }
+
+}  // namespace mycha

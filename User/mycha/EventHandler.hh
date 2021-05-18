@@ -4,12 +4,17 @@
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
 
+namespace mycha
+{
+
 class EventHandler : public utils::Observer
 {
   public:
-    EventHandler(utils::AllSignals& signals);
+    explicit EventHandler(utils::AllSignals& signals);
     void HandleEvents();
 
   private:
     utils::AllSignals& mSignals;
 };
+
+}  // namespace mycha

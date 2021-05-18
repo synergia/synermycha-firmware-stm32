@@ -19,7 +19,7 @@ enum class MenuState
 class Menu : public utils::Observer
 {
   public:
-    Menu(utils::AllSignals& sig);
+    explicit Menu(utils::AllSignals& sig);
 
     void setDefaultMenuPage(MenuPage* page);
     void onButtonDownPressed();

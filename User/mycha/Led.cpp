@@ -1,5 +1,8 @@
 #include "Led.hh"
 
+namespace mycha
+{
+
 Led::Led(utils::AllSignals& sig, GpioPort port, GpioPin pin, bool isOn)
     : mAllSignals(sig)
     , mPort(port)
@@ -34,22 +37,12 @@ bool Led::isOn()
 
 void Led::toggle()
 {
-    if (mIsOn)
-    {
-        off();
-        mIsOn = false;
-    }
-    else
-    {
-        on();
-        mIsOn = true;
-    }
+    set(not mIsOn);
 }
 
 void Led::set(bool isOn)
 {
-    if (isOn)
-        on();
-    else
-        off();
+    isOn ? on() : off();
 }
+
+}  // namespace mycha

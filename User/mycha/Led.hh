@@ -4,6 +4,9 @@
 #include "utils/HalUtils.hh"
 #include "utils/Observer.hh"
 
+namespace mycha
+{
+
 class Led : public utils::Observer
 {
   public:
@@ -23,3 +26,5 @@ class Led : public utils::Observer
 
     bool mIsOn;
 };
+
+}  // namespace mycha

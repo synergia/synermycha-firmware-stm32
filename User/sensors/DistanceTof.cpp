@@ -1,5 +1,8 @@
 #include "DistanceTof.hh"
 
+namespace sensors
+{
+
 DistanceTof::DistanceTof(GpioPort port, GpioPin pin, TofAddress address)
     : mPort(port)
     , mPin(pin)
@@ -37,3 +40,5 @@ uint16_t DistanceTof::readDistance()
 
     return mLastMeasurement;
 }
+
+}  // namespace sensors

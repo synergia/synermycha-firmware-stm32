@@ -3,6 +3,9 @@
 #include "VL53L0X.h"
 #include "utils/HalUtils.hh"
 
+namespace sensors
+{
+
 class DistanceTof
 {
     using TofAddress = uint8_t;
@@ -22,3 +25,5 @@ class DistanceTof
     VL53L0X mHandler;
     uint16_t mLastMeasurement;
 };
+
+}  // namespace sensors

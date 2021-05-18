@@ -1,5 +1,8 @@
 #include "Encoder.hh"
 
+namespace sensors
+{
+
 Encoder::Encoder(TimHandler* handler)
     : mHandler(handler)
 {
@@ -14,3 +17,5 @@ uint32_t Encoder::getTicks() const
 {
     return mHandler->Instance->CNT;
 }
+
+}  // namespace sensors

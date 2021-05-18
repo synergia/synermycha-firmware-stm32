@@ -2,6 +2,9 @@
 
 #include "utils/HalUtils.hh"
 
+namespace sensors
+{
+
 class Encoder
 {
   public:
@@ -13,3 +16,5 @@ class Encoder
   private:
     TimHandler* mHandler;
 };
+
+}  // namespace sensors
