@@ -11,7 +11,7 @@ class Encoder
     Encoder(TimHandler* handler);
     void initialize();
 
-    uint32_t getTicks() const;
+    int32_t getDiffTicks() const;
 
   private:
     TimHandler* mHandler;

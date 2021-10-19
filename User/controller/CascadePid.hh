@@ -1,54 +1,54 @@
-#pragma once
+// #pragma once
 
-namespace controller
-{
+// namespace controller
+// {
 
-/*
-This controller uses two PID connected to each other.
-Outer loop is position controller, inner loop velocity.
-Velocity controller is run 10 times faster that position controller.
+// /*
+// This controller uses two PID connected to each other.
+// Outer loop is position controller, inner loop velocity.
+// Velocity controller is run 10 times faster that position controller.
 
-For now maybe we should use only P position, and PI velocity controller.
+// For now maybe we should use only P position, and PI velocity controller.
 
-Integral part of velocity controller is "smart" -
-it's equal zero for non-zero desired velocity.
-*/
-class CascadePid
-{
-  public:
-    CascadePid(double posP, double posI, double posD, double velP, double velI, double velD);
+// Integral part of velocity controller is "smart" -
+// it's equal zero for non-zero desired velocity.
+// */
+// class CascadePid
+// {
+//   public:
+//     CascadePid(double posP, double posI, double posD, double velP, double velI, double velD);
 
-    struct PidIn
-    {
-        double refPos;
-        double measPos;
+//     struct PidIn
+//     {
+//         double refPos;
+//         double measPos;
 
-        double refVel;
-        double measVel;
-    };
+//         double refVel;
+//         double measVel;
+//     };
 
-    struct PidOut
-    {
-        double left;
-        double right;
-    };
+//     struct PidOut
+//     {
+//         double left;
+//         double right;
+//     };
 
-    PidOut calculate(const PidIn& pidIn);
+//     PidOut calculate(const PidIn& pidIn);
 
-    struct Pid
-    {
-        double kp;
-        double ki;
-        double kd;
-        double lastError;
-        double errorSum;
-        double lastOut;
-        double feedForward;
-    };
+//     struct Factors
+//     {
+//         double kp;
+//         double ki;
+//         double kd;
+//         double lastError;
+//         double errorSum;
+//         double lastOut;
+//         double feedForward;
+//     };
 
-  private:
-    Pid mPidPos;
-    Pid mPidVel;
-};
+//   private:
+//     Factors mPidPos;
+//     Factors mPidVel;
+// };
 
-}  // namespace controller
+// }  // namespace controller

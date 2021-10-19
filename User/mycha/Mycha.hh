@@ -16,14 +16,35 @@ namespace mechanic
 {
 // all data in SI
 constexpr double PI = 3.14159265358979323846;
+
 // meters
-constexpr double radius = 0.012;
+constexpr double wheelRadius = 0.012;
+
 // meters
-constexpr double circumference = 2 * PI * radius;
+constexpr double mouseRadius = 0.047 / 2.0;
+
+// meters
+constexpr double wheelCircumference = 2 * PI * wheelRadius;
 
 // seconds
 constexpr double controllerPeriod = 0.005;
+
+// ticks
+// WARNING: experimental changes. Firstly was 32 * 160 !!!!!!!!!!!!!!!!!!!!!!
+constexpr uint32_t tickPerRevolution = 16 * 160;
+
+// const for calculating angular speed for givent ticks
+constexpr double ticksToAngularSpeedMultipler = (2 * PI / tickPerRevolution) / controllerPeriod;
+
 }  // namespace mechanic
+
+struct MouseData
+{
+    double angularSpeed;
+    double transSpeed;
+    double angularDistance;
+    double transDistance;
+};
 
 class Mycha : public utils::Observer
 {
@@ -47,6 +68,7 @@ class Mycha : public utils::Observer
 
     void onInterruptDistance();
     void onInterruptController();
+    MouseData getMouseData();
 
     void buttonUp();
     void buttonDown();

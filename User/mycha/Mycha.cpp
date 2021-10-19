@@ -1,4 +1,5 @@
 #include "Mycha.hh"
+#include "controller/Pid.hh"
 #include <adc.h>
 #include <tim.h>
 
@@ -91,21 +92,48 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
-    // position controller 10 times slower
-    // in this configuration 20Hz
-    static int loopCnt = 0;
-    if (++loopCnt == 10)
+    static controller::Pid transSpeedPid{100, 0, 0};
+    static controller::Pid angularSpeedPid{0, 0, 0};
+    static controller::PidIn angSpeedPidIn, transSpeedPidIn;
+    angSpeedPidIn.refVal   = 0;
+    transSpeedPidIn.refVal = 0.6;
+
+    const MouseData data    = getMouseData();
+    angSpeedPidIn.measVal   = data.angularSpeed;
+    transSpeedPidIn.measVal = data.transSpeed;
+
+    double transSpeedOut = transSpeedPid.calculate(transSpeedPidIn);
+    double angSpeedOut   = angularSpeedPid.calculate(angSpeedPidIn);
+
+    // mMotorL.setPwm(transSpeedOut + angSpeedOut);
+    // mMotorR.setPwm(transSpeedOut - angSpeedOut);
+    mMotorL.setPwm(30);
+    mMotorR.setPwm(30);
+}
+
+MouseData Mycha::getMouseData()
+{
+    static int i = 0;
+    if (++i == 200)
     {
-        loopCnt = 0;
+        mLed1.toggle();
+        i = 0;
     }
-    static double timeFromStart = 0.0;
+    volatile const double Rticks  = mEncoderR.getDiffTicks();
+    double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
+    double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
 
-    timeFromStart += mechanic::controllerPeriod;
+    volatile const double Lticks = mEncoderL.getDiffTicks();
+    double leftWheelAngularSpeed = Lticks * mechanic::ticksToAngularSpeedMultipler;
+    double leftWheelTransSpeed   = leftWheelAngularSpeed * mechanic::wheelRadius;
 
-    constexpr float distanceToReach = 1;  // 1 meter
-    static float currentDistance    = 0;
-    static uint32_t lastTickL;
-    static uint32_t lastTickR;
+    double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
+    double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
+
+    MouseData data;
+    data.angularSpeed = mouseAngularSpeed;
+    data.transSpeed   = mouseTransSpeed;
+    return data;
 }
 
 void Mycha::buttonUp()

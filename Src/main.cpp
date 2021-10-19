@@ -341,8 +341,8 @@ int main(void)
     mycha::EventHandler eventHandler(allSignals);
     eventHandler.HandleEvents();
 
-    sensors::DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
-    sensors::DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
+    // sensors::DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
+    // sensors::DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
 
     while (1)
     {
