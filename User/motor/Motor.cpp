@@ -11,7 +11,6 @@ Motor::Motor(TimHandler* handler, PwmCcrPtr ccr, uint32_t channel, GpioPort port
     , mPinDir(pinDir)
     , mIsPinHighWhenForward(pinStateWhenForward)
     , mFactor(mMaxCcr / MAX_PWM_RANGE)
-    , mCurrentPwm(0)
     , isForward(true)
 {
 }
@@ -25,13 +24,10 @@ void Motor::initialize()
 
 void Motor::setPwm(float speed)
 {
-    if (speed > MAX_PWM_RANGE)
-        return;
-
     if (speed > MAX_PWM)
         speed = MAX_PWM;
-
-    mCurrentPwm = speed;
+    else if (speed < -MAX_PWM)
+        speed = -MAX_PWM;
 
     uint32_t valueToCcr = static_cast<uint32_t>(std::abs(mFactor * speed));
     if (speed >= 0)

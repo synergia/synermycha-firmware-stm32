@@ -12,6 +12,13 @@ struct AllSignals
     signal<void(void)> buttonEnter;
 
     signal<void(void)> displayBuffor;
+    // used in controll loop to not delay it. Only set displayBuffor, call displayBuffReadyPararell
+    // and then in EventHandler displayBuffPararell is always called to check if new draw is needed or not
+    signal<void(void)> displayBuffPararell;
+    signal<void(void)> displayBuffReadyPararell;
+    // show informs if driver should load bytes to memory,
+    // so if more logs are needed, only last log should have show=true, to avoid latency
+    signal<void(const char* name, double value, uint8_t line, bool show)> displayLogValue;
 
     signal<void(void)> interruptDistance;
     signal<void(void)> tim14Elapsed;

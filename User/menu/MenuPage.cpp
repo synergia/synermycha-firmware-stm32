@@ -68,9 +68,7 @@ void MenuPage::setDisplayPromt(bool promt)
 
 void MenuPage::prepareMenuPageForDisplay()
 {
-    for (int i = 0; i < display::maxRows; i++)
-        for (int j = 0; j < display::maxColumns; j++)
-            display::displayBuff[i][j] = ' ';
+    display::clearDisplayBuff();
 
     constexpr int startPosColumn = 3;
     int startPosRow              = 0;

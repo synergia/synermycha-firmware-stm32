@@ -5,6 +5,21 @@ namespace display
 
 char displayBuff[maxRows][maxColumns];
 
+void clearDisplayBuff()
+{
+    for (int i = 0; i < display::maxRows; i++)
+        for (int j = 0; j < display::maxColumns; j++)
+            display::displayBuff[i][j] = ' ';
+}
+
+void clearDisplayBuffLine(const uint32_t line)
+{
+    if (line >= display::maxRows)
+        return;
+    for (int j = 0; j < display::maxColumns; j++)
+        display::displayBuff[line][j] = ' ';
+}
+
 Display::Display(utils::AllSignals& signals, I2C_HandleTypeDef* hi2c, const uint8_t* logo, const uint8_t* font,
                  int fontSize)
     : mAllSignals(signals)
@@ -15,7 +30,10 @@ Display::Display(utils::AllSignals& signals, I2C_HandleTypeDef* hi2c, const uint
     GFX_SetFont(font);
     GFX_SetFontSize(1);
 
-    mAllSignals.displayBuffor.connect<Display, &Display::ShowDisplayBuffor>(*this);
+    mAllSignals.displayBuffor.connect<Display, &Display::showDisplayBuffor>(*this);
+    mAllSignals.displayBuffReadyPararell.connect<Display, &Display::displayBuffReadyPararell>(*this);
+    mAllSignals.displayBuffPararell.connect<Display, &Display::showDisplayBufforPararell>(*this);
+    mAllSignals.displayLogValue.connect<Display, &Display::logValue>(*this);
 }
 
 void Display::clear()
@@ -35,7 +53,7 @@ void Display::writeLine(int nr, char* line)
     GFX_DrawString(0, (nr + 2) * 9 - 1, const_cast<char*>(line), WHITE, BLACK);
 }
 
-void Display::ShowDisplayBuffor()
+void Display::showDisplayBuffor()
 {
     clear();
     for (int i = 0; i < maxRows; i++)
@@ -43,6 +61,36 @@ void Display::ShowDisplayBuffor()
         writeLine(i, displayBuff[i]);
     }
     show();
+}
+
+void Display::displayBuffReadyPararell()
+{
+    if (not mIsDisplayShowing)
+    {
+        mIsDisplayBuffReady = true;
+    }
+}
+
+void Display::showDisplayBufforPararell()
+{
+    if (mIsDisplayBuffReady)
+    {
+        mIsDisplayShowing = true;
+        showDisplayBuffor();
+        mIsDisplayBuffReady = false;
+        mIsDisplayShowing   = false;
+    }
+}
+
+void Display::logValue(const char* text, double val, uint8_t line, bool show)
+{
+    if (line > 3)
+        return;
+    display::clearDisplayBuffLine(line);
+    snprintf(display::displayBuff[line], display::maxColumns, text, val);
+
+    if (show)
+        displayBuffReadyPararell();
 }
 
 }  // namespace display

@@ -17,7 +17,14 @@
         "optional": "cpp",
         "sstream": "cpp",
         "cmath": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "typeinfo": "cpp"
     },
     "editor.formatOnSave": true,
     "clang-format.executable": "/usr/bin/clang-format-10",

@@ -67,6 +67,7 @@ void EventHandler::HandleEvents()
 {
     while (true)
     {
+        mSignals.displayBuffPararell.emit();
         if (flagButtonEnterPush)
         {
             mSignals.buttonEnter.emit();

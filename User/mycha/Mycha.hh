@@ -2,6 +2,7 @@
 
 #include "Led.hh"
 #include "controller/TrajectoryGenerator.hh"
+#include "display/Display.hh"
 #include "motor/HBridge.hh"
 #include "motor/Motor.hh"
 #include "sensors/DistanceTof.hh"

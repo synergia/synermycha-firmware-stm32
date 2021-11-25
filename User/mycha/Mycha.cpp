@@ -1,6 +1,7 @@
 #include "Mycha.hh"
 #include "controller/Pid.hh"
 #include <adc.h>
+#include <cmath>
 #include <tim.h>
 
 namespace mycha
@@ -28,6 +29,8 @@ Mycha::Mycha(utils::AllSignals& signals)
     connectSignals();
 
     initializeMycha();
+    display::clearDisplayBuff();
+    mSignals.displayLogValue.emit("start: ", 5.4839, 0, true);
 }
 
 void Mycha::initializeMycha()
@@ -92,23 +95,25 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
-    static controller::Pid transSpeedPid{100, 0, 0};
-    static controller::Pid angularSpeedPid{0, 0, 0};
+    static controller::Pid transSpeedPid{100, 5, 0};
+    static controller::Pid angularSpeedPid{10, 0, 0};
     static controller::PidIn angSpeedPidIn, transSpeedPidIn;
     angSpeedPidIn.refVal   = 0;
-    transSpeedPidIn.refVal = 0.6;
+    transSpeedPidIn.refVal = 0.4;
 
     const MouseData data    = getMouseData();
     angSpeedPidIn.measVal   = data.angularSpeed;
     transSpeedPidIn.measVal = data.transSpeed;
+    double transSpeedOut    = transSpeedPid.calculate(transSpeedPidIn);
+    double angSpeedOut      = angularSpeedPid.calculate(angSpeedPidIn);
 
-    double transSpeedOut = transSpeedPid.calculate(transSpeedPidIn);
-    double angSpeedOut   = angularSpeedPid.calculate(angSpeedPidIn);
+    mSignals.displayLogValue.emit("m trans :%f:", transSpeedPidIn.measVal, 2, false);
+    mSignals.displayLogValue.emit("m ang   :%f:", angSpeedPidIn.measVal, 3, true);
 
-    // mMotorL.setPwm(transSpeedOut + angSpeedOut);
-    // mMotorR.setPwm(transSpeedOut - angSpeedOut);
-    mMotorL.setPwm(30);
-    mMotorR.setPwm(30);
+    // mMotorL.setPwm(transSpeedOut - angSpeedOut);
+    // mMotorR.setPwm(transSpeedOut + angSpeedOut);
+    mMotorL.setPwm(0);
+    mMotorR.setPwm(0);
 }
 
 MouseData Mycha::getMouseData()
@@ -119,18 +124,22 @@ MouseData Mycha::getMouseData()
         mLed1.toggle();
         i = 0;
     }
-    volatile const double Rticks  = mEncoderR.getDiffTicks();
-    double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
-    double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
 
-    volatile const double Lticks = mEncoderL.getDiffTicks();
+    volatile const auto Rticks             = mEncoderR.getDiffTicks();
+    volatile double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
+    volatile double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
+
+    volatile const auto Lticks   = mEncoderL.getDiffTicks();
     double leftWheelAngularSpeed = Lticks * mechanic::ticksToAngularSpeedMultipler;
     double leftWheelTransSpeed   = leftWheelAngularSpeed * mechanic::wheelRadius;
 
     double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
     double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
 
-    MouseData data;
+    mSignals.displayLogValue.emit("VR:%f:", rightWheelTransSpeed, 0, false);
+    mSignals.displayLogValue.emit("VL:%f:", leftWheelTransSpeed, 1, false);
+
+    MouseData data{};
     data.angularSpeed = mouseAngularSpeed;
     data.transSpeed   = mouseTransSpeed;
     return data;
