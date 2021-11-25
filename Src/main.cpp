@@ -336,6 +336,9 @@ int main(void)
     HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
     HAL_TIM_Base_Start_IT(&htim10);
 
+    HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
+    HAL_TIM_Base_Start_IT(&htim14);
+
     mycha::Mycha myszunia(allSignals);
 
     mycha::EventHandler eventHandler(allSignals);

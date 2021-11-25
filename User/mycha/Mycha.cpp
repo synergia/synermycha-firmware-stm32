@@ -2,6 +2,7 @@
 #include "controller/Pid.hh"
 #include <adc.h>
 #include <cmath>
+#include <inttypes.h>
 #include <tim.h>
 
 namespace mycha
@@ -30,7 +31,6 @@ Mycha::Mycha(utils::AllSignals& signals)
 
     initializeMycha();
     display::clearDisplayBuff();
-    mSignals.displayLogValue.emit("start: ", 5.4839, 0, true);
 }
 
 void Mycha::initializeMycha()
@@ -107,9 +107,6 @@ void Mycha::onInterruptController()
     double transSpeedOut    = transSpeedPid.calculate(transSpeedPidIn);
     double angSpeedOut      = angularSpeedPid.calculate(angSpeedPidIn);
 
-    mSignals.displayLogValue.emit("m trans :%f:", transSpeedPidIn.measVal, 2, false);
-    mSignals.displayLogValue.emit("m ang   :%f:", angSpeedPidIn.measVal, 3, true);
-
     // mMotorL.setPwm(transSpeedOut - angSpeedOut);
     // mMotorR.setPwm(transSpeedOut + angSpeedOut);
     mMotorL.setPwm(0);
@@ -136,9 +133,6 @@ MouseData Mycha::getMouseData()
     double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
     double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
 
-    mSignals.displayLogValue.emit("VR:%f:", rightWheelTransSpeed, 0, false);
-    mSignals.displayLogValue.emit("VL:%f:", leftWheelTransSpeed, 1, false);
-
     MouseData data{};
     data.angularSpeed = mouseAngularSpeed;
     data.transSpeed   = mouseTransSpeed;
@@ -155,13 +149,20 @@ void Mycha::buttonDown()
 
 void Mycha::tim14Elapsed()
 {
-    static bool colour = 0;
-    uint16_t PomiarADC = 0;
-    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
-    {
-        PomiarADC = HAL_ADC_GetValue(&hadc1);
-        HAL_ADC_Start(&hadc1);
-    }
+    mLed3.toggle();
+    double distL  = mSensorL.readDistance();
+    double distFL = mSensorFL.readDistance();
+    double distR  = mSensorR.readDistance();
+    mSignals.displayLogValue.emit("L=%f", distL, 0, false);
+    mSignals.displayLogValue.emit("FL=%f", distFL, 1, false);
+    mSignals.displayLogValue.emit("R=%f", distR, 2, true);
+    // static bool colour = 0;
+    // uint16_t PomiarADC = 0;
+    // if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+    // {
+    //     PomiarADC = HAL_ADC_GetValue(&hadc1);
+    //     HAL_ADC_Start(&hadc1);
+    // }
     // SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
     // if(PomiarADC/340 > 0){
     //   SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
