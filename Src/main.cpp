@@ -93,6 +93,7 @@
 #include "mycha/EventHandler.hh"
 #include "mycha/Mycha.hh"
 #include "sensors/DistanceTof.hh"
+#include "sensors/VL53L0X/core/inc/vl53l0x_api.h"
 #include "static/fonts.h"
 #include "static/mario_theme.hpp"
 #include "static/synermycha-logo.h"
@@ -333,9 +334,11 @@ int main(void)
     // char ParseBuffer[100];
     // memset(ParseBuffer, 0, sizeof(ParseBuffer));  // clear ParseBuffer
 
+    // controll loop
     HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
     HAL_TIM_Base_Start_IT(&htim10);
 
+    // sensor readings
     HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
     HAL_TIM_Base_Start_IT(&htim14);
 
@@ -344,12 +347,8 @@ int main(void)
     mycha::EventHandler eventHandler(allSignals);
     eventHandler.HandleEvents();
 
-    // sensors::DistanceTof mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010);
-    // sensors::DistanceTof mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011);
-
     while (1)
     {
-
         /*
         if (UARTDMA_IsDataReady(&huartdma))
         {

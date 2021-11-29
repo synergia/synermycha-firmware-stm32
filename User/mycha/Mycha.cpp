@@ -10,11 +10,16 @@ namespace mycha
 
 Mycha::Mycha(utils::AllSignals& signals)
     : mSignals(signals)
-    , mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, 0b0101010)
-    , mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, 0b0101011)
-    , mSensorF(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, 0b0101100)
-    , mSensorFR(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, 0b0101101)
-    , mSensorR(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, 0b0101111)
+    , mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, sensors::address::left,
+               sensors::calibration::offsetLeft)
+    , mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, sensors::address::frontLeft,
+                sensors::calibration::outFrontLeft)
+    , mSensorF(VC53L0x_XSHUT_FRONT_GPIO_Port, VC53L0x_XSHUT_FRONT_Pin, sensors::address::front,
+               sensors::calibration::offsetFront)
+    , mSensorFR(VC53L0x_XSHUT_FRONT_RIGHT_GPIO_Port, VC53L0x_XSHUT_FRONT_RIGHT_Pin, sensors::address::frontRight,
+                sensors::calibration::offsetFrontRight)
+    , mSensorR(VC53L0x_XSHUT_RIGHT_GPIO_Port, VC53L0x_XSHUT_RIGHT_Pin, sensors::address::right,
+               sensors::calibration::offsetRight)
     , mLed1(signals, LED_1_GPIO_Port, LED_1_Pin)
     , mLed2(signals, LED_2_GPIO_Port, LED_2_Pin)
     , mLed3(signals, LED_3_GPIO_Port, LED_3_Pin)
@@ -152,10 +157,10 @@ void Mycha::tim14Elapsed()
     mLed3.toggle();
     double distL  = mSensorL.readDistance();
     double distFL = mSensorFL.readDistance();
-    double distR  = mSensorR.readDistance();
+    double distF  = mSensorF.readDistance();
     mSignals.displayLogValue.emit("L=%f", distL, 0, false);
     mSignals.displayLogValue.emit("FL=%f", distFL, 1, false);
-    mSignals.displayLogValue.emit("R=%f", distR, 2, true);
+    mSignals.displayLogValue.emit("F=%f", distF, 2, true);
     // static bool colour = 0;
     // uint16_t PomiarADC = 0;
     // if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
