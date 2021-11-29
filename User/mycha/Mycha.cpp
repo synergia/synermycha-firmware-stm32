@@ -155,12 +155,17 @@ void Mycha::buttonDown()
 void Mycha::tim14Elapsed()
 {
     mLed3.toggle();
-    double distL  = mSensorL.readDistance();
-    double distFL = mSensorFL.readDistance();
-    double distF  = mSensorF.readDistance();
-    mSignals.displayLogValue.emit("L=%f", distL, 0, false);
-    mSignals.displayLogValue.emit("FL=%f", distFL, 1, false);
-    mSignals.displayLogValue.emit("F=%f", distF, 2, true);
+    mSensorL.readDistance();
+    mSensorFL.readDistance();
+    mSensorF.readDistance();
+    mSensorFR.readDistance();
+    mSensorR.readDistance();
+
+    mSignals.displayLogValue.emit("L:%f", mSensorL.getLastMeasurement(), 0, false);
+    mSignals.displayLogValue.emit("FL:%f", mSensorFL.getLastMeasurement(), 1, false);
+    mSignals.displayLogValue.emit("F:%f", mSensorF.getLastMeasurement(), 2, false);
+    mSignals.displayLogValue.emit("FR:%f", mSensorFR.getLastMeasurement(), 3, true);
+
     // static bool colour = 0;
     // uint16_t PomiarADC = 0;
     // if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)

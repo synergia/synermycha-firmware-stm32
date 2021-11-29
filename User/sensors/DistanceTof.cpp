@@ -62,17 +62,24 @@ uint16_t DistanceTof::readDistance()
 
     // it should probably not happen (readings are 25Hz, this sensor is doing 33Hz)
     VL53L0X_GetMeasurementDataReady(mDev, &isDataReady);
-    if (not isDataReady)
-        return INVALID_VALUE;
-
-    VL53L0X_GetRangingMeasurementData(mDev, &rangingData);
-    if (rangingData.RangeStatus == 0)
+    if (isDataReady)
     {
-        mLastMeasurement = rangingData.RangeMilliMeter;
-        return mLastMeasurement;
+        VL53L0X_GetRangingMeasurementData(mDev, &rangingData);
+        if (rangingData.RangeStatus == 0)
+        {
+            mLastMeasurement = rangingData.RangeMilliMeter;
+        }
+        else
+        {
+            mLastMeasurement = INVALID_VALUE;
+        }
+    }
+    else
+    {
+        mLastMeasurement = INVALID_VALUE;
     }
 
-    return INVALID_VALUE;
+    return mLastMeasurement;
 }
 
 }  // namespace sensors
