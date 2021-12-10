@@ -25,4 +25,10 @@ double Pid::calculate(const PidIn& pidIn)
     return p + i + d;
 }
 
+void Pid::reset()
+{
+    mLastError = 0.0;
+    mErrorSum  = 0.0;
+}
+
 }  // namespace controller

@@ -22,9 +22,9 @@ void DistanceTof::initialize()
     uint8_t VhvSettings;
     uint8_t PhaseCal;
 
-    GpioWrite(mPort, mPin, false);  // Disable XSHUT
+    gpioWrite(mPort, mPin, false);  // Disable XSHUT
     WaitMs(20);
-    GpioWrite(mPort, mPin, true);  // Enable XSHUT
+    gpioWrite(mPort, mPin, true);  // Enable XSHUT
     WaitMs(20);
     VL53L0X_SetDeviceAddress(mDev, mAddress);
     mDev->I2cDevAddr = mAddress;

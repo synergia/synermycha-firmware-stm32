@@ -8,32 +8,39 @@ namespace controller
 class TrajectoryGenerator
 {
   public:
-    TrajectoryGenerator(double _xFinish, double _vMax, double _accel);
+    TrajectoryGenerator(double _xFinish, double _vMax, double _accel, double _dt);
+    TrajectoryGenerator();
 
-    void setVMax(double _vMax)
-    {
-        vMax = _vMax;
-    }
+    void reset();
 
     void calculateTrajectory(uint16_t t);
     double getSRef() const;
     double getVRef() const;
+    double getPathLength() const;
+
+    double getXFinish() const;
+    double getVMax() const;
+    double getAccel() const;
+    double getDt() const;
 
   private:
     // length of path in milimeters
-    double const xFinish;
+    double xFinish;
 
     // max velocity in milimeters per second
     double vMax;
 
     // acceleration in milimiters per second square
-    const double accel;
+    double accel;
+
+    // period of controller (to get calculus from velocity)
+    double dt;
 
     // reference distance
-    double sRef;
+    double sRef = 0.0;
 
     // reference velocity
-    double vRef;
+    double vRef = 0.0;
 
     /*
      * trapezoidal profiler

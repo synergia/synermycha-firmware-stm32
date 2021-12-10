@@ -1,5 +1,4 @@
 #include "Mycha.hh"
-#include "controller/Pid.hh"
 #include <adc.h>
 #include <cmath>
 #include <inttypes.h>
@@ -30,12 +29,24 @@ Mycha::Mycha(utils::AllSignals& signals)
     , mMotorR(&htim12, &(htim12.Instance->CCR1), TIM_CHANNEL_1, DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, true)
     , mEncoderL(&htim3)
     , mEncoderR(&htim4)
-    , mTrajectory(1, 0.6, 0.6)  // testing only
+    , mImu(sensors::address::imu)
 {
     connectSignals();
 
     initializeMycha();
     display::clearDisplayBuff();
+}
+
+void Mycha::connectSignals()
+{
+    mSignals.interruptDistance.connect<Mycha, &Mycha::onInterruptDistance>(*this);
+    mSignals.interruptController.connect<Mycha, &Mycha::onInterruptController>(*this);
+
+    mSignals.buttonDown.connect<Mycha, &Mycha::onButtonDown>(*this);
+    mSignals.buttonUp.connect<Mycha, &Mycha::onButtonUp>(*this);
+    mSignals.tim14Elapsed.connect<Mycha, &Mycha::onTim14Elapsed>(*this);
+
+    mSignals.getGyroZ.connect<Mycha, &Mycha::onGetGyroZ>(*this);
 }
 
 void Mycha::initializeMycha()
@@ -45,6 +56,7 @@ void Mycha::initializeMycha()
     initAdc();
     initMotors();
     initDistance();
+    initImu();
 }
 
 void Mycha::initBle()
@@ -84,14 +96,9 @@ void Mycha::initDistance()
     mSensorR.initialize();
 }
 
-void Mycha::connectSignals()
+void Mycha::initImu()
 {
-    mSignals.interruptDistance.connect<Mycha, &Mycha::onInterruptDistance>(*this);
-    mSignals.interruptController.connect<Mycha, &Mycha::onInterruptController>(*this);
-
-    mSignals.buttonDown.connect<Mycha, &Mycha::buttonDown>(*this);
-    mSignals.buttonUp.connect<Mycha, &Mycha::buttonUp>(*this);
-    mSignals.tim14Elapsed.connect<Mycha, &Mycha::tim14Elapsed>(*this);
+    mImu.initialize();
 }
 
 void Mycha::onInterruptDistance()
@@ -100,71 +107,80 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
-    static controller::Pid transSpeedPid{100, 5, 0};
-    static controller::Pid angularSpeedPid{10, 0, 0};
-    static controller::PidIn angSpeedPidIn, transSpeedPidIn;
-    angSpeedPidIn.refVal   = 0;
-    transSpeedPidIn.refVal = 0.4;
+    setDrivingData();
 
-    const MouseData data    = getMouseData();
-    angSpeedPidIn.measVal   = data.angularSpeed;
-    transSpeedPidIn.measVal = data.transSpeed;
-    double transSpeedOut    = transSpeedPid.calculate(transSpeedPidIn);
-    double angSpeedOut      = angularSpeedPid.calculate(angSpeedPidIn);
+    MotorsSettings motorSettings;
+    mSignals.getMotorSettings.emit(motorSettings);
 
-    // mMotorL.setPwm(transSpeedOut - angSpeedOut);
-    // mMotorR.setPwm(transSpeedOut + angSpeedOut);
-    mMotorL.setPwm(0);
-    mMotorR.setPwm(0);
+    // mSignals.displayLogValue.emit("motL:%f", (double)motorSettings.pwmLeftMotor, 2, false);
+    // mSignals.displayLogValue.emit("motR:%f", (double)motorSettings.pwmRightMotor, 3, true);
+
+    mMotorL.setPwm(motorSettings.pwmLeftMotor);
+    mMotorR.setPwm(motorSettings.pwmRightMotor);
+
+    // mMotorL.setPwm(0);
+    // mMotorR.setPwm(0);
 }
 
-MouseData Mycha::getMouseData()
+void Mycha::setDrivingData()
 {
     static int i = 0;
-    if (++i == 200)
+    if (++i == 100)
     {
         mLed1.toggle();
         i = 0;
     }
 
-    volatile const auto Rticks             = mEncoderR.getDiffTicks();
-    volatile double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
-    volatile double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
+    const auto Rticks          = mEncoderR.getDiffTicks();
+    const auto Lticks          = mEncoderL.getDiffTicks();
+    const double rightDistance = Rticks * mechanic::ticksToDistanceMultipler;
+    const double leftDistance  = Lticks * mechanic::ticksToDistanceMultipler;
 
-    volatile const auto Lticks   = mEncoderL.getDiffTicks();
-    double leftWheelAngularSpeed = Lticks * mechanic::ticksToAngularSpeedMultipler;
-    double leftWheelTransSpeed   = leftWheelAngularSpeed * mechanic::wheelRadius;
+    DrivingData data{};
+    data.leftWheelDistance  = leftDistance;
+    data.rightWheelDistance = rightDistance;
+    mSignals.setDrivingData.emit(data);
 
-    double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
-    double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
+    // volatile const auto Rticks             = mEncoderR.getDiffTicks();
+    // volatile double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
+    // volatile double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
 
-    MouseData data{};
-    data.angularSpeed = mouseAngularSpeed;
-    data.transSpeed   = mouseTransSpeed;
-    return data;
+    // volatile const auto Lticks   = mEncoderL.getDiffTicks();
+    // double leftWheelAngularSpeed = Lticks * mechanic::ticksToAngularSpeedMultipler;
+    // double leftWheelTransSpeed   = leftWheelAngularSpeed * mechanic::wheelRadius;
+
+    // double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
+    // double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
+
+    // mSignals.displayLogValue.emit("V_L:%f", leftWheelTransSpeed, 0, false);
+    // mSignals.displayLogValue.emit("V_R:%f", rightWheelTransSpeed, 1, false);
+
+    // DrivingData data{};
+    // data.angularSpeed = mouseAngularSpeed;
+    // data.transSpeed   = mouseTransSpeed;
+    // return data;
 }
 
-void Mycha::buttonUp()
+void Mycha::onButtonUp()
 {
 }
 
-void Mycha::buttonDown()
+void Mycha::onButtonDown()
 {
 }
 
-void Mycha::tim14Elapsed()
+void Mycha::onTim14Elapsed()
 {
     mLed3.toggle();
-    mSensorL.readDistance();
-    mSensorFL.readDistance();
-    mSensorF.readDistance();
-    mSensorFR.readDistance();
-    mSensorR.readDistance();
 
-    mSignals.displayLogValue.emit("L:%f", mSensorL.getLastMeasurement(), 0, false);
-    mSignals.displayLogValue.emit("FL:%f", mSensorFL.getLastMeasurement(), 1, false);
-    mSignals.displayLogValue.emit("F:%f", mSensorF.getLastMeasurement(), 2, false);
-    mSignals.displayLogValue.emit("FR:%f", mSensorFR.getLastMeasurement(), 3, true);
+    DistancesData data;
+    data.left       = mSensorL.readDistance();
+    data.frontLeft  = mSensorFL.readDistance();
+    data.front      = mSensorF.readDistance();
+    data.frontRight = mSensorFR.readDistance();
+    data.right      = mSensorR.readDistance();
+
+    mSignals.setDistancesData.emit(data);
 
     // static bool colour = 0;
     // uint16_t PomiarADC = 0;
@@ -185,6 +201,11 @@ void Mycha::tim14Elapsed()
     //   SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
     //   colour = !colour;
     // }
+}
+
+void Mycha::onGetGyroZ(double& gyroZ)
+{
+    gyroZ = mImu.getGyroZ();
 }
 
 }  // namespace mycha

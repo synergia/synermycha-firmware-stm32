@@ -13,10 +13,10 @@ void HBridge::initialize()
 
 void HBridge::enable()
 {
-    GpioWrite(mPortEnable, mPinEnable, true);
+    gpioWrite(mPortEnable, mPinEnable, true);
 }
 
 void HBridge::disable()
 {
-    GpioWrite(mPortEnable, mPinEnable, false);
+    gpioWrite(mPortEnable, mPinEnable, false);
 }

@@ -4,10 +4,11 @@
 namespace controller
 {
 
-TrajectoryGenerator::TrajectoryGenerator(double _xFinish, double _vMax, double _accel)
+TrajectoryGenerator::TrajectoryGenerator(double _xFinish, double _vMax, double _accel, double _dt)
     : xFinish(_xFinish)
     , vMax(_vMax)
     , accel(_accel)
+    , dt(_dt)
 {
     sRef       = 0;
     vRef       = 0;
@@ -30,6 +31,20 @@ TrajectoryGenerator::TrajectoryGenerator(double _xFinish, double _vMax, double _
     profiler_b = vMax / accel;
     profiler_c = vMax / accel + tMax;
     profiler_d = vMax / accel + tMax + vMax / accel;
+}
+
+TrajectoryGenerator::TrajectoryGenerator()
+    : xFinish(0)
+    , vMax(0)
+    , accel(0)
+    , dt(0)
+{
+}
+
+void TrajectoryGenerator::reset()
+{
+    vRef = 0;
+    sRef = 0;
 }
 
 void TrajectoryGenerator::calculateTrajectory(uint16_t t)
@@ -60,7 +75,7 @@ void TrajectoryGenerator::calculateTrajectory(uint16_t t)
     vRef = y * vMax;
 
     // integrate velocity to get position
-    sRef += vRef * 0.001;
+    sRef += vRef * dt;
 }
 
 double TrajectoryGenerator::getSRef() const
@@ -71,6 +86,11 @@ double TrajectoryGenerator::getSRef() const
 double TrajectoryGenerator::getVRef() const
 {
     return vRef;
+}
+
+double TrajectoryGenerator::getPathLength() const
+{
+    return xFinish;
 }
 
 }  // namespace controller

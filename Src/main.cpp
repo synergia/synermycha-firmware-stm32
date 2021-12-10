@@ -88,6 +88,7 @@
 #include "display/GFX_BW.h"
 #include "display/OLED_SSD1306.h"
 #include "led/led.h"
+#include "logic/Logic.hh"
 #include "menu/Menu.hh"
 #include "menu/config_inline/ConfigInlineSingleValue.hh"
 #include "mycha/EventHandler.hh"
@@ -342,8 +343,9 @@ int main(void)
     HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
     HAL_TIM_Base_Start_IT(&htim14);
 
+    logic::Logic logika(allSignals);
     mycha::Mycha myszunia(allSignals);
-
+    HAL_Delay(1000);
     mycha::EventHandler eventHandler(allSignals);
     eventHandler.HandleEvents();
 

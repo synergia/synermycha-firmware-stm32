@@ -20,13 +20,13 @@ void Led::initialize()
 
 void Led::on()
 {
-    GpioWrite(mPort, mPin, true);
+    gpioWrite(mPort, mPin, true);
     mIsOn = true;
 }
 
 void Led::off()
 {
-    GpioWrite(mPort, mPin, false);
+    gpioWrite(mPort, mPin, false);
     mIsOn = false;
 }
 

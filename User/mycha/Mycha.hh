@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Led.hh"
-#include "controller/TrajectoryGenerator.hh"
+#include "MouseData.hh"
 #include "display/Display.hh"
 #include "motor/HBridge.hh"
 #include "motor/Motor.hh"
 #include "sensors/DistanceTof.hh"
 #include "sensors/Encoder.hh"
+#include "sensors/Imu.hh"
 #include "utils/AllSignals.hh"
 #include "utils/Observer.hh"
 #include <cmath>
@@ -28,33 +29,31 @@ constexpr double mouseRadius = 0.047 / 2.0;
 constexpr double wheelCircumference = 2 * PI * wheelRadius;
 
 // seconds
-constexpr double controllerPeriod = 0.005;
+constexpr double controllerPeriod = 0.01;
+
+// seconds
+constexpr double distancesPeriod = 0.04;
 
 // ticks
 // WARNING: experimental changes. Firstly was 32 * 160 !!!!!!!!!!!!!!!!!!!!!!
 constexpr uint32_t tickPerRevolution = 16 * 160;
+
+// const for calculating distance for givent ticks
+constexpr double ticksToDistanceMultipler = wheelCircumference / tickPerRevolution;
 
 // const for calculating angular speed for givent ticks
 constexpr double ticksToAngularSpeedMultipler = (2 * PI / tickPerRevolution) / controllerPeriod;
 
 }  // namespace mechanic
 
-struct MouseData
-{
-    double angularSpeed;
-    double transSpeed;
-    double angularDistance;
-    double transDistance;
-};
-
 class Mycha : public utils::Observer
 {
   public:
     explicit Mycha(utils::AllSignals& signals);
-    void motor(float pwm)
+    void motors(float pwmRight, float pwmLeft)
     {
-        mMotorL.setPwm(pwm);
-        mMotorR.setPwm(-pwm);
+        mMotorR.setPwm(pwmRight);
+        mMotorL.setPwm(pwmLeft);
     }
 
   private:
@@ -66,14 +65,17 @@ class Mycha : public utils::Observer
     void initAdc();
     void initMotors();
     void initDistance();
+    void initImu();
 
     void onInterruptDistance();
     void onInterruptController();
-    MouseData getMouseData();
+    void setDrivingData();
 
-    void buttonUp();
-    void buttonDown();
-    void tim14Elapsed();
+    void onButtonUp();
+    void onButtonDown();
+    void onTim14Elapsed();
+
+    void onGetGyroZ(double& gyroZ);
 
     utils::AllSignals& mSignals;
 
@@ -96,7 +98,7 @@ class Mycha : public utils::Observer
     sensors::Encoder mEncoderL;
     sensors::Encoder mEncoderR;
 
-    controller::TrajectoryGenerator mTrajectory;
+    sensors::Imu mImu;
 };
 
 }  // namespace mycha

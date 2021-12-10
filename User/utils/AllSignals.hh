@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Signal.hh"
+#include "mycha/MouseData.hh"
 
 namespace utils
 {
@@ -25,6 +26,13 @@ struct AllSignals
 
     // special signal, called directly from interupt routine
     signal<void(void)> interruptController;
+
+    signal<void(const mycha::DrivingData&)> setDrivingData;
+    signal<void(const mycha::DistancesData&)> setDistancesData;
+
+    signal<void(mycha::MotorsSettings&)> getMotorSettings;
+
+    signal<void(double&)> getGyroZ;
 };
 
 }  // namespace utils

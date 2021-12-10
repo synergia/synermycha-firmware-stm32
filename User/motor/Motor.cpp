@@ -46,10 +46,10 @@ void Motor::setDir(bool forward)
     isForward = forward;
     if (forward)
     {
-        GpioWrite(mPortDir, mPinDir, mIsPinHighWhenForward);
+        gpioWrite(mPortDir, mPinDir, mIsPinHighWhenForward);
     }
     else
     {
-        GpioWrite(mPortDir, mPinDir, not mIsPinHighWhenForward);
+        gpioWrite(mPortDir, mPinDir, not mIsPinHighWhenForward);
     }
 }
