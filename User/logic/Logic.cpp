@@ -11,8 +11,35 @@ Logic::Logic(utils::AllSignals& signals)
     : mSignals(signals)
     , mActiveController{ControllerType::Forward}
     , mForwardController{signals}
-    , mRotationalController{}
+    , mRotationalController{signals}
+    , mCommands{}
 {
+    controller::Command cmd;
+
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{4};
+    mCommands.addCommand(cmd);
+
+    cmd.type       = controller::CommandType::Rotational;
+    cmd.rotational = controller::RotationalCommand{180};
+    mCommands.addCommand(cmd);
+
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{1};
+    mCommands.addCommand(cmd);
+
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{1};
+    mCommands.addCommand(cmd);
+
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{2};
+    mCommands.addCommand(cmd);
+
+    cmd.type       = controller::CommandType::Rotational;
+    cmd.rotational = controller::RotationalCommand{180};
+    mCommands.addCommand(cmd);
+
     connectSignals();
 }
 
@@ -39,17 +66,15 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
-    static int isok = 0;
+    static int cnt;
     if (isTargetReached())
     {
-        executeNewCommand();
-        isok++;
+        loadNewCommand();
+        ++cnt;
     }
     motorData = getDataFromController();
 
-    // mSignals.displayLogValue.emit("R:%f", mAllRightRoad, 0, false);
-    // mSignals.displayLogValue.emit("L:%f", mAllLeftRoad, 1, false);
-    // mSignals.displayLogValue.emit("isok%f", (double)isok, 2, true);
+    mSignals.displayLogValue.emit("cnt:%f", cnt, 3, true);
 }
 
 mycha::MotorsSettings Logic::getDataFromController()
@@ -78,9 +103,14 @@ mycha::MotorsSettings Logic::getDataFromForwardController()
 
 mycha::MotorsSettings Logic::getDataFromRotationalController()
 {
+    double angularSpeed;
+    mSignals.getGyroZ.emit(angularSpeed);
+    mAllAngle += angularSpeed * mycha::mechanic::controllerPeriod;
+
     controller::RotationalControllerInput input;
     input.leftWheelRoad  = mAllLeftRoad;
     input.rightWheelRoad = mAllRightRoad;
+    input.angle          = mAllAngle;
 
     return mRotationalController.getControll(input);
 }
@@ -98,14 +128,51 @@ bool Logic::isTargetReached() const
     }
 }
 
-void Logic::executeNewCommand()
+void Logic::loadNewCommand()
 {
     resetCurrentControllerAndLogicData();
+    if (not mCommands.isEmpty())
+    {
+        executeCommand(mCommands.getNextCommand());
+    }
+    else
+    {
+        executeCommand(controller::Command{});
+    }
     // here is logic for labirynth solving
     // dummy for now
-    mActiveController = ControllerType::Forward;
+}
+
+void Logic::executeCommand(const controller::Command& command)
+{
+    using controller::CommandType;
+    switch (command.type)
+    {
+    case CommandType::Forward:
+        executeCommandOnForwardController(command.forward);
+        mActiveController = ControllerType::Forward;
+        break;
+    case CommandType::Rotational:
+        executeCommandOnRotationalController(command.rotational);
+        mActiveController = ControllerType::Rotational;
+        break;
+    default:
+        return;
+    }
+}
+
+void Logic::executeCommandOnForwardController(const controller::ForwardCommand& command)
+{
+    static constexpr double cubeSize{0.18};
+
+    auto xFinish = cubeSize * command.nrOfCubes;
     mForwardController.setNewTrajectory(
-        controller::TrajectoryGenerator{0.18, 0.4, 0.05, mycha::mechanic::controllerPeriod});
+        controller::TrajectoryGenerator{xFinish, 0.5, 0.4, mycha::mechanic::controllerPeriod});
+}
+
+void Logic::executeCommandOnRotationalController(const controller::RotationalCommand& command)
+{
+    mRotationalController.setNewAngle(command.angle);
 }
 
 void Logic::resetCurrentControllerAndLogicData()
@@ -114,6 +181,7 @@ void Logic::resetCurrentControllerAndLogicData()
     mAllRightRoad = 0.0;
     mLeftSpeed    = 0.0;
     mRightSpeed   = 0.0;
+    mAllAngle     = 0.0;
 
     switch (mActiveController)
     {

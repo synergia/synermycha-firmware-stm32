@@ -13,15 +13,10 @@ class TrajectoryGenerator
 
     void reset();
 
-    void calculateTrajectory(uint16_t t);
+    void calculateTrajectory(double t);
     double getSRef() const;
     double getVRef() const;
     double getPathLength() const;
-
-    double getXFinish() const;
-    double getVMax() const;
-    double getAccel() const;
-    double getDt() const;
 
   private:
     // length of path in milimeters
@@ -41,6 +36,8 @@ class TrajectoryGenerator
 
     // reference velocity
     double vRef = 0.0;
+    // used in trapezoidal integration
+    double lastVRef = 0.0;
 
     /*
      * trapezoidal profiler

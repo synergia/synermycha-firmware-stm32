@@ -28,9 +28,6 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
     pidInLeft.measVal = mCurrentInput.leftWheelRoad;
     pidInLeft.refVal  = sRef;
 
-    mSignals.displayLogValue.emit("R:%f", mCurrentInput.rightWheelRoad, 0, false);
-    mSignals.displayLogValue.emit("L:%f", mCurrentInput.leftWheelRoad, 1, false);
-
     const double outLeft  = mLeftPid.calculate(pidInLeft);
     const double outRight = mRightPid.calculate(pidInRight);
 
@@ -50,6 +47,7 @@ void ForwardController::reset()
     mTrajectory.reset();
     mLeftPid.reset();
     mRightPid.reset();
+    mCurrentInput = ForwardControllerInput{};
 }
 
 bool ForwardController::isTargetReached() const
@@ -57,17 +55,16 @@ bool ForwardController::isTargetReached() const
     // mouse must reach at least (target - delta) in meters distance or exceed it
     static constexpr double delta{0.002};
 
-    const double finish       = mTrajectory.getPathLength();
-    const bool isLeftReached  = (finish - mCurrentInput.leftWheelRoad) <= delta;
-    const bool isRightReached = (finish - mCurrentInput.rightWheelRoad) <= delta;
-    mSignals.displayLogValue.emit("finish:%f", (double)finish, 2, false);
-    mSignals.displayLogValue.emit("left:%f", (double)mCurrentInput.leftWheelRoad, 3, true);
+    const double target       = mTrajectory.getPathLength();
+    const bool isLeftReached  = (target - mCurrentInput.leftWheelRoad) <= delta;
+    const bool isRightReached = (target - mCurrentInput.rightWheelRoad) <= delta;
     return isLeftReached && isRightReached;
 }
 
 double ForwardController::getDistancesCorrection() const
 {
-    static constexpr double distancessDiffCooficient{0.1};
+    // WAS 0.1
+    static constexpr double distancessDiffCooficient{0.16};
 
     double diff = 0.0;
     if (mCurrentInput.rightDistance < 120)

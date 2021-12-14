@@ -26,6 +26,9 @@ constexpr double wheelRadius = 0.012;
 constexpr double mouseRadius = 0.047 / 2.0;
 
 // meters
+constexpr double mouseCircumference = 2 * PI * mouseRadius;
+
+// meters
 constexpr double wheelCircumference = 2 * PI * wheelRadius;
 
 // seconds

@@ -29,12 +29,13 @@ Mycha::Mycha(utils::AllSignals& signals)
     , mMotorR(&htim12, &(htim12.Instance->CCR1), TIM_CHANNEL_1, DRV8835_DIR_A_GPIO_Port, DRV8835_DIR_A_Pin, true)
     , mEncoderL(&htim3)
     , mEncoderR(&htim4)
-    , mImu(sensors::address::imu)
+    , mImu(signals, sensors::address::imu)
 {
-    connectSignals();
-
+    display::clearDisplayBuff();
     initializeMycha();
     display::clearDisplayBuff();
+
+    connectSignals();
 }
 
 void Mycha::connectSignals()
@@ -140,25 +141,6 @@ void Mycha::setDrivingData()
     data.leftWheelDistance  = leftDistance;
     data.rightWheelDistance = rightDistance;
     mSignals.setDrivingData.emit(data);
-
-    // volatile const auto Rticks             = mEncoderR.getDiffTicks();
-    // volatile double rightWheelAngularSpeed = Rticks * mechanic::ticksToAngularSpeedMultipler;
-    // volatile double rightWheelTransSpeed   = rightWheelAngularSpeed * mechanic::wheelRadius;
-
-    // volatile const auto Lticks   = mEncoderL.getDiffTicks();
-    // double leftWheelAngularSpeed = Lticks * mechanic::ticksToAngularSpeedMultipler;
-    // double leftWheelTransSpeed   = leftWheelAngularSpeed * mechanic::wheelRadius;
-
-    // double mouseTransSpeed   = (rightWheelTransSpeed + leftWheelTransSpeed) / 2;
-    // double mouseAngularSpeed = (rightWheelTransSpeed - leftWheelTransSpeed) / mechanic::mouseRadius;
-
-    // mSignals.displayLogValue.emit("V_L:%f", leftWheelTransSpeed, 0, false);
-    // mSignals.displayLogValue.emit("V_R:%f", rightWheelTransSpeed, 1, false);
-
-    // DrivingData data{};
-    // data.angularSpeed = mouseAngularSpeed;
-    // data.transSpeed   = mouseTransSpeed;
-    // return data;
 }
 
 void Mycha::onButtonUp()

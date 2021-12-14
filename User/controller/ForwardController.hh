@@ -10,6 +10,7 @@ namespace controller
 
 struct ForwardControllerInput
 {
+    // whole road which mouse went
     double leftWheelRoad;
     double rightWheelRoad;
     double leftDistance;
@@ -19,7 +20,7 @@ struct ForwardControllerInput
 class ForwardController
 {
   public:
-    ForwardController(utils::AllSignals& signals);
+    explicit ForwardController(utils::AllSignals& signals);
 
     mycha::MotorsSettings getControll(const ForwardControllerInput& input);
     void reset();
@@ -37,9 +38,7 @@ class ForwardController
     TrajectoryGenerator mTrajectory;
     ForwardControllerInput mCurrentInput;
 
-    double mTime              = 0.0;
-    double mAllLeftWheelRoad  = 0.0;
-    double mAllRightWheelRoad = 0.0;
+    double mTime = 0.0;
 };
 
 }  // namespace controller

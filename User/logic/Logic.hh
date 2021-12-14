@@ -1,5 +1,6 @@
 #pragma once
 
+#include "controller/CommandQueue.hh"
 #include "controller/ForwardController.hh"
 #include "controller/RotationalController.hh"
 #include "mycha/MouseData.hh"
@@ -12,7 +13,7 @@ namespace logic
 class Logic : public utils::Observer
 {
   public:
-    Logic(utils::AllSignals& signals);
+    explicit Logic(utils::AllSignals& signals);
 
   private:
     enum class ControllerType
@@ -31,7 +32,10 @@ class Logic : public utils::Observer
     mycha::MotorsSettings getDataFromRotationalController();
 
     bool isTargetReached() const;
-    void executeNewCommand();
+    void loadNewCommand();
+    void executeCommand(const controller::Command& command);
+    void executeCommandOnForwardController(const controller::ForwardCommand& command);
+    void executeCommandOnRotationalController(const controller::RotationalCommand& command);
     void resetCurrentControllerAndLogicData();
 
     mycha::DrivingData mDrivingData{};
@@ -42,10 +46,12 @@ class Logic : public utils::Observer
     double mAllRightRoad = 0.0;
     double mLeftSpeed    = 0.0;
     double mRightSpeed   = 0.0;
+    double mAllAngle     = 0.0;
 
     ControllerType mActiveController;
     controller::ForwardController mForwardController;
     controller::RotationalController mRotationalController;
+    controller::CommandQueue mCommands;
 };
 
 }  // namespace logic

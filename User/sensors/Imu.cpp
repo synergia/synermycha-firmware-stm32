@@ -40,8 +40,9 @@ uint16_t gyroDpsToRawValue(GyroDps gyroDps)
 }
 }  // namespace
 
-Imu::Imu(uint8_t address)
-    : mI2cHandler(&hi2c3)
+Imu::Imu(utils::AllSignals& signals, uint8_t address)
+    : mSignals(signals)
+    , mI2cHandler(&hi2c3)
     , mAddress(address)
     , mCurrentDps(0)
 {
@@ -50,12 +51,23 @@ Imu::Imu(uint8_t address)
 void Imu::initialize()
 {
     setGyroDps(GyroDps::GYRO_FS_SEL_250dps);
+
+    HAL_Delay(100);
+    int32_t gyroSumZ = 0;
+    for (int i = 0; i < 200; i++)
+    {
+        gyroSumZ += getRawGyroZ();
+        HAL_Delay(10);
+    }
+    mOffset = gyroSumZ / 200.0;
+    mSignals.displayLogValue.emit("gyro offset:%f", (double)gyroSumZ / 200.0, 0, true);
+    HAL_Delay(1000);
 }
 
 double Imu::getGyroZ()
 {
-    constexpr auto maxAdc = std::numeric_limits<uint16_t>::max();
-    const auto rawGyro    = getRawGyroZ();
+    constexpr auto maxAdc = std::numeric_limits<int16_t>::max();
+    const auto rawGyro    = getRawGyroZ() - mOffset;
     const double value    = ((double)rawGyro / maxAdc) * mCurrentDps;
     return value;
 }

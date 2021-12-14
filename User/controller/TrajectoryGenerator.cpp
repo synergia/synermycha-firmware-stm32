@@ -43,11 +43,12 @@ TrajectoryGenerator::TrajectoryGenerator()
 
 void TrajectoryGenerator::reset()
 {
-    vRef = 0;
-    sRef = 0;
+    vRef     = 0;
+    lastVRef = 0;
+    sRef     = 0;
 }
 
-void TrajectoryGenerator::calculateTrajectory(uint16_t t)
+void TrajectoryGenerator::calculateTrajectory(double t)
 {
     double y = 0;
 
@@ -75,7 +76,8 @@ void TrajectoryGenerator::calculateTrajectory(uint16_t t)
     vRef = y * vMax;
 
     // integrate velocity to get position
-    sRef += vRef * dt;
+    sRef += (lastVRef + vRef) * dt * 0.5;
+    lastVRef = vRef;
 }
 
 double TrajectoryGenerator::getSRef() const

@@ -1,4 +1,5 @@
 #pragma once
+#include "utils/AllSignals.hh"
 #include "utils/HalUtils.hh"
 #include <i2c.h>
 
@@ -34,7 +35,7 @@ enum class GyroDps : uint8_t
 class Imu
 {
   public:
-    Imu(uint8_t address);
+    Imu(utils::AllSignals& signals, uint8_t address);
     void initialize();
 
     void setGyroDps(GyroDps gyroDps);
@@ -44,11 +45,15 @@ class Imu
     uint16_t getCurrentDpsValue();
 
   private:
+    utils::AllSignals& mSignals;
+
     int16_t getRawGyroZ();
 
     I2cHandlerPtr mI2cHandler;
     uint8_t mAddress;
     uint16_t mCurrentDps;
+
+    int16_t mOffset{};
 };
 
 }  // namespace sensors
