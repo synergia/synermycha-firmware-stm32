@@ -7,19 +7,44 @@
 namespace logic
 {
 
+namespace
+{
+
+inline bool isNoWall(uint16_t sensorData)
+{
+    // empiric value, in milimeters
+    constexpr uint16_t noWallDistance{120};
+
+    const bool isMeasurementValid = sensorData != sensors::DistanceTof::INVALID_VALUE;
+    const bool noWall             = sensorData > noWallDistance;
+
+    return isMeasurementValid and noWall;
+}
+
+/// @note lack of front left/rigth, for tests
+/// when they are present, it seemed to be 0
+/// need check it
+inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
+{
+    return dist.right != 0 and dist.front != 0 and dist.left != 0;
+}
+
+void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
+{
+    signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
+    signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
+    signals.displayLogValue.emit("L: %f", (float)data.left, 2, false);
+}
+
+}  // namespace
+
 Logic::Logic(utils::AllSignals& signals)
     : mSignals(signals)
-    , mActiveController{ControllerType::Forward}
+    , mActiveController{ControllerType::None}
     , mForwardController{signals}
     , mRotationalController{signals}
     , mCommands{}
 {
-    controller::Command cmd;
-
-    cmd.type    = controller::CommandType::Forward;
-    cmd.forward = controller::ForwardCommand{1};
-    mCommands.addCommand(cmd);
-
     connectSignals();
 }
 
@@ -46,16 +71,15 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
-    static int cnt;
     if (isTargetReached())
     {
+        resetCurrentControllerAndLogicData();
         loadNewCommand();
-        ++cnt;
     }
+    mSignals.displayLogValue.emit("ctrl: %f", (float)(int)mActiveController, 0, false);
+    mSignals.displayLogValue.emit("isempty: %f", (float)mCommands.isEmpty(), 1, true);
 
-    motorData = mValidCommand ? getDataFromController() : mycha::MotorsSettings{};
-
-    mSignals.displayLogValue.emit("cnt:%f", cnt, 3, true);
+    motorData = getDataFromController();
 }
 
 mycha::MotorsSettings Logic::getDataFromController()
@@ -66,6 +90,7 @@ mycha::MotorsSettings Logic::getDataFromController()
         return getDataFromForwardController();
     case ControllerType::Rotational:
         return getDataFromRotationalController();
+    case ControllerType::None:
     default:
         return mycha::MotorsSettings{};
     }
@@ -104,43 +129,45 @@ bool Logic::isTargetReached() const
         return mForwardController.isTargetReached();
     case ControllerType::Rotational:
         return mRotationalController.isTargetReached();
+    case ControllerType::None:
     default:
-        return false;
+        return true;
     }
 }
 
 void Logic::loadNewCommand()
 {
-    resetCurrentControllerAndLogicData();
-    // here is logic for labirynth solving
-    // dummy for now
     if (not mCommands.isEmpty())
     {
-        mValidCommand = true;
-        executeCommand(mCommands.getNextCommand());
+        mActiveController = executeCommand(mCommands.getNextCommand());
     }
     else
     {
-        mValidCommand = false;
+        generateNewCommands();
+        mActiveController = ControllerType::None;
     }
 }
 
-void Logic::executeCommand(const controller::Command& command)
+Logic::ControllerType Logic::executeCommand(const controller::Command& command)
 {
+    ControllerType type = ControllerType::None;
+
     using controller::CommandType;
     switch (command.type)
     {
     case CommandType::Forward:
         executeCommandOnForwardController(command.forward);
-        mActiveController = ControllerType::Forward;
+        type = ControllerType::Forward;
         break;
     case CommandType::Rotational:
         executeCommandOnRotationalController(command.rotational);
-        mActiveController = ControllerType::Rotational;
+        type = ControllerType::Rotational;
         break;
     default:
-        return;
+        type = ControllerType::None;
     }
+
+    return type;
 }
 
 void Logic::executeCommandOnForwardController(const controller::ForwardCommand& command)
@@ -175,6 +202,47 @@ void Logic::resetCurrentControllerAndLogicData()
         break;
     default:
         return;
+    }
+}
+
+void Logic::generateNewCommands()
+{
+    // avoid reading distances before first data comes
+    if (not areAllDistancesInitialized(mDistancesData))
+        return;
+
+    controller::Command cmd;
+    if (isNoWall(mDistancesData.right))
+    {
+        cmd.type       = controller::CommandType::Rotational;
+        cmd.rotational = controller::RotationalCommand{-90};
+        mCommands.addCommand(cmd);
+
+        cmd.type    = controller::CommandType::Forward;
+        cmd.forward = controller::ForwardCommand{1};
+        mCommands.addCommand(cmd);
+    }
+    else if (isNoWall(mDistancesData.front))
+    {
+        cmd.type    = controller::CommandType::Forward;
+        cmd.forward = controller::ForwardCommand{1};
+        mCommands.addCommand(cmd);
+    }
+    else if (isNoWall(mDistancesData.left))
+    {
+        cmd.type       = controller::CommandType::Rotational;
+        cmd.rotational = controller::RotationalCommand{90};
+        mCommands.addCommand(cmd);
+
+        cmd.type    = controller::CommandType::Forward;
+        cmd.forward = controller::ForwardCommand{1};
+        mCommands.addCommand(cmd);
+    }
+    else
+    {
+        cmd.type       = controller::CommandType::Rotational;
+        cmd.rotational = controller::RotationalCommand{180};
+        mCommands.addCommand(cmd);
     }
 }
 

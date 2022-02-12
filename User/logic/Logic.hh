@@ -18,6 +18,7 @@ class Logic : public utils::Observer
   private:
     enum class ControllerType
     {
+        None,
         Forward,
         Rotational
     };
@@ -33,10 +34,12 @@ class Logic : public utils::Observer
 
     bool isTargetReached() const;
     void loadNewCommand();
-    void executeCommand(const controller::Command& command);
+    ControllerType executeCommand(const controller::Command& command);
     void executeCommandOnForwardController(const controller::ForwardCommand& command);
     void executeCommandOnRotationalController(const controller::RotationalCommand& command);
     void resetCurrentControllerAndLogicData();
+
+    void generateNewCommands();
 
     mycha::DrivingData mDrivingData{};
     mycha::DistancesData mDistancesData{};
@@ -52,8 +55,6 @@ class Logic : public utils::Observer
     controller::ForwardController mForwardController;
     controller::RotationalController mRotationalController;
     controller::CommandQueue mCommands;
-
-    bool mValidCommand = true;
 };
 
 }  // namespace logic

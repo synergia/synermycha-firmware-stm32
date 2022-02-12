@@ -33,9 +33,6 @@ mycha::MotorsSettings RotationalController::getControll(const RotationalControll
     pidInLeft.refVal     = sRef * signLeft;
     const double outLeft = mLeftPid.calculate(pidInLeft);
 
-    mSignals.displayLogValue.emit("alfa:%f", mCurrentInput.angle, 1, false);
-    mSignals.displayLogValue.emit("sRef:%f", sRef, 2, false);
-
     mycha::MotorsSettings motorData;
     motorData.pwmLeftMotor  = outLeft;
     motorData.pwmRightMotor = outRight;
@@ -71,10 +68,13 @@ void RotationalController::setNewAngle(double angle)
 
 bool RotationalController::isTargetReached() const
 {
-    // mouse must reach at least (targetAngle - delta) in degrees angle or exceed it
-    static constexpr double delta{0.5};
+    // mouse must reach at least (target - delta) in meters distance or exceed it
+    static constexpr double delta{0.002};
 
-    return (std::abs(mTargetAngle) - std::abs(mCurrentInput.angle)) <= delta;
+    const double target       = mTrajectory.getPathLength();
+    const bool isLeftReached  = (target - std::abs(mCurrentInput.leftWheelRoad)) <= delta;
+    const bool isRightReached = (target - std::abs(mCurrentInput.rightWheelRoad)) <= delta;
+    return isLeftReached && isRightReached;
 }
 
 double RotationalController::getRoadCorrection() const
