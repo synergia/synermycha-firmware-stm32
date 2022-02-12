@@ -52,6 +52,8 @@ class Logic : public utils::Observer
     controller::ForwardController mForwardController;
     controller::RotationalController mRotationalController;
     controller::CommandQueue mCommands;
+
+    bool mValidCommand = true;
 };
 
 }  // namespace logic

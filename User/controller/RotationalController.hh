@@ -35,7 +35,6 @@ class RotationalController
 
     Pid mLeftPid;
     Pid mRightPid;
-    Pid mAnglePid;
     TrajectoryGenerator mTrajectory;
     RotationalControllerInput mCurrentInput;
     double mTargetAngle = 0.0;

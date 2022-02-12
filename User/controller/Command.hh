@@ -24,7 +24,7 @@ struct RotationalCommand
     {
     }
     // positive is rotating left
-    double angle;
+    double angle = 0;
 };
 
 enum class CommandType

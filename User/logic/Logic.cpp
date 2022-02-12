@@ -17,27 +17,7 @@ Logic::Logic(utils::AllSignals& signals)
     controller::Command cmd;
 
     cmd.type    = controller::CommandType::Forward;
-    cmd.forward = controller::ForwardCommand{4};
-    mCommands.addCommand(cmd);
-
-    cmd.type       = controller::CommandType::Rotational;
-    cmd.rotational = controller::RotationalCommand{180};
-    mCommands.addCommand(cmd);
-
-    cmd.type    = controller::CommandType::Forward;
     cmd.forward = controller::ForwardCommand{1};
-    mCommands.addCommand(cmd);
-
-    cmd.type    = controller::CommandType::Forward;
-    cmd.forward = controller::ForwardCommand{1};
-    mCommands.addCommand(cmd);
-
-    cmd.type    = controller::CommandType::Forward;
-    cmd.forward = controller::ForwardCommand{2};
-    mCommands.addCommand(cmd);
-
-    cmd.type       = controller::CommandType::Rotational;
-    cmd.rotational = controller::RotationalCommand{180};
     mCommands.addCommand(cmd);
 
     connectSignals();
@@ -72,7 +52,8 @@ void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
         loadNewCommand();
         ++cnt;
     }
-    motorData = getDataFromController();
+
+    motorData = mValidCommand ? getDataFromController() : mycha::MotorsSettings{};
 
     mSignals.displayLogValue.emit("cnt:%f", cnt, 3, true);
 }
@@ -131,16 +112,17 @@ bool Logic::isTargetReached() const
 void Logic::loadNewCommand()
 {
     resetCurrentControllerAndLogicData();
+    // here is logic for labirynth solving
+    // dummy for now
     if (not mCommands.isEmpty())
     {
+        mValidCommand = true;
         executeCommand(mCommands.getNextCommand());
     }
     else
     {
-        executeCommand(controller::Command{});
+        mValidCommand = false;
     }
-    // here is logic for labirynth solving
-    // dummy for now
 }
 
 void Logic::executeCommand(const controller::Command& command)
