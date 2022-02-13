@@ -33,6 +33,9 @@ constexpr uint8_t frontRight = 48;
 constexpr uint8_t right      = 50;
 }  // namespace address
 
+bool isNoWall(uint16_t sensorData);
+bool isWall(uint16_t sensorData);
+
 class DistanceTof
 {
     using TofAddress = uint8_t;

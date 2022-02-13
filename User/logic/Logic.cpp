@@ -10,17 +10,6 @@ namespace logic
 namespace
 {
 
-inline bool isNoWall(uint16_t sensorData)
-{
-    // empiric value, in milimeters
-    constexpr uint16_t noWallDistance{120};
-
-    const bool isMeasurementValid = sensorData != sensors::DistanceTof::INVALID_VALUE;
-    const bool noWall             = sensorData > noWallDistance;
-
-    return isMeasurementValid and noWall;
-}
-
 /// @note lack of front left/rigth, for tests
 /// when they are present, it seemed to be 0
 /// need check it
@@ -33,7 +22,7 @@ void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data
 {
     signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
     signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
-    signals.displayLogValue.emit("L: %f", (float)data.left, 2, false);
+    signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
 }
 
 }  // namespace
@@ -67,6 +56,7 @@ void Logic::onSetDrivingData(const mycha::DrivingData& data)
 void Logic::onSetDistancesData(const mycha::DistancesData& data)
 {
     mDistancesData = data;
+    printDistances(mSignals, data);
 }
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
@@ -76,8 +66,6 @@ void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
         resetCurrentControllerAndLogicData();
         loadNewCommand();
     }
-    mSignals.displayLogValue.emit("ctrl: %f", (float)(int)mActiveController, 0, false);
-    mSignals.displayLogValue.emit("isempty: %f", (float)mCommands.isEmpty(), 1, true);
 
     motorData = getDataFromController();
 }
@@ -172,9 +160,7 @@ Logic::ControllerType Logic::executeCommand(const controller::Command& command)
 
 void Logic::executeCommandOnForwardController(const controller::ForwardCommand& command)
 {
-    static constexpr double cubeSize{0.18};
-
-    auto xFinish = cubeSize * command.nrOfCubes;
+    auto xFinish = mycha::mechanic::labyrinthCubeSize * command.nrOfCubes;
     mForwardController.setNewTrajectory(
         controller::TrajectoryGenerator{xFinish, 0.5, 0.4, mycha::mechanic::controllerPeriod});
 }
@@ -212,7 +198,7 @@ void Logic::generateNewCommands()
         return;
 
     controller::Command cmd;
-    if (isNoWall(mDistancesData.right))
+    if (sensors::isNoWall(mDistancesData.right))
     {
         cmd.type       = controller::CommandType::Rotational;
         cmd.rotational = controller::RotationalCommand{-90};
@@ -222,13 +208,13 @@ void Logic::generateNewCommands()
         cmd.forward = controller::ForwardCommand{1};
         mCommands.addCommand(cmd);
     }
-    else if (isNoWall(mDistancesData.front))
+    else if (sensors::isNoWall(mDistancesData.front))
     {
         cmd.type    = controller::CommandType::Forward;
         cmd.forward = controller::ForwardCommand{1};
         mCommands.addCommand(cmd);
     }
-    else if (isNoWall(mDistancesData.left))
+    else if (sensors::isNoWall(mDistancesData.left))
     {
         cmd.type       = controller::CommandType::Rotational;
         cmd.rotational = controller::RotationalCommand{90};

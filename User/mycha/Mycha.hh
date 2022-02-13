@@ -31,6 +31,12 @@ constexpr double mouseCircumference = 2 * PI * mouseRadius;
 // meters
 constexpr double wheelCircumference = 2 * PI * wheelRadius;
 
+// meters
+constexpr double labyrinthCubeSize{0.18};
+
+// milimeters
+constexpr double sideSensorToSideWallDistance = (labyrinthCubeSize / 2.0 - mouseRadius) * 1000.0;
+
 // seconds
 constexpr double controllerPeriod = 0.01;
 

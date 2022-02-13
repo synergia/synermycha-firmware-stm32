@@ -4,6 +4,25 @@
 namespace sensors
 {
 
+namespace
+{
+// empiric value, in milimeters
+constexpr uint16_t noWallDistance{120};
+}  // namespace
+
+bool isNoWall(uint16_t sensorData)
+{
+    const bool isMeasurementValid = sensorData != sensors::DistanceTof::INVALID_VALUE;
+    const bool noWall             = sensorData > noWallDistance;
+
+    return isMeasurementValid and noWall;
+}
+
+bool isWall(uint16_t sensorData)
+{
+    return sensorData <= noWallDistance;
+}
+
 DistanceTof::DistanceTof(GpioPort port, GpioPin pin, TofAddress address, ToFOffset offset)
     : mPort(port)
     , mPin(pin)

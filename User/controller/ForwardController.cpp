@@ -63,13 +63,24 @@ bool ForwardController::isTargetReached() const
 
 double ForwardController::getDistancesCorrection() const
 {
-    // WAS 0.1
-    static constexpr double distancessDiffCooficient{0.16};
+    static constexpr double distancessDiffCooficient{0.32};
 
     double diff = 0.0;
-    if (mCurrentInput.rightDistance < 120)
+    // walls on both sides
+    if (sensors::isWall(mCurrentInput.rightDistance) and sensors::isWall(mCurrentInput.leftDistance))
     {
         diff = mCurrentInput.rightDistance - mCurrentInput.leftDistance;
+        diff /= 2.0;
+    }
+    // wall only on right
+    else if (sensors::isWall(mCurrentInput.rightDistance))
+    {
+        diff = mCurrentInput.rightDistance - mycha::mechanic::sideSensorToSideWallDistance;
+    }
+    // wall only on left
+    else if (sensors::isWall(mCurrentInput.leftDistance))
+    {
+        diff = mycha::mechanic::sideSensorToSideWallDistance - mCurrentInput.leftDistance;
     }
 
     return diff * distancessDiffCooficient;
@@ -77,9 +88,11 @@ double ForwardController::getDistancesCorrection() const
 
 double ForwardController::getRoadCorrection() const
 {
-    static constexpr double roadDiffCooficient{20};
+    static constexpr double roadDiffCooficient{40};
 
     double diff = mCurrentInput.rightWheelRoad - mCurrentInput.leftWheelRoad;
+
+    diff /= 2.0;
     return diff * roadDiffCooficient;
 }
 
