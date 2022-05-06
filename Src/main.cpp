@@ -102,6 +102,7 @@
 #include "uartdma/UART_DMA.h"
 #include "usbd_cdc_if.h"
 #include "utils/AllSignals.hh"
+#include "utils/LoggingSystem.hh"
 #include "utils/Observer.hh"
 #include "utils/Signal.hh"
 #include "ws2812b/ws2812b.h"
@@ -177,6 +178,11 @@ void debugPrintln(UART_HandleTypeDef* huart, char _out[])
     HAL_UART_Transmit_IT(huart, (uint8_t*)_out, strlen(_out));
     char newline[3] = "\r";
     HAL_UART_Transmit_IT(huart, (uint8_t*)newline, 2);
+}
+
+bool loggerWorker(char* buf, int len)
+{
+    return true;
 }
 
 void setupADC()
@@ -342,6 +348,13 @@ int main(void)
     // sensor readings
     HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
     HAL_TIM_Base_Start_IT(&htim14);
+
+    utils::LoggingSystem logger(loggerWorker);
+    int example          = 5;
+    float example2       = 3.1415;
+    const char* example3 = "mycha";
+    logger.info("tu jest info:%d, %f", example, example2);
+    logger.error("a tu error:%s", example3);
 
     logic::Logic logika(allSignals);
     mycha::Mycha myszunia(allSignals);

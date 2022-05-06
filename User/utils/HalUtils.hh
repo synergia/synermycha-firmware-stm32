@@ -3,11 +3,12 @@
 #include <cstdint>
 #include <main.h>
 
-using GpioPort      = GPIO_TypeDef*;
-using GpioPin       = uint16_t;
-using TimHandler    = TIM_HandleTypeDef;
-using I2cHandlerPtr = I2C_HandleTypeDef*;
-using PwmCcrPtr     = volatile uint32_t*;
+using GpioPort             = GPIO_TypeDef*;
+using GpioPin              = uint16_t;
+using TimHandler           = TIM_HandleTypeDef;
+using I2cHandlerPtr        = I2C_HandleTypeDef*;
+using PwmCcrPtr            = volatile uint32_t*;
+using LoggingWorkerPtrType = bool (*)(char* buf, int len);
 
 static inline void gpioWrite(GpioPort port, GpioPin pin, bool isSet)
 {
