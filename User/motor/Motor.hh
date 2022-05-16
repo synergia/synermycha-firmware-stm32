@@ -4,7 +4,7 @@
 
 // pwm in range [-MAX_PWM_RANGE ... +MAX_PWM_RANGE]
 constexpr float MAX_PWM_RANGE = 100.0f;
-constexpr float MAX_PWM       = 50.0f;
+constexpr float MAX_PWM       = 75.0f;
 
 static_assert(MAX_PWM_RANGE > 0 && MAX_PWM_RANGE > 0, "Pwm constants must be greater than zero!");
 static_assert(MAX_PWM <= MAX_PWM_RANGE, "Max Pwm must be less than max pwm range!");

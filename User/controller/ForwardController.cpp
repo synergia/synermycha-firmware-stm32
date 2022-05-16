@@ -6,37 +6,57 @@ namespace controller
 
 ForwardController::ForwardController(utils::AllSignals& signals)
     : mSignals(signals)
-    , mLeftPid{1000, 20, 10}
-    , mRightPid{1000, 20, 10}
-    , mTrajectory{}
+    , mTransPid{100, 10, 0}
+    , mRotPid{100, 10, 0}
+    , mTransTrajectory{}
     , mCurrentInput{}
+    , mRotTrajectory{controller::TrajectoryGenerator{mycha::mechanic::mouseCircumference / 4, 0.4, 1,
+                                                     mycha::mechanic::controllerPeriod}}
 {
 }
 
 mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInput& input)
 {
-    mCurrentInput = input;
+    mCurrentInput        = input;
+    static double mTime2 = 0.0;
 
     mTime += mycha::mechanic::controllerPeriod;
-    mTrajectory.calculateTrajectory(mTime);
-    const double sRef = mTrajectory.getSRef();
+    mTransTrajectory.calculateTrajectory(mTime);
+    const double vTransRef = mTransTrajectory.getVRef();
 
-    controller::PidIn pidInRight;
-    pidInRight.measVal = mCurrentInput.rightWheelRoad;
-    pidInRight.refVal  = sRef;
-    controller::PidIn pidInLeft;
-    pidInLeft.measVal = mCurrentInput.leftWheelRoad;
-    pidInLeft.refVal  = sRef;
+    double vRotRef = 0;
+    if (mTransTrajectory.getSRef() > 0.64)
+    {
+        mRotTrajectory.calculateTrajectory(mTime2);
+        vRotRef = mRotTrajectory.getVRef();
+        mTime2 += mycha::mechanic::controllerPeriod;
+    }
+    else
+    {
+        vRotRef = 0;
+    }
 
-    const double outLeft  = mLeftPid.calculate(pidInLeft);
-    const double outRight = mRightPid.calculate(pidInRight);
+    controller::PidIn pidInTrans;
+    pidInTrans.measVal = (mCurrentInput.rightWheelSpeed + mCurrentInput.leftWheelSpeed) / 2.0;
+    pidInTrans.refVal  = vTransRef;
+    controller::PidIn pidInRot;
+    pidInRot.measVal = (mCurrentInput.rightWheelSpeed - mCurrentInput.leftWheelSpeed) / 2.0;
+    pidInRot.refVal  = vRotRef;
 
-    const double roadCorr      = getRoadCorrection();
-    const double distancesCorr = getDistancesCorrection();
+    const double outTrans = mTransPid.calculate(pidInTrans);
+    const double outRot   = mRotPid.calculate(pidInRot);
+
+    // const double roadCorr      = getRoadCorrection();
+    // const double distancesCorr = getDistancesCorrection();
+
+    mSignals.displayLogValue.emit("xRef:%f", (double)vTransRef, 0, false);
+    mSignals.displayLogValue.emit("wRef:%f", (double)vRotRef, 1, false);
+    mSignals.displayLogValue.emit("sRef:%f", (double)mTransTrajectory.getSRef(), 2, true);
+    // mSignals.displayLogValue.emit("outR:%f", (double)outRot, 3, true);
 
     mycha::MotorsSettings motorData;
-    motorData.pwmLeftMotor  = outLeft + roadCorr + distancesCorr;
-    motorData.pwmRightMotor = outRight - roadCorr - distancesCorr;
+    motorData.pwmLeftMotor  = outTrans - outRot;
+    motorData.pwmRightMotor = outTrans + outRot;
 
     return motorData;
 }
@@ -44,9 +64,9 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
 void ForwardController::reset()
 {
     mTime = 0.0;
-    mTrajectory.reset();
-    mLeftPid.reset();
-    mRightPid.reset();
+    mTransTrajectory.reset();
+    mTransPid.reset();
+    mRotPid.reset();
     mCurrentInput = ForwardControllerInput{};
 }
 
@@ -55,7 +75,7 @@ bool ForwardController::isTargetReached() const
     // mouse must reach at least (target - delta) in meters distance or exceed it
     static constexpr double delta{0.002};
 
-    const double target       = mTrajectory.getPathLength();
+    const double target       = mTransTrajectory.getPathLength();
     const bool isLeftReached  = (target - mCurrentInput.leftWheelRoad) <= delta;
     const bool isRightReached = (target - mCurrentInput.rightWheelRoad) <= delta;
     return isLeftReached && isRightReached;
@@ -98,7 +118,7 @@ double ForwardController::getRoadCorrection() const
 
 void ForwardController::setNewTrajectory(const TrajectoryGenerator& trajectory)
 {
-    mTrajectory = trajectory;
+    mTransTrajectory = trajectory;
 }
 
 }  // namespace controller

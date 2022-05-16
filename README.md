@@ -11,8 +11,7 @@ _Welcome to the Synermycha Firmware repository!_
 | TIM3          | APB1      | X         | Encoders              | 
 | TIM4          | APB1      | X         | Encoders              | 
 | TIM9          | APB2      | vary      | Eye led, buzzer       | 
-| TIM10         | APB2      | 100Hz     | PID                   | 
-| TIM11         | APB2      | 100Hz     | Trajectory            | 
+| TIM10         | APB2      | 1kHz      | PID                   | 
 | TIM12         | APB1      | 180kHz    | Motors                | 
 | TIM13         | APB1      | 60Hz      | BLE, display, debug   | 
 | TIM14         | APB1      | 25Hz      | Distances ToF         | 

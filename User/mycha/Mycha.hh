@@ -38,7 +38,7 @@ constexpr double labyrinthCubeSize{0.18};
 constexpr double sideSensorToSideWallDistance = (labyrinthCubeSize / 2.0 - mouseRadius) * 1000.0;
 
 // seconds
-constexpr double controllerPeriod = 0.01;
+constexpr double controllerPeriod = 0.001;
 
 // seconds
 constexpr double distancesPeriod = 0.04;

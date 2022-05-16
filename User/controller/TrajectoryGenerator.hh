@@ -22,10 +22,10 @@ class TrajectoryGenerator
     // length of path in milimeters
     double xFinish;
 
-    // max velocity in milimeters per second
+    // max velocity in meters per second
     double vMax;
 
-    // acceleration in milimiters per second square
+    // acceleration in meters per second square
     double accel;
 
     // period of controller (to get calculus from velocity)

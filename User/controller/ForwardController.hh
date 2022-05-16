@@ -13,6 +13,8 @@ struct ForwardControllerInput
     // whole road which mouse went
     double leftWheelRoad;
     double rightWheelRoad;
+    double leftWheelSpeed;
+    double rightWheelSpeed;
     double leftDistance;
     double rightDistance;
 };
@@ -33,10 +35,11 @@ class ForwardController
 
     utils::AllSignals& mSignals;
 
-    Pid mLeftPid;
-    Pid mRightPid;
-    TrajectoryGenerator mTrajectory;
+    Pid mTransPid;
+    Pid mRotPid;
+    TrajectoryGenerator mTransTrajectory;
     ForwardControllerInput mCurrentInput;
+    TrajectoryGenerator mRotTrajectory;
 
     double mTime = 0.0;
 };

@@ -20,9 +20,9 @@ inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
 
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
-    signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
-    signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
-    signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
+    // signals.displayLogValue.emit("FR: %f", (float)data.frontRight, 0, false);
+    // signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
+    // signals.displayLogValue.emit("FL: %f", (float)data.frontLeft, 2, true);
 }
 
 }  // namespace
@@ -34,6 +34,11 @@ Logic::Logic(utils::AllSignals& signals)
     , mRotationalController{signals}
     , mCommands{}
 {
+    controller::Command cmd;
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{5};
+    mCommands.addCommand(cmd);
+
     connectSignals();
 }
 
@@ -51,6 +56,8 @@ void Logic::onSetDrivingData(const mycha::DrivingData& data)
     mAllRightRoad += data.rightWheelDistance;
     mLeftSpeed  = data.leftWheelDistance / mycha::mechanic::controllerPeriod;
     mRightSpeed = data.rightWheelDistance / mycha::mechanic::controllerPeriod;
+
+    mSignals.displayLogValue.emit("allR:%f", (double)mAllRightRoad, 3, false);
 }
 
 void Logic::onSetDistancesData(const mycha::DistancesData& data)
@@ -87,10 +94,12 @@ mycha::MotorsSettings Logic::getDataFromController()
 mycha::MotorsSettings Logic::getDataFromForwardController()
 {
     controller::ForwardControllerInput input;
-    input.leftDistance   = mDistancesData.left;
-    input.rightDistance  = mDistancesData.right;
-    input.leftWheelRoad  = mAllLeftRoad;
-    input.rightWheelRoad = mAllRightRoad;
+    input.leftDistance    = mDistancesData.left;
+    input.rightDistance   = mDistancesData.right;
+    input.leftWheelRoad   = mAllLeftRoad;
+    input.rightWheelRoad  = mAllRightRoad;
+    input.leftWheelSpeed  = mLeftSpeed;
+    input.rightWheelSpeed = mRightSpeed;
 
     return mForwardController.getControll(input);
 }
@@ -162,7 +171,7 @@ void Logic::executeCommandOnForwardController(const controller::ForwardCommand& 
 {
     auto xFinish = mycha::mechanic::labyrinthCubeSize * command.nrOfCubes;
     mForwardController.setNewTrajectory(
-        controller::TrajectoryGenerator{xFinish, 0.5, 0.4, mycha::mechanic::controllerPeriod});
+        controller::TrajectoryGenerator{xFinish, 0.4, 1, mycha::mechanic::controllerPeriod});
 }
 
 void Logic::executeCommandOnRotationalController(const controller::RotationalCommand& command)
@@ -193,43 +202,43 @@ void Logic::resetCurrentControllerAndLogicData()
 
 void Logic::generateNewCommands()
 {
-    // avoid reading distances before first data comes
-    if (not areAllDistancesInitialized(mDistancesData))
-        return;
+    // // avoid reading distances before first data comes
+    // if (not areAllDistancesInitialized(mDistancesData))
+    //     return;
 
-    controller::Command cmd;
-    if (sensors::isNoWall(mDistancesData.right))
-    {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{-90};
-        mCommands.addCommand(cmd);
+    // controller::Command cmd;
+    // if (sensors::isNoWall(mDistancesData.right))
+    // {
+    //     cmd.type       = controller::CommandType::Rotational;
+    //     cmd.rotational = controller::RotationalCommand{-90};
+    //     mCommands.addCommand(cmd);
 
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
-        mCommands.addCommand(cmd);
-    }
-    else if (sensors::isNoWall(mDistancesData.front))
-    {
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
-        mCommands.addCommand(cmd);
-    }
-    else if (sensors::isNoWall(mDistancesData.left))
-    {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{90};
-        mCommands.addCommand(cmd);
+    //     cmd.type    = controller::CommandType::Forward;
+    //     cmd.forward = controller::ForwardCommand{1};
+    //     mCommands.addCommand(cmd);
+    // }
+    // else if (sensors::isNoWall(mDistancesData.front))
+    // {
+    //     cmd.type    = controller::CommandType::Forward;
+    //     cmd.forward = controller::ForwardCommand{1};
+    //     mCommands.addCommand(cmd);
+    // }
+    // else if (sensors::isNoWall(mDistancesData.left))
+    // {
+    //     cmd.type       = controller::CommandType::Rotational;
+    //     cmd.rotational = controller::RotationalCommand{90};
+    //     mCommands.addCommand(cmd);
 
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
-        mCommands.addCommand(cmd);
-    }
-    else
-    {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{180};
-        mCommands.addCommand(cmd);
-    }
+    //     cmd.type    = controller::CommandType::Forward;
+    //     cmd.forward = controller::ForwardCommand{1};
+    //     mCommands.addCommand(cmd);
+    // }
+    // else
+    // {
+    //     cmd.type       = controller::CommandType::Rotational;
+    //     cmd.rotational = controller::RotationalCommand{180};
+    //     mCommands.addCommand(cmd);
+    // }
 }
 
 }  // namespace logic
