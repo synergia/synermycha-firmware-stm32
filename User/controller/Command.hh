@@ -8,17 +8,19 @@ namespace controller
 struct ForwardCommand
 {
     ForwardCommand() = default;
-    explicit ForwardCommand(uint8_t cubes)
-        : nrOfCubes(cubes)
+    // in meters
+    explicit ForwardCommand(double len)
+        : length(len)
     {
     }
     // nr of cubes in labirynth to go through
-    uint8_t nrOfCubes = 0;
+    double length = 0;
 };
 
 struct RotationalCommand
 {
     RotationalCommand() = default;
+    // in degrees
     explicit RotationalCommand(double ang)
         : angle(ang)
     {

@@ -15,7 +15,8 @@ ForwardController::ForwardController(utils::AllSignals& signals)
 
 mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInput& input)
 {
-    mCurrentInput = input;
+    mCurrentInput  = input;
+    const int sign = mTargetDistance > 0 ? 1 : -1;
 
     mTime += mycha::mechanic::controllerPeriod;
     mTransTrajectory.calculateTrajectory(mTime);
@@ -25,7 +26,7 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
 
     controller::PidIn pidInTrans;
     pidInTrans.measVal = (mCurrentInput.rightWheelSpeed + mCurrentInput.leftWheelSpeed) / 2.0;
-    pidInTrans.refVal  = vTransRef;
+    pidInTrans.refVal  = sign * vTransRef;
     controller::PidIn pidInRot;
     pidInRot.measVal = (mCurrentInput.rightWheelSpeed - mCurrentInput.leftWheelSpeed) / 2.0;
     pidInRot.refVal  = vRotRef;
@@ -36,9 +37,9 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
     // const double roadCorr      = getRoadCorrection();
     const double distancesCorr = getDistancesCorrection();
 
-    mSignals.displayLogValue.emit("xRef:%f", (double)vTransRef, 0, false);
-    mSignals.displayLogValue.emit("wRef:%f", (double)vRotRef, 1, false);
-    mSignals.displayLogValue.emit("sRef:%f", (double)mTransTrajectory.getSRef(), 2, true);
+    // mSignals.displayLogValue.emit("xRef:%f", (double)vTransRef, 0, false);
+    // mSignals.displayLogValue.emit("wRef:%f", (double)vRotRef, 1, false);
+    // mSignals.displayLogValue.emit("sRef:%f", (double)mTransTrajectory.getSRef(), 2, true);
     // mSignals.displayLogValue.emit("outR:%f", (double)outRot, 3, true);
 
     mycha::MotorsSettings motorData;
@@ -50,7 +51,8 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
 
 void ForwardController::reset()
 {
-    mTime = 0.0;
+    mTime           = 0.0;
+    mTargetDistance = 0.0;
     mTransTrajectory.reset();
     mTransPid.reset();
     mRotPid.reset();
@@ -63,8 +65,8 @@ bool ForwardController::isTargetReached() const
     static constexpr double delta{0.002};
 
     const double target       = mTransTrajectory.getPathLength();
-    const bool isLeftReached  = (target - mCurrentInput.leftWheelRoad) <= delta;
-    const bool isRightReached = (target - mCurrentInput.rightWheelRoad) <= delta;
+    const bool isLeftReached  = (target - std::abs(mCurrentInput.leftWheelRoad)) <= delta;
+    const bool isRightReached = (target - std::abs(mCurrentInput.rightWheelRoad)) <= delta;
     return isLeftReached && isRightReached;
 }
 
@@ -104,9 +106,10 @@ double ForwardController::getRoadCorrection() const
     return diff * roadDiffCooficient;
 }
 
-void ForwardController::setNewTrajectory(const TrajectoryGenerator& trajectory)
+void ForwardController::setNewDistance(double distance)
 {
-    mTransTrajectory = trajectory;
+    mTargetDistance  = distance;
+    mTransTrajectory = TrajectoryGenerator{std::abs(mTargetDistance), 0.4, 1, mycha::mechanic::controllerPeriod};
 }
 
 }  // namespace controller

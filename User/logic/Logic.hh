@@ -41,6 +41,9 @@ class Logic : public utils::Observer
 
     void generateNewCommands();
 
+    bool needToCompensateFrontDistance();
+    controller::Command getCommandToCompensateFrontDistance();
+
     mycha::DrivingData mDrivingData{};
     mycha::DistancesData mDistancesData{};
     utils::AllSignals& mSignals;

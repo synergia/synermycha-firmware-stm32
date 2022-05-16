@@ -20,9 +20,9 @@ inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
 
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
-    // signals.displayLogValue.emit("FR: %f", (float)data.frontRight, 0, false);
-    // signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
-    // signals.displayLogValue.emit("FL: %f", (float)data.frontLeft, 2, true);
+    signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
+    signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
+    signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
 }
 
 }  // namespace
@@ -131,7 +131,11 @@ bool Logic::isTargetReached() const
 
 void Logic::loadNewCommand()
 {
-    if (not mCommands.isEmpty())
+    if (needToCompensateFrontDistance())
+    {
+        mActiveController = executeCommand(getCommandToCompensateFrontDistance());
+    }
+    else if (not mCommands.isEmpty())
     {
         mActiveController = executeCommand(mCommands.getNextCommand());
     }
@@ -166,9 +170,7 @@ Logic::ControllerType Logic::executeCommand(const controller::Command& command)
 
 void Logic::executeCommandOnForwardController(const controller::ForwardCommand& command)
 {
-    auto xFinish = mycha::mechanic::labyrinthCubeSize * command.nrOfCubes;
-    mForwardController.setNewTrajectory(
-        controller::TrajectoryGenerator{xFinish, 0.4, 1, mycha::mechanic::controllerPeriod});
+    mForwardController.setNewDistance(command.length);
 }
 
 void Logic::executeCommandOnRotationalController(const controller::RotationalCommand& command)
@@ -203,6 +205,8 @@ void Logic::generateNewCommands()
     if (not areAllDistancesInitialized(mDistancesData))
         return;
 
+    const double oneCubeLen = mycha::mechanic::labyrinthCubeSize;
+
     controller::Command cmd;
     if (sensors::isNoWall(mDistancesData.right))
     {
@@ -211,13 +215,13 @@ void Logic::generateNewCommands()
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
+        cmd.forward = controller::ForwardCommand{oneCubeLen};
         mCommands.addCommand(cmd);
     }
     else if (sensors::isNoWall(mDistancesData.front))
     {
         cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
+        cmd.forward = controller::ForwardCommand{oneCubeLen};
         mCommands.addCommand(cmd);
     }
     else if (sensors::isNoWall(mDistancesData.left))
@@ -227,7 +231,7 @@ void Logic::generateNewCommands()
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{1};
+        cmd.forward = controller::ForwardCommand{oneCubeLen};
         mCommands.addCommand(cmd);
     }
     else
@@ -236,6 +240,34 @@ void Logic::generateNewCommands()
         cmd.rotational = controller::RotationalCommand{180};
         mCommands.addCommand(cmd);
     }
+}
+
+bool Logic::needToCompensateFrontDistance()
+{
+    // milimeters
+    static constexpr double allowedFrontOffset   = 5;
+    static constexpr double minAllowedFront      = mycha::mechanic::frontSensorToFrontWallDistance - allowedFrontOffset;
+    static constexpr double maxAllowedFront      = mycha::mechanic::frontSensorToFrontWallDistance + allowedFrontOffset;
+    static constexpr double cubeSizeInMilimeters = mycha::mechanic::labyrinthCubeSize * 1000;
+
+    // avoid reading distances before first data comes
+    if (not areAllDistancesInitialized(mDistancesData))
+        return false;
+
+    if (mDistancesData.front > cubeSizeInMilimeters)
+        return false;
+
+    return mDistancesData.front < minAllowedFront || mDistancesData.front > maxAllowedFront;
+}
+
+controller::Command Logic::getCommandToCompensateFrontDistance()
+{
+    const double distanceToCompensate = (mDistancesData.front - mycha::mechanic::frontSensorToFrontWallDistance) / 1000;
+    controller::Command cmd;
+    cmd.type    = controller::CommandType::Forward;
+    cmd.forward = controller::ForwardCommand{distanceToCompensate};
+
+    return cmd;
 }
 
 }  // namespace logic

@@ -27,7 +27,7 @@ class ForwardController
     mycha::MotorsSettings getControll(const ForwardControllerInput& input);
     void reset();
     bool isTargetReached() const;
-    void setNewTrajectory(const TrajectoryGenerator& trajectory);
+    void setNewDistance(double distance);
 
   private:
     double getDistancesCorrection() const;
@@ -39,6 +39,7 @@ class ForwardController
     Pid mRotPid;
     TrajectoryGenerator mTransTrajectory;
     ForwardControllerInput mCurrentInput;
+    double mTargetDistance = 0.0;
 
     double mTime = 0.0;
 };
