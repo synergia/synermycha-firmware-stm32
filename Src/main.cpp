@@ -349,12 +349,12 @@ int main(void)
     HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
     HAL_TIM_Base_Start_IT(&htim14);
 
-    utils::LoggingSystem logger(loggerWorker);
-    int example          = 5;
-    float example2       = 3.1415;
-    const char* example3 = "mycha";
-    logger.info("tu jest info:%d, %f", example, example2);
-    logger.error("a tu error:%s", example3);
+    // utils::LoggingSystem logger(loggerWorker);
+    // int example          = 5;
+    // float example2       = 3.1415;
+    // const char* example3 = "mycha";
+    // logger.info("tu jest info:%d, %f", example, example2);
+    // logger.error("a tu error:%s", example3);
 
     logic::Logic logika(allSignals);
     mycha::Mycha myszunia(allSignals);

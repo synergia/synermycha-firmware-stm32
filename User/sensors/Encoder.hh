@@ -11,10 +11,12 @@ class Encoder
     Encoder(TimHandler* handler);
     void initialize();
 
-    int32_t getDiffTicks() const;
+    int32_t getDiffTicks();
 
   private:
     TimHandler* mHandler;
+    uint32_t mLastCnt;
+    bool isInitialized;
 };
 
 }  // namespace sensors
