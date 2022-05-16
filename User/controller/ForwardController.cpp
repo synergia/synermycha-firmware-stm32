@@ -6,8 +6,8 @@ namespace controller
 
 ForwardController::ForwardController(utils::AllSignals& signals)
     : mSignals(signals)
-    , mTransPid{100, 10, 0}
-    , mRotPid{100, 10, 0}
+    , mTransPid{100, 5, 10}
+    , mRotPid{100, 5, 10}
     , mTransTrajectory{}
     , mCurrentInput{}
     , mRotTrajectory{controller::TrajectoryGenerator{mycha::mechanic::mouseCircumference / 4, 0.4, 1,
@@ -47,7 +47,7 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
     const double outRot   = mRotPid.calculate(pidInRot);
 
     // const double roadCorr      = getRoadCorrection();
-    // const double distancesCorr = getDistancesCorrection();
+    const double distancesCorr = getDistancesCorrection();
 
     mSignals.displayLogValue.emit("xRef:%f", (double)vTransRef, 0, false);
     mSignals.displayLogValue.emit("wRef:%f", (double)vRotRef, 1, false);
@@ -55,8 +55,8 @@ mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInpu
     // mSignals.displayLogValue.emit("outR:%f", (double)outRot, 3, true);
 
     mycha::MotorsSettings motorData;
-    motorData.pwmLeftMotor  = outTrans - outRot;
-    motorData.pwmRightMotor = outTrans + outRot;
+    motorData.pwmLeftMotor  = outTrans - outRot + distancesCorr;
+    motorData.pwmRightMotor = outTrans + outRot - distancesCorr;
 
     return motorData;
 }
@@ -83,7 +83,8 @@ bool ForwardController::isTargetReached() const
 
 double ForwardController::getDistancesCorrection() const
 {
-    static constexpr double distancessDiffCooficient{0.32};
+    const double mouseTransSpeed = (mCurrentInput.rightWheelSpeed + mCurrentInput.leftWheelSpeed) / 2.0;
+    static constexpr double distancessDiffCooficient{1};
 
     double diff = 0.0;
     // walls on both sides
@@ -103,7 +104,7 @@ double ForwardController::getDistancesCorrection() const
         diff = mycha::mechanic::sideSensorToSideWallDistance - mCurrentInput.leftDistance;
     }
 
-    return diff * distancessDiffCooficient;
+    return diff * mouseTransSpeed * distancessDiffCooficient;
 }
 
 double ForwardController::getRoadCorrection() const
