@@ -35,9 +35,9 @@ class RotationalController
 
     utils::AllSignals& mSignals;
 
-    Pid mLeftPid;
-    Pid mRightPid;
-    TrajectoryGenerator mTrajectory;
+    Pid mTransPid;
+    Pid mRotPid;
+    TrajectoryGenerator mRotTrajectory;
     RotationalControllerInput mCurrentInput;
     double mTargetAngle = 0.0;
 

@@ -39,7 +39,6 @@ class ForwardController
     Pid mRotPid;
     TrajectoryGenerator mTransTrajectory;
     ForwardControllerInput mCurrentInput;
-    TrajectoryGenerator mRotTrajectory;
 
     double mTime = 0.0;
 };

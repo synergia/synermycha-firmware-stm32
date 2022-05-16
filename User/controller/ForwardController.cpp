@@ -10,31 +10,18 @@ ForwardController::ForwardController(utils::AllSignals& signals)
     , mRotPid{100, 5, 10}
     , mTransTrajectory{}
     , mCurrentInput{}
-    , mRotTrajectory{controller::TrajectoryGenerator{mycha::mechanic::mouseCircumference / 4, 0.4, 1,
-                                                     mycha::mechanic::controllerPeriod}}
 {
 }
 
 mycha::MotorsSettings ForwardController::getControll(const ForwardControllerInput& input)
 {
-    mCurrentInput        = input;
-    static double mTime2 = 0.0;
+    mCurrentInput = input;
 
     mTime += mycha::mechanic::controllerPeriod;
     mTransTrajectory.calculateTrajectory(mTime);
     const double vTransRef = mTransTrajectory.getVRef();
 
-    double vRotRef = 0;
-    if (mTransTrajectory.getSRef() > 0.64)
-    {
-        mRotTrajectory.calculateTrajectory(mTime2);
-        vRotRef = mRotTrajectory.getVRef();
-        mTime2 += mycha::mechanic::controllerPeriod;
-    }
-    else
-    {
-        vRotRef = 0;
-    }
+    const double vRotRef = 0;
 
     controller::PidIn pidInTrans;
     pidInTrans.measVal = (mCurrentInput.rightWheelSpeed + mCurrentInput.leftWheelSpeed) / 2.0;
