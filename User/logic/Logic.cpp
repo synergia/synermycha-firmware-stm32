@@ -20,9 +20,9 @@ inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
 
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
-    signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
-    signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
-    signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
+    // signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
+    // signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
+    // signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
 }
 
 }  // namespace
@@ -34,6 +34,16 @@ Logic::Logic(utils::AllSignals& signals)
     , mRotationalController{signals}
     , mCommands{}
 {
+    // controller::Command cmd;
+    // cmd.type       = controller::CommandType::Rotational;
+    // cmd.rotational = controller::RotationalCommand{90};
+    // mCommands.addCommand(cmd);
+    // cmd.type       = controller::CommandType::Rotational;
+    // cmd.rotational = controller::RotationalCommand{90};
+    // mCommands.addCommand(cmd);
+    // cmd.type       = controller::CommandType::Rotational;
+    // cmd.rotational = controller::RotationalCommand{-180};
+    // mCommands.addCommand(cmd);
     connectSignals();
 }
 
@@ -68,6 +78,15 @@ void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
         resetCurrentControllerAndLogicData();
         loadNewCommand();
     }
+    // static double maxAngSpeed = 0;
+    // {
+    //     double angularSpeed;
+    //     mSignals.getGyroZ.emit(angularSpeed);
+    //     mAllAngle += angularSpeed * mycha::mechanic::controllerPeriod;
+    //     maxAngSpeed = std::max(maxAngSpeed, angularSpeed);
+    //     // mSignals.displayLogValue.emit("max omega Z:%f", (double)maxAngSpeed, 0, true);
+    //     mSignals.displayLogValue.emit("angle Z:%f", (double)mAllAngle, 0, true);
+    // }
 
     motorData = getDataFromController();
 }
@@ -111,6 +130,7 @@ mycha::MotorsSettings Logic::getDataFromRotationalController()
     input.leftWheelSpeed  = mLeftSpeed;
     input.rightWheelSpeed = mRightSpeed;
     input.angle           = mAllAngle;
+    input.angularSpeed    = angularSpeed;
 
     return mRotationalController.getControll(input);
 }
@@ -135,7 +155,7 @@ void Logic::loadNewCommand()
     {
         mActiveController = executeCommand(getCommandToCompensateFrontDistance());
     }
-    else if (not mCommands.isEmpty())
+    if (not mCommands.isEmpty())
     {
         mActiveController = executeCommand(mCommands.getNextCommand());
     }

@@ -12,6 +12,7 @@ struct RotationalControllerInput
 {
     // whole angle which mouse rotated
     double angle;
+    double angularSpeed;
     // whole road which mouse went (each wheel in opposite direction)
     double leftWheelRoad;
     double rightWheelRoad;

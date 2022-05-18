@@ -33,6 +33,7 @@ Mycha::Mycha(utils::AllSignals& signals)
 {
     display::clearDisplayBuff();
     initializeMycha();
+    HAL_Delay(1000);
     display::clearDisplayBuff();
 
     connectSignals();
@@ -52,12 +53,16 @@ void Mycha::connectSignals()
 
 void Mycha::initializeMycha()
 {
-    initBle();
+    // initBle();
     initLed();
-    initAdc();
+    mSignals.displayTextLine.emit(-1, "LED - OK");
+    // initAdc();
     initMotors();
+    mSignals.displayTextLine.emit(0, "Motors - OK");
     initDistance();
+    mSignals.displayTextLine.emit(1, "ToF - OK");
     initImu();
+    mSignals.displayTextLine.emit(3, "IMU - OK");
 }
 
 void Mycha::initBle()

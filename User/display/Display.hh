@@ -29,7 +29,8 @@ class Display : public utils::Observer
 
     void clear();
     void show();
-    void writeLine(int nr, char* line);
+    void writeLine(int nr, const char* line);
+    void displayTextLine(int nr, const char* line);
     void showDisplayBuffor();
     void displayBuffReadyPararell();
     void showDisplayBufforPararell();

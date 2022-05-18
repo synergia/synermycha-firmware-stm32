@@ -34,6 +34,7 @@ Display::Display(utils::AllSignals& signals, I2C_HandleTypeDef* hi2c, const uint
     mAllSignals.displayBuffReadyPararell.connect<Display, &Display::displayBuffReadyPararell>(*this);
     mAllSignals.displayBuffPararell.connect<Display, &Display::showDisplayBufforPararell>(*this);
     mAllSignals.displayLogValue.connect<Display, &Display::logValue>(*this);
+    mAllSignals.displayTextLine.connect<Display, &Display::displayTextLine>(*this);
 }
 
 void Display::clear()
@@ -46,11 +47,17 @@ void Display::show()
     SSD1306_Display();
 }
 
-void Display::writeLine(int nr, char* line)
+void Display::writeLine(int nr, const char* line)
 {
     while (mHi2c->hdmatx->State != HAL_DMA_STATE_READY)
         ;
     GFX_DrawString(0, (nr + 2) * 9 - 1, const_cast<char*>(line), WHITE, BLACK);
+}
+
+void Display::displayTextLine(int nr, const char* text)
+{
+    writeLine(nr, text);
+    show();
 }
 
 void Display::showDisplayBuffor()

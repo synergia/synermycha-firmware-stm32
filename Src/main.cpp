@@ -190,21 +190,6 @@ void setupADC()
     HAL_ADC_Start(&hadc1);
 }
 
-void setupMotors()
-{
-    HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
-    HAL_TIM_Base_Start_IT(&htim14);
-    HAL_GPIO_WritePin(DRV8835_EN_GPIO_Port, DRV8835_EN_Pin, GPIO_PIN_SET);
-    HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
-    HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-    RIGHT_MOTOR_FORWARD;
-    LEFT_MOTOR_FORWARD;
-    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
-    TIM12->CCR1 = 0;
-    TIM12->CCR2 = 0;
-}
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -265,31 +250,19 @@ int main(void)
     display::Display display(allSignals, &hi2c2, logo, font_8x5, 1);
     HAL_Delay(1000);
 
-    display.writeLine(0, STRINGIFY(GIT_TAG));
-    display.writeLine(1, "OLED     initialized");
-    display.show();
+    // display.writeLine(0, STRINGIFY(GIT_TAG));
+    // display.writeLine(1, "OLED     initialized");
+    // display.show();
 
-    setupBLE();
-    display.writeLine(2, "BLE      initialized");
-    display.show();
+    // setupBLE();
+    // display.writeLine(2, "BLE      initialized");
+    // display.show();
 
-    // setupLed();
-    display.writeLine(3, "LED      initialized");
-    display.show();
+    // setupADC();
+    // display.writeLine(4, "ADC      initialized");
+    // display.show();
 
-    setupADC();
-    display.writeLine(4, "ADC      initialized");
-    display.show();
-
-    // setupMotors();
-    display.writeLine(5, "Motors   initialized");
-    display.show();
-
-    // done in Mycha
-    display.writeLine(6, "Distance initialized");
-    display.show();
-
-    WaitMs(1000);
+    // WaitMs(1000);
     display.clear();
 
     // while (hi2c2.hdmatx->State != HAL_DMA_STATE_READY)
@@ -335,7 +308,7 @@ int main(void)
     pageCos.AddOption(MenuOption("ustaw cos", OptionType::ConfigInline, &configCos));
     pageCos.AddOption(MenuOption("ustaw boola", OptionType::ConfigInline, &configBool));
 
-    menu.setDefaultMenuPage(&pageFirst);
+    // menu.setDefaultMenuPage(&pageFirst);
 
     // // SSD1306_Clear(BLACK);
     // char ParseBuffer[100];

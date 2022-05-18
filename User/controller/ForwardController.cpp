@@ -73,7 +73,7 @@ bool ForwardController::isTargetReached() const
 double ForwardController::getDistancesCorrection() const
 {
     const double mouseTransSpeed = (mCurrentInput.rightWheelSpeed + mCurrentInput.leftWheelSpeed) / 2.0;
-    static constexpr double distancessDiffCooficient{1};
+    static constexpr double distancessDiffCooficient{2};
 
     double diff = 0.0;
     // walls on both sides
