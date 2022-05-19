@@ -231,7 +231,7 @@ void Logic::generateNewCommands()
     if (sensors::isNoWall(mDistancesData.right))
     {
         cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{-90};
+        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Left};
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;
@@ -247,7 +247,7 @@ void Logic::generateNewCommands()
     else if (sensors::isNoWall(mDistancesData.left))
     {
         cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{90};
+        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Right};
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;
@@ -257,7 +257,7 @@ void Logic::generateNewCommands()
     else
     {
         cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{180};
+        cmd.rotational = controller::RotationalCommand{controller::RotationDir::TurnBack};
         mCommands.addCommand(cmd);
     }
 }

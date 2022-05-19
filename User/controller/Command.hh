@@ -5,6 +5,14 @@
 namespace controller
 {
 
+enum class RotationDir : uint8_t
+{
+    Other,
+    Left,
+    Right,
+    TurnBack
+};
+
 struct ForwardCommand
 {
     ForwardCommand() = default;
@@ -23,10 +31,31 @@ struct RotationalCommand
     // in degrees
     explicit RotationalCommand(double ang)
         : angle(ang)
+        , rotDir{RotationDir::Other}
+    {
+    }
+
+    explicit RotationalCommand(RotationDir dir)
+        : rotDir(dir)
+        , angle{rotDirToAngle(dir)}
     {
     }
     // positive is rotating left
-    double angle = 0;
+    double angle{};
+    RotationDir rotDir{};
+
+  private:
+    double rotDirToAngle(RotationDir dir)
+    {
+        if (dir == RotationDir::Left)
+            return -90.0;
+        else if (dir == RotationDir::Right)
+            return 90.0;
+        else if (dir == RotationDir::TurnBack)
+            return 180.0;
+        else
+            return 0.0;
+    }
 };
 
 enum class CommandType

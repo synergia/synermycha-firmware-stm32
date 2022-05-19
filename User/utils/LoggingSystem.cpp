@@ -2,11 +2,6 @@
 #include <cstdarg>
 #include <cstdio>
 
-namespace
-{
-char stringToPrint[100];
-}
-
 namespace utils
 {
 
