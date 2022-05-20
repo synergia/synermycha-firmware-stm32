@@ -10,6 +10,7 @@ _Welcome to the Synermycha Firmware repository!_
 | ------------- | --------- | --------- | --------------------- | 
 | TIM3          | APB1      | X         | Encoders              | 
 | TIM4          | APB1      | X         | Encoders              | 
+| TIM5          | APB1      | 1MHz      | test time measurements|
 | TIM9          | APB2      | vary      | Eye led, buzzer       | 
 | TIM10         | APB2      | 1kHz      | PID                   | 
 | TIM12         | APB1      | 180kHz    | Motors                | 

@@ -2,6 +2,7 @@
 
 #include "controller/Command.hh"
 #include "mycha/MouseData.hh"
+#include "utils/AllSignals.hh"
 #include "utils/Stack.hh"
 #include <cstdint>
 #include <utility>
@@ -51,7 +52,7 @@ struct Cell
 class Maze
 {
   public:
-    Maze();
+    Maze(utils::AllSignals& signals);
     void updateMouseAndMazeState(const controller::Command& cmd, const mycha::DistancesData& distances);
     void updateWallsAtStartup(const mycha::DistancesData& distances);
     void drawMaze();

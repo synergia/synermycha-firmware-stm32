@@ -105,6 +105,7 @@
 #include "utils/LoggingSystem.hh"
 #include "utils/Observer.hh"
 #include "utils/Signal.hh"
+#include "utils/Timer.hh"
 #include "ws2812b/ws2812b.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -241,6 +242,7 @@ int main(void)
     MX_TIM10_Init();
     MX_TIM11_Init();
     MX_TIM13_Init();
+    MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
     UARTDMA_Init(&huartdma, &huart1);
     uint8_t Received[3];

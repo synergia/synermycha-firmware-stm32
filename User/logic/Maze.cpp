@@ -2,6 +2,7 @@
 #include "display/Display.hh"
 #include "mycha/Mycha.hh"
 #include "sensors/DistanceTof.hh"
+#include "utils/Timer.hh"
 #include <cstring>
 
 namespace
@@ -45,13 +46,21 @@ void valueToCharBuf(uint8_t val, char* buf)
 namespace logic
 {
 
-Maze::Maze()
+Maze::Maze(utils::AllSignals& signals)
     : mStart{4, 4}
     , mFinish{2, 4}
     , mMouseDir{MouseDir::N}
 {
     mCurrentPos = mStart;
+
+    utils::Timer timer;
+    timer.start();
     initFloodfill();
+    timer.stop();
+
+    char buf[20];
+    snprintf(buf, 20, "maze us=%ld", timer.getTimeInUs());
+    signals.displayTextLine.emit(2, buf);
 }
 
 void Maze::updateMouseAndMazeState(const controller::Command& cmd, const mycha::DistancesData& distances)
@@ -63,6 +72,7 @@ void Maze::updateMouseAndMazeState(const controller::Command& cmd, const mycha::
         {
             moveMouseForward();
             updateWalls(distances);
+            floodfill(mCurrentPos);
         }
     }
     else if (cmd.type == controller::CommandType::Rotational)

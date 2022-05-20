@@ -3,6 +3,7 @@
 #include "controller/TrajectoryGenerator.hh"
 #include "display/Display.hh"
 #include "mycha/Mycha.hh"
+#include "utils/Timer.hh"
 
 namespace logic
 {
@@ -20,9 +21,9 @@ inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
 
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
-    // signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
-    // signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
-    // signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
+    signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
+    signals.displayLogValue.emit("F: %f", (float)data.front, 1, false);
+    signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
 }
 
 }  // namespace
@@ -33,19 +34,11 @@ Logic::Logic(utils::AllSignals& signals)
     , mForwardController{signals}
     , mRotationalController{signals}
     , mCommands{}
+    , mMaze{signals}
 {
-    // controller::Command cmd;
-    // cmd.type       = controller::CommandType::Rotational;
-    // cmd.rotational = controller::RotationalCommand{90};
-    // mCommands.addCommand(cmd);
-    // cmd.type       = controller::CommandType::Rotational;
-    // cmd.rotational = controller::RotationalCommand{90};
-    // mCommands.addCommand(cmd);
-    // cmd.type       = controller::CommandType::Rotational;
-    // cmd.rotational = controller::RotationalCommand{-180};
-    // mCommands.addCommand(cmd);
-    mMaze.drawMaze();
-    mSignals.showMaze.emit();
+    // mMaze.drawMaze();
+    // mSignals.showMaze.emit();
+
     // connectSignals();
 }
 
@@ -69,26 +62,28 @@ void Logic::onSetDrivingData(const mycha::DrivingData& data)
 
 void Logic::onSetDistancesData(const mycha::DistancesData& data)
 {
+    static bool isFirstMazeUpdateDone = false;
+
     mDistancesData = data;
-    printDistances(mSignals, data);
+    if (not isFirstMazeUpdateDone && areAllDistancesInitialized(mDistancesData))
+    {
+        mMaze.updateWallsAtStartup(mDistancesData);
+    }
+
+    // printDistances(mSignals, data);
 }
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
     if (isTargetReached())
     {
+        if (mIsStartedRun)
+        {
+            //  mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
+        }
         resetCurrentControllerAndLogicData();
         loadNewCommand();
     }
-    // static double maxAngSpeed = 0;
-    // {
-    //     double angularSpeed;
-    //     mSignals.getGyroZ.emit(angularSpeed);
-    //     mAllAngle += angularSpeed * mycha::mechanic::controllerPeriod;
-    //     maxAngSpeed = std::max(maxAngSpeed, angularSpeed);
-    //     // mSignals.displayLogValue.emit("max omega Z:%f", (double)maxAngSpeed, 0, true);
-    //     mSignals.displayLogValue.emit("angle Z:%f", (double)mAllAngle, 0, true);
-    // }
 
     motorData = getDataFromController();
 }
@@ -159,7 +154,8 @@ void Logic::loadNewCommand()
     }
     if (not mCommands.isEmpty())
     {
-        mActiveController = executeCommand(mCommands.getNextCommand());
+        mLastCommand      = mCommands.getNextCommand();
+        mActiveController = executeCommand(mLastCommand);
     }
     else
     {
@@ -228,7 +224,6 @@ void Logic::generateNewCommands()
         return;
 
     const double oneCubeLen = mycha::mechanic::labyrinthCubeSize;
-
     controller::Command cmd;
     if (sensors::isNoWall(mDistancesData.right))
     {
@@ -262,6 +257,8 @@ void Logic::generateNewCommands()
         cmd.rotational = controller::RotationalCommand{controller::RotationDir::TurnBack};
         mCommands.addCommand(cmd);
     }
+
+    mIsStartedRun = true;
 }
 
 bool Logic::needToCompensateFrontDistance()
