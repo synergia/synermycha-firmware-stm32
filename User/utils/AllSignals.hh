@@ -21,6 +21,7 @@ struct AllSignals
     // so if more logs are needed, only last log should have show=true, to avoid latency
     signal<void(const char* text, double value, uint8_t line, bool show)> displayLogValue;
     signal<void(int line, const char* text)> displayTextLine;
+    signal<void(void)> showMaze;
 
     signal<void(void)> interruptDistance;
     signal<void(void)> tim14Elapsed;

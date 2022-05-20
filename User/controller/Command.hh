@@ -36,8 +36,9 @@ struct RotationalCommand
     }
 
     explicit RotationalCommand(RotationDir dir)
-        : rotDir(dir)
-        , angle{rotDirToAngle(dir)}
+        : angle{rotDirToAngle(dir)}
+        , rotDir(dir)
+
     {
     }
     // positive is rotating left
@@ -47,9 +48,9 @@ struct RotationalCommand
   private:
     double rotDirToAngle(RotationDir dir)
     {
-        if (dir == RotationDir::Left)
+        if (dir == RotationDir::Right)
             return -90.0;
-        else if (dir == RotationDir::Right)
+        else if (dir == RotationDir::Left)
             return 90.0;
         else if (dir == RotationDir::TurnBack)
             return 180.0;

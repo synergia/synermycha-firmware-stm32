@@ -2,6 +2,7 @@
 
 #include "controller/Command.hh"
 #include "mycha/MouseData.hh"
+#include "utils/Stack.hh"
 #include <cstdint>
 #include <utility>
 
@@ -9,11 +10,25 @@ namespace logic
 {
 constexpr uint8_t mazeLen = 5;
 
+/*
+          X
+ 0------------------>
+ |
+ |
+Y|
+ |
+ |
+ V
+*/
 struct Point
 {
-    uint8_t x{};
-    uint8_t y{};
+    // column
+    int8_t x{};
+    // row
+    int8_t y{};
 };
+
+using StackType = utils::Stack<Point, 256>;
 
 enum class MouseDir : uint8_t
 {
@@ -29,6 +44,8 @@ struct Cell
     bool isWallS{};
     bool isWallE{};
     bool isWallW{};
+    bool wasVisited{};
+    uint8_t value = 255;
 };
 
 class Maze
@@ -37,6 +54,7 @@ class Maze
     Maze();
     void updateMouseAndMazeState(const controller::Command& cmd, const mycha::DistancesData& distances);
     void updateWallsAtStartup(const mycha::DistancesData& distances);
+    void drawMaze();
 
   private:
     void moveMouseForward();
@@ -48,6 +66,11 @@ class Maze
     void updateWallW(const Point& point);
     void updateWallS(const Point& point);
     void updateWallE(const Point& point);
+
+    void initFloodfill();
+    void floodfill(Point floodP);
+    uint8_t minValueFromNeighbours(Point p);
+    void pushToStackAdjacentCells(const Point& p, StackType& stack);
 
     Point mStart;
     Point mFinish;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Maze.hh"
 #include "controller/CommandQueue.hh"
 #include "controller/ForwardController.hh"
 #include "controller/RotationalController.hh"
@@ -58,6 +59,8 @@ class Logic : public utils::Observer
     controller::ForwardController mForwardController;
     controller::RotationalController mRotationalController;
     controller::CommandQueue mCommands;
+
+    Maze mMaze;
 };
 
 }  // namespace logic

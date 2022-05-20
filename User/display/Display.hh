@@ -17,6 +17,7 @@ constexpr int maxRows    = 4;
 constexpr int maxColumns = 20;
 
 extern char displayBuff[maxRows][maxColumns];
+extern char displayMazeBuff[5][maxColumns];
 
 void clearDisplayBuff();
 void clearDisplayBuffLine(const uint32_t line);
@@ -32,6 +33,7 @@ class Display : public utils::Observer
     void writeLine(int nr, const char* line);
     void displayTextLine(int nr, const char* line);
     void showDisplayBuffor();
+    void showMaze();
     void displayBuffReadyPararell();
     void showDisplayBufforPararell();
     void logValue(const char* text, double val, uint8_t line, bool show);

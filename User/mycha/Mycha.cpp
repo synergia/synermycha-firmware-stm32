@@ -55,14 +55,14 @@ void Mycha::initializeMycha()
 {
     // initBle();
     initLed();
-    mSignals.displayTextLine.emit(-1, "LED - OK");
+    //  mSignals.displayTextLine.emit(-1, "LED - OK");
     // initAdc();
     initMotors();
-    mSignals.displayTextLine.emit(0, "Motors - OK");
+    // mSignals.displayTextLine.emit(0, "Motors - OK");
     initDistance();
-    mSignals.displayTextLine.emit(1, "ToF - OK");
+    // mSignals.displayTextLine.emit(1, "ToF - OK");
     initImu();
-    mSignals.displayTextLine.emit(3, "IMU - OK");
+    //  mSignals.displayTextLine.emit(3, "IMU - OK");
 }
 
 void Mycha::initBle()

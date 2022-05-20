@@ -41,10 +41,10 @@ mycha::MotorsSettings RotationalController::getControll(const RotationalControll
     const double outTrans = mTransPid.calculate(pidInTrans);
     const double outRot   = mRotPid.calculate(pidInRot);
 
-    mSignals.displayLogValue.emit("angle:%f", (double)mCurrentInput.angle, 0, false);
-    mSignals.displayLogValue.emit("target:%f", (double)mTargetAngle, 1, false);
-    mSignals.displayLogValue.emit("sRef:%f", (double)mRotTrajectory.getSRef(), 2, false);
-    mSignals.displayLogValue.emit("meas:%f", (double)pidInRot.measVal, 3, true);
+    // mSignals.displayLogValue.emit("angle:%f", (double)mCurrentInput.angle, 0, false);
+    // mSignals.displayLogValue.emit("target:%f", (double)mTargetAngle, 1, false);
+    // mSignals.displayLogValue.emit("sRef:%f", (double)mRotTrajectory.getSRef(), 2, false);
+    // mSignals.displayLogValue.emit("meas:%f", (double)pidInRot.measVal, 3, true);
 
     mycha::MotorsSettings motorData;
     motorData.pwmLeftMotor  = outTrans - outRot;

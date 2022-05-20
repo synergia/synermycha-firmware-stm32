@@ -63,7 +63,7 @@ void Imu::initialize()
 
     char buf[20];
     snprintf(buf, 20, "IMU offset=%d", mOffset);
-    mSignals.displayTextLine.emit(2, buf);
+    // mSignals.displayTextLine.emit(2, buf);
     HAL_Delay(1000);
 }
 

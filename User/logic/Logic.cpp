@@ -44,7 +44,9 @@ Logic::Logic(utils::AllSignals& signals)
     // cmd.type       = controller::CommandType::Rotational;
     // cmd.rotational = controller::RotationalCommand{-180};
     // mCommands.addCommand(cmd);
-    connectSignals();
+    mMaze.drawMaze();
+    mSignals.showMaze.emit();
+    // connectSignals();
 }
 
 void Logic::connectSignals()
@@ -231,7 +233,7 @@ void Logic::generateNewCommands()
     if (sensors::isNoWall(mDistancesData.right))
     {
         cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Left};
+        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Right};
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;
@@ -247,7 +249,7 @@ void Logic::generateNewCommands()
     else if (sensors::isNoWall(mDistancesData.left))
     {
         cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Right};
+        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Left};
         mCommands.addCommand(cmd);
 
         cmd.type    = controller::CommandType::Forward;

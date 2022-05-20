@@ -4,6 +4,7 @@ namespace display
 {
 
 char displayBuff[maxRows][maxColumns];
+char displayMazeBuff[5][maxColumns];
 
 void clearDisplayBuff()
 {
@@ -35,6 +36,7 @@ Display::Display(utils::AllSignals& signals, I2C_HandleTypeDef* hi2c, const uint
     mAllSignals.displayBuffPararell.connect<Display, &Display::showDisplayBufforPararell>(*this);
     mAllSignals.displayLogValue.connect<Display, &Display::logValue>(*this);
     mAllSignals.displayTextLine.connect<Display, &Display::displayTextLine>(*this);
+    mAllSignals.showMaze.connect<Display, &Display::showMaze>(*this);
 }
 
 void Display::clear()
@@ -66,6 +68,16 @@ void Display::showDisplayBuffor()
     for (int i = 0; i < maxRows; i++)
     {
         writeLine(i, displayBuff[i]);
+    }
+    show();
+}
+
+void Display::showMaze()
+{
+    clear();
+    for (int i = 0; i < 5; i++)
+    {
+        writeLine(i, displayMazeBuff[i]);
     }
     show();
 }
