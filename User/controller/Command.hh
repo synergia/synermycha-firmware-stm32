@@ -61,6 +61,7 @@ struct RotationalCommand
 
 enum class CommandType
 {
+    Stop,
     Forward,
     Rotational
 };

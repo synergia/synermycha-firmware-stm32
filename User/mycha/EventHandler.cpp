@@ -34,7 +34,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-    // if TIM9 is used as controll loop, it should looks like follow
     if (htim->Instance == TIM10)
     {
         if (allSignalsPtr)
@@ -68,6 +67,8 @@ void EventHandler::HandleEvents()
     while (true)
     {
         mSignals.displayBuffPararell.emit();
+        mSignals.showMaze.emit();
+
         if (flagButtonEnterPush)
         {
             mSignals.buttonEnter.emit();

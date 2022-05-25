@@ -11,14 +11,6 @@ namespace logic
 namespace
 {
 
-/// @note lack of front left/rigth, for tests
-/// when they are present, it seemed to be 0
-/// need check it
-inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
-{
-    return dist.right != 0 and dist.front != 0 and dist.left != 0;
-}
-
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
     signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
@@ -36,10 +28,7 @@ Logic::Logic(utils::AllSignals& signals)
     , mCommands{}
     , mMaze{signals}
 {
-    // mMaze.drawMaze();
-    // mSignals.showMaze.emit();
-
-    // connectSignals();
+    connectSignals();
 }
 
 void Logic::connectSignals()
@@ -65,9 +54,10 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
     static bool isFirstMazeUpdateDone = false;
 
     mDistancesData = data;
-    if (not isFirstMazeUpdateDone && areAllDistancesInitialized(mDistancesData))
+    if (not isFirstMazeUpdateDone)
     {
         mMaze.updateWallsAtStartup(mDistancesData);
+        isFirstMazeUpdateDone = true;
     }
 
     // printDistances(mSignals, data);
@@ -75,15 +65,21 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
+    static int targetCounter = 0;
+
     if (isTargetReached())
     {
-        if (mIsStartedRun)
-        {
-            //  mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
-        }
+        targetCounter++;
+        mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
+        mMaze.drawMazeWeights();
+        // mMaze.drawMazeWalls();
+        mSignals.mazeReadyToShow.emit();
         resetCurrentControllerAndLogicData();
-        loadNewCommand();
+        if (not mMaze.isMouseInFinishPoint())
+            loadNewCommand();
     }
+
+    // mSignals.displayLogValue.emit("R: %f", (float)targetCounter, 0, true);
 
     motorData = getDataFromController();
 }
@@ -148,20 +144,22 @@ bool Logic::isTargetReached() const
 
 void Logic::loadNewCommand()
 {
-    if (needToCompensateFrontDistance())
-    {
-        mActiveController = executeCommand(getCommandToCompensateFrontDistance());
-    }
+    // if (needToCompensateFrontDistance())
+    // {
+    //     mLastCommand = getCommandToCompensateFrontDistance();
+    // }
+    // else if (not mCommands.isEmpty())
     if (not mCommands.isEmpty())
     {
-        mLastCommand      = mCommands.getNextCommand();
-        mActiveController = executeCommand(mLastCommand);
+        mLastCommand = mCommands.getNextCommand();
     }
     else
     {
         generateNewCommands();
-        mActiveController = ControllerType::None;
+        mLastCommand = mCommands.getNextCommand();
     }
+
+    mActiveController = executeCommand(mLastCommand);
 }
 
 Logic::ControllerType Logic::executeCommand(const controller::Command& command)
@@ -212,19 +210,18 @@ void Logic::resetCurrentControllerAndLogicData()
     case ControllerType::Rotational:
         mRotationalController.reset();
         break;
-    default:
+    case ControllerType::None:
         return;
     }
+
+    mActiveController = ControllerType::None;
+    mLastCommand      = controller::Command{};
 }
 
 void Logic::generateNewCommands()
 {
-    // avoid reading distances before first data comes
-    if (not areAllDistancesInitialized(mDistancesData))
-        return;
-
     const double oneCubeLen = mycha::mechanic::labyrinthCubeSize;
-    controller::Command cmd;
+    controller::Command cmd{};
     if (sensors::isNoWall(mDistancesData.right))
     {
         cmd.type       = controller::CommandType::Rotational;
@@ -257,21 +254,15 @@ void Logic::generateNewCommands()
         cmd.rotational = controller::RotationalCommand{controller::RotationDir::TurnBack};
         mCommands.addCommand(cmd);
     }
-
-    mIsStartedRun = true;
 }
 
 bool Logic::needToCompensateFrontDistance()
 {
     // milimeters
-    static constexpr double allowedFrontOffset   = 5;
+    static constexpr double allowedFrontOffset   = 10;
     static constexpr double minAllowedFront      = mycha::mechanic::frontSensorToFrontWallDistance - allowedFrontOffset;
     static constexpr double maxAllowedFront      = mycha::mechanic::frontSensorToFrontWallDistance + allowedFrontOffset;
     static constexpr double cubeSizeInMilimeters = mycha::mechanic::labyrinthCubeSize * 1000;
-
-    // avoid reading distances before first data comes
-    if (not areAllDistancesInitialized(mDistancesData))
-        return false;
 
     if (mDistancesData.front > cubeSizeInMilimeters)
         return false;
@@ -282,7 +273,7 @@ bool Logic::needToCompensateFrontDistance()
 controller::Command Logic::getCommandToCompensateFrontDistance()
 {
     const double distanceToCompensate = (mDistancesData.front - mycha::mechanic::frontSensorToFrontWallDistance) / 1000;
-    controller::Command cmd;
+    controller::Command cmd{};
     cmd.type    = controller::CommandType::Forward;
     cmd.forward = controller::ForwardCommand{distanceToCompensate};
 

@@ -48,7 +48,7 @@ Imu::Imu(utils::AllSignals& signals, uint8_t address)
 {
 }
 
-void Imu::initialize()
+int16_t Imu::initialize()
 {
     setGyroDps(GyroDps::GYRO_FS_SEL_1000dps);
 
@@ -61,10 +61,7 @@ void Imu::initialize()
     }
     mOffset = gyroSumZ / 1000.0;
 
-    char buf[20];
-    snprintf(buf, 20, "IMU offset=%d", mOffset);
-    // mSignals.displayTextLine.emit(2, buf);
-    HAL_Delay(1000);
+    return mOffset;
 }
 
 double Imu::getGyroZ()

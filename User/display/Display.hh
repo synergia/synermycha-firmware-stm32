@@ -34,6 +34,7 @@ class Display : public utils::Observer
     void displayTextLine(int nr, const char* line);
     void showDisplayBuffor();
     void showMaze();
+    void mazeReadyToShow();
     void displayBuffReadyPararell();
     void showDisplayBufforPararell();
     void logValue(const char* text, double val, uint8_t line, bool show);
@@ -43,6 +44,7 @@ class Display : public utils::Observer
     I2C_HandleTypeDef* mHi2c;
     bool mIsDisplayBuffReady = false;
     bool mIsDisplayShowing   = false;
+    bool mMazeReadyToShow    = false;
 };
 
 }  // namespace display

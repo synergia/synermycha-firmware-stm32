@@ -22,6 +22,7 @@ struct AllSignals
     signal<void(const char* text, double value, uint8_t line, bool show)> displayLogValue;
     signal<void(int line, const char* text)> displayTextLine;
     signal<void(void)> showMaze;
+    signal<void(void)> mazeReadyToShow;
 
     signal<void(void)> interruptDistance;
     signal<void(void)> tim14Elapsed;

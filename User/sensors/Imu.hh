@@ -36,7 +36,7 @@ class Imu
 {
   public:
     Imu(utils::AllSignals& signals, uint8_t address);
-    void initialize();
+    int16_t initialize();
 
     void setGyroDps(GyroDps gyroDps);
 

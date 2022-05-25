@@ -12,25 +12,22 @@ logic::StackType stack;
 
 bool cmpEqual(double v1, double v2)
 {
-    return v1 - v2 < 1e-5;
+    return std::abs(v1 - v2) < 1e-5;
 }
 
 // assume that char buf is always 4 size. max value is 255 + \0;
 void valueToCharBuf(uint8_t val, char* buf)
 {
-    buf[0] = buf[1] = buf[2] = buf[3] = 0;
+    buf[0] = buf[1] = buf[2] = ' ';
 
     if (val < 10)
     {
         buf[0] = val + '0';
-        buf[1] = ' ';
-        buf[2] = ' ';
     }
     else if (val < 100)
     {
         buf[0] = val / 10 + '0';
         buf[1] = val % 10 + '0';
-        buf[2] = ' ';
     }
     else if (val < 1000)
     {
@@ -41,26 +38,51 @@ void valueToCharBuf(uint8_t val, char* buf)
     }
 }
 
+void initMazeWallToDisplay(char buf[][20])
+{
+    for (int row = 0; row < 5; ++row)
+    {
+        for (int col = 0; col < 10; ++col)
+        {
+            buf[row][col] = ' ';
+        }
+    }
+
+    for (int row = 0; row < 5; ++row)
+    {
+        buf[row][0]  = '|';
+        buf[row][10] = '|';
+    }
+
+    for (int col = 1; col < 10; ++col)
+    {
+        buf[4][col] = '_';
+    }
+}
+
 }  // namespace
 
 namespace logic
 {
 
+bool operator==(const Point& lhs, const Point& rhs)
+{
+    return lhs.x == rhs.x and lhs.y == rhs.y;
+}
+
+bool operator!=(const Point& lhs, const Point& rhs)
+{
+    return not(lhs == rhs);
+}
+
 Maze::Maze(utils::AllSignals& signals)
-    : mStart{4, 4}
+    : mSignals{signals}
+    , mStart{4, 4}
     , mFinish{2, 4}
     , mMouseDir{MouseDir::N}
 {
     mCurrentPos = mStart;
-
-    utils::Timer timer;
-    timer.start();
     initFloodfill();
-    timer.stop();
-
-    char buf[20];
-    snprintf(buf, 20, "maze us=%ld", timer.getTimeInUs());
-    signals.displayTextLine.emit(2, buf);
 }
 
 void Maze::updateMouseAndMazeState(const controller::Command& cmd, const mycha::DistancesData& distances)
@@ -84,10 +106,13 @@ void Maze::updateMouseAndMazeState(const controller::Command& cmd, const mycha::
 void Maze::updateWallsAtStartup(const mycha::DistancesData& distances)
 {
     updateWalls(distances);
+    floodfill(mCurrentPos);
 }
 
 void Maze::moveMouseForward()
 {
+    static int cntForward = 0;
+    ++cntForward;
     auto x = mCurrentPos.x;
     auto y = mCurrentPos.y;
 
@@ -114,6 +139,10 @@ void Maze::moveMouseForward()
 
     mCurrentPos.x = x;
     mCurrentPos.y = y;
+
+    // mSignals.displayLogValue.emit("x: %f", (float)mCurrentPos.x, 0, false);
+    // mSignals.displayLogValue.emit("y: %f", (float)mCurrentPos.y, 1, false);
+    // mSignals.displayLogValue.emit("cnt: %f", (float)cntForward, 2, true);
 }
 
 void Maze::rotateMouse(controller::RotationDir dir)
@@ -278,24 +307,72 @@ void Maze::updateWallE(const Point& point)
     }
 }
 
-void Maze::drawMaze()
+void Maze::drawMazeWeights()
 {
-    char buf[4];
+    if (mazeLen != 5)
+        return;
+
+    char buf[3];
     for (int row = 0; row < 5; ++row)
     {
         char* rowPtr = display::displayMazeBuff[row];
         for (int col = 0; col < 5; ++col)
         {
             valueToCharBuf(mMaze[row][col].value, buf);
-            strcat(rowPtr, buf);
-            rowPtr += 3;
+            *rowPtr++ = buf[0];
+            *rowPtr++ = buf[1];
+            *rowPtr++ = buf[2];
             if (col < 4)
             {
-                strcat(rowPtr, "|");
-                ++rowPtr;
+                *rowPtr++ = '|';
             }
         }
     }
+}
+
+void Maze::drawMazeWalls()
+{
+    if (mazeLen != 5)
+        return;
+
+    static bool isMazeWallInit = false;
+    if (not isMazeWallInit)
+    {
+        initMazeWallToDisplay(display::displayMazeBuff);
+        isMazeWallInit = true;
+    }
+
+    auto x = mCurrentPos.x;
+    auto y = mCurrentPos.y;
+
+    // north, upper wall is impossible to draw
+    if (mMaze[y][x].isWallN)
+    {
+        if (y > 0)
+        {
+            display::displayMazeBuff[y - 1][x * 2 + 1] = '_';
+        }
+    }
+    // west
+    if (mMaze[y][x].isWallW)
+    {
+        display::displayMazeBuff[y][x * 2] = '|';
+    }
+    // south
+    if (mMaze[y][x].isWallS)
+    {
+        display::displayMazeBuff[y][x * 2 + 1] = '_';
+    }
+    // east
+    if (mMaze[y][x].isWallE)
+    {
+        display::displayMazeBuff[y][x * 2 + 2] = '|';
+    }
+}
+
+bool Maze::isMouseInFinishPoint()
+{
+    return mCurrentPos == mFinish;
 }
 
 void Maze::initFloodfill()
@@ -330,6 +407,11 @@ void Maze::floodfill(Point floodP)
         for (int y = 0; y < mazeLen; y++)
             mMaze[x][y].wasVisited = false;
     }
+
+    if (mCurrentPos == mFinish)
+        return;
+
+    mMaze[mFinish.y][mFinish.x].wasVisited = true;
 
     pushToStackAdjacentCells(floodP, stack);
     stack.push(floodP);

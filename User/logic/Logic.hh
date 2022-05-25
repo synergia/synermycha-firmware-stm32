@@ -60,7 +60,6 @@ class Logic : public utils::Observer
     controller::RotationalController mRotationalController;
     controller::CommandQueue mCommands;
 
-    bool mIsStartedRun{false};
     controller::Command mLastCommand{};
 
     Maze mMaze;

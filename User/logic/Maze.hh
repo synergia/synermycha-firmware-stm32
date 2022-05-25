@@ -29,6 +29,9 @@ struct Point
     int8_t y{};
 };
 
+bool operator==(const Point& lhs, const Point& rhs);
+bool operator!=(const Point& lhs, const Point& rhs);
+
 using StackType = utils::Stack<Point, 256>;
 
 enum class MouseDir : uint8_t
@@ -55,7 +58,9 @@ class Maze
     Maze(utils::AllSignals& signals);
     void updateMouseAndMazeState(const controller::Command& cmd, const mycha::DistancesData& distances);
     void updateWallsAtStartup(const mycha::DistancesData& distances);
-    void drawMaze();
+    void drawMazeWeights();
+    void drawMazeWalls();
+    bool isMouseInFinishPoint();
 
   private:
     void moveMouseForward();
@@ -72,6 +77,8 @@ class Maze
     void floodfill(Point floodP);
     uint8_t minValueFromNeighbours(Point p);
     void pushToStackAdjacentCells(const Point& p, StackType& stack);
+
+    utils::AllSignals& mSignals;
 
     Point mStart;
     Point mFinish;

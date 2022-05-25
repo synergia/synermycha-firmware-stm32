@@ -80,7 +80,7 @@ class Mycha : public utils::Observer
     void initAdc();
     void initMotors();
     void initDistance();
-    void initImu();
+    int16_t initImu();
 
     void onInterruptDistance();
     void onInterruptController();
@@ -91,6 +91,10 @@ class Mycha : public utils::Observer
     void onTim14Elapsed();
 
     void onGetGyroZ(double& gyroZ);
+
+    double getBatteryVoltage();
+
+    bool isMychaInitalized();
 
     utils::AllSignals& mSignals;
 
@@ -114,6 +118,8 @@ class Mycha : public utils::Observer
     sensors::Encoder mEncoderR;
 
     sensors::Imu mImu;
+
+    bool mAreDistancesValidData{false};
 };
 
 }  // namespace mycha

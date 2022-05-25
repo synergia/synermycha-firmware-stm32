@@ -1,8 +1,21 @@
 #include "Mycha.hh"
+#include "utils/Timer.hh"
 #include <adc.h>
 #include <cmath>
 #include <inttypes.h>
 #include <tim.h>
+
+namespace
+{
+/// @note lack of front left/rigth, for tests
+/// when they are present, it seemed to be 0
+/// need check it
+inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
+{
+    return dist.right != 0 and dist.front != 0 and dist.left != 0;
+}
+
+}  // namespace
 
 namespace mycha
 {
@@ -36,6 +49,7 @@ Mycha::Mycha(utils::AllSignals& signals)
     HAL_Delay(1000);
     display::clearDisplayBuff();
 
+    /// @note important thing, that connectSignal should be after initalization of mycha
     connectSignals();
 }
 
@@ -53,16 +67,21 @@ void Mycha::connectSignals()
 
 void Mycha::initializeMycha()
 {
+    char buf[20];
+
     // initBle();
     initLed();
-    //  mSignals.displayTextLine.emit(-1, "LED - OK");
-    // initAdc();
+    initAdc();
+    snprintf(buf, 20, "Voltage=%f", getBatteryVoltage());
+    mSignals.displayTextLine.emit(-1, buf);
+
     initMotors();
-    // mSignals.displayTextLine.emit(0, "Motors - OK");
     initDistance();
-    // mSignals.displayTextLine.emit(1, "ToF - OK");
-    initImu();
-    //  mSignals.displayTextLine.emit(3, "IMU - OK");
+    mSignals.displayTextLine.emit(1, "ToF - OK");
+
+    auto offset = initImu();
+    snprintf(buf, 20, "offset gyro=%d", offset);
+    mSignals.displayTextLine.emit(2, buf);
 }
 
 void Mycha::initBle()
@@ -80,6 +99,7 @@ void Mycha::initLed()
 
 void Mycha::initAdc()
 {
+    HAL_ADC_Start(&hadc1);
 }
 
 void Mycha::initMotors()
@@ -102,9 +122,9 @@ void Mycha::initDistance()
     mSensorR.initialize();
 }
 
-void Mycha::initImu()
+int16_t Mycha::initImu()
 {
-    mImu.initialize();
+    return mImu.initialize();
 }
 
 void Mycha::onInterruptDistance()
@@ -113,6 +133,9 @@ void Mycha::onInterruptDistance()
 
 void Mycha::onInterruptController()
 {
+    if (not isMychaInitalized())
+        return;
+
     setDrivingData();
 
     MotorsSettings motorSettings;
@@ -167,32 +190,34 @@ void Mycha::onTim14Elapsed()
     data.frontRight = mSensorFR.readDistance();
     data.right      = mSensorR.readDistance();
 
-    mSignals.setDistancesData.emit(data);
+    mAreDistancesValidData = areAllDistancesInitialized(data);
 
-    // static bool colour = 0;
-    // uint16_t PomiarADC = 0;
-    // if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
-    // {
-    //     PomiarADC = HAL_ADC_GetValue(&hadc1);
-    //     HAL_ADC_Start(&hadc1);
-    // }
-    // SSD1306_DrawFilledRectangle(112,2,12,4,SSD1306_COLOR_BLACK);
-    // if(PomiarADC/340 > 0){
-    //   SSD1306_DrawRectangle(110,0,16,8,SSD1306_COLOR_WHITE);
-    //   SSD1306_DrawLine(127,3,127,5,SSD1306_COLOR_WHITE);
-    //   SSD1306_DrawFilledRectangle(112,2,PomiarADC/340,4,SSD1306_COLOR_WHITE);
-    // }
-    // else
-    // {
-    //   SSD1306_DrawRectangle(110,0,16,8,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK );
-    //   SSD1306_DrawLine(127,3,127,5,colour ? SSD1306_COLOR_WHITE : SSD1306_COLOR_BLACK);
-    //   colour = !colour;
-    // }
+    if (mAreDistancesValidData)
+        mSignals.setDistancesData.emit(data);
 }
 
 void Mycha::onGetGyroZ(double& gyroZ)
 {
     gyroZ = mImu.getGyroZ();
+}
+
+double Mycha::getBatteryVoltage()
+{
+    double voltage{};
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK)
+    {
+        auto rawAdc = HAL_ADC_GetValue(&hadc1);
+        // resistance division is 3
+        // reference voltage 3.3V
+        voltage = 3.0 * 3.3 * (double(rawAdc) / 4096.0);
+        HAL_ADC_Start(&hadc1);
+    }
+    return voltage;
+}
+
+bool Mycha::isMychaInitalized()
+{
+    return mAreDistancesValidData;
 }
 
 }  // namespace mycha

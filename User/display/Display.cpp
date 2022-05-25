@@ -37,6 +37,7 @@ Display::Display(utils::AllSignals& signals, I2C_HandleTypeDef* hi2c, const uint
     mAllSignals.displayLogValue.connect<Display, &Display::logValue>(*this);
     mAllSignals.displayTextLine.connect<Display, &Display::displayTextLine>(*this);
     mAllSignals.showMaze.connect<Display, &Display::showMaze>(*this);
+    mAllSignals.mazeReadyToShow.connect<Display, &Display::mazeReadyToShow>(*this);
 }
 
 void Display::clear()
@@ -74,12 +75,22 @@ void Display::showDisplayBuffor()
 
 void Display::showMaze()
 {
+    if (not mMazeReadyToShow)
+        return;
+
     clear();
     for (int i = 0; i < 5; i++)
     {
         writeLine(i, displayMazeBuff[i]);
     }
     show();
+
+    mMazeReadyToShow = false;
+}
+
+void Display::mazeReadyToShow()
+{
+    mMazeReadyToShow = true;
 }
 
 void Display::displayBuffReadyPararell()
