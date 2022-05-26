@@ -9,6 +9,7 @@ namespace
 {
 
 logic::StackType stack;
+utils::Stack<controller::Command, 255> cmdStack;
 
 bool cmpEqual(double v1, double v2)
 {
@@ -375,6 +376,83 @@ bool Maze::isMouseInFinishPoint()
     return mCurrentPos == mFinish;
 }
 
+bool Maze::isMouseInStartingPoint()
+{
+    return mCurrentPos == mStart;
+}
+
+controller::Command Maze::generateCommandInSearchRun() const
+{
+    Point nextPoint = findCellWithMinValueFromNeighbour();
+    return getCommandFromCurrentPointToNext(nextPoint);
+}
+
+void Maze::generateCommandsToBackToStart(controller::CommandQueue& queue)
+{
+    using namespace controller;
+
+    const Point originalCurrentPos  = mCurrentPos;
+    const MouseDir originalMouseDir = mMouseDir;
+
+    mCurrentPos = mStart;
+    mMouseDir   = MouseDir::N;
+
+    // simulate run from start to finish
+    while (not isMouseInFinishPoint())
+    {
+        auto cmd = Maze::generateCommandInSearchRun();
+        if (cmd.type == CommandType::Forward)
+            moveMouseForward();
+        else if (cmd.type == CommandType::Rotational)
+            rotateMouse(cmd.rotational.rotDir);
+        cmdStack.push(cmd);
+    }
+
+    // insert first command, turn back from finish
+    Command cmd{};
+    cmd.type       = CommandType::Rotational;
+    cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+    queue.addCommand(cmd);
+
+    // reverse commands to make it from finish to start
+    // optimize it for speed on straight road
+    while (not cmdStack.isEmpty())
+    {
+        auto popedCmd = cmdStack.pop();
+        if (popedCmd.type == CommandType::Rotational)
+        {
+            Command cmd{};
+            if (popedCmd.rotational.rotDir == RotationDir::Left)
+            {
+                cmd.type       = CommandType::Rotational;
+                cmd.rotational = RotationalCommand{RotationDir::Right};
+            }
+            else if (popedCmd.rotational.rotDir == RotationDir::Right)
+            {
+                cmd.type       = CommandType::Rotational;
+                cmd.rotational = RotationalCommand{RotationDir::Left};
+            }
+            queue.addCommand(cmd);
+        }
+        else if (popedCmd.type == CommandType::Forward)
+        {
+            uint32_t nrOfForwardCommands = 1;
+            while (not cmdStack.isEmpty() and cmdStack.peek().type == CommandType::Forward)
+            {
+                ++nrOfForwardCommands;
+                cmdStack.pop();
+            }
+            Command cmd{};
+            cmd.type    = CommandType::Forward;
+            cmd.forward = ForwardCommand{nrOfForwardCommands * mycha::mechanic::labyrinthCubeSize};
+            queue.addCommand(cmd);
+        }
+    }
+
+    mCurrentPos = originalCurrentPos;
+    mMouseDir   = originalMouseDir;
+}
+
 void Maze::initFloodfill()
 {
     for (int x = 0; x < mazeLen; x++)
@@ -496,6 +574,129 @@ void Maze::pushToStackAdjacentCells(const Point& p, StackType& stack)
             stack.push(Point{p.x + (int8_t)1, p.y});
         }
     }
+}
+
+Point Maze::findCellWithMinValueFromNeighbour() const
+{
+    uint8_t minVal = 255;
+    uint8_t tmp    = 255;
+    Point minPoint{};
+
+    const Point& p   = mCurrentPos;
+    const Cell& cell = mMaze[p.y][p.x];
+    // north
+    if (!cell.isWallN and p.y - 1 >= 0)
+    {
+        minVal     = mMaze[p.y - 1][p.x].value;
+        minPoint.x = p.x;
+        minPoint.y = p.y - 1;
+    }
+    // west
+    if (!cell.isWallW and p.x - 1 >= 0)
+    {
+        tmp = mMaze[p.y][p.x - 1].value;
+        if (tmp < minVal)
+        {
+            minVal     = tmp;
+            minPoint.x = p.x - 1;
+            minPoint.y = p.y;
+        }
+    }
+    // south
+    if (!cell.isWallS and p.y + 1 < mazeLen)
+    {
+        tmp = mMaze[p.y + 1][p.x].value;
+        if (tmp < minVal)
+        {
+            minVal     = tmp;
+            minPoint.x = p.x;
+            minPoint.y = p.y + 1;
+        }
+    }
+    // east
+    if (!cell.isWallE and p.x + 1 < mazeLen)
+    {
+        tmp = mMaze[p.y][p.x + 1].value;
+        if (tmp < minVal)
+        {
+            minVal     = tmp;
+            minPoint.x = p.x + 1;
+            minPoint.y = p.y;
+        }
+    }
+
+    return minPoint;
+}
+
+controller::Command Maze::getCommandFromCurrentPointToNext(Point next) const
+{
+    static constexpr double wallLen = 0.18;
+
+    using namespace controller;
+
+    const Point& p = mCurrentPos;
+    MouseDir dirOfNextPointFromCurrent{};
+
+    if (next.x > p.x)
+        dirOfNextPointFromCurrent = MouseDir::E;
+    else if (next.x < p.x)
+        dirOfNextPointFromCurrent = MouseDir::W;
+    else if (next.y < p.y)
+        dirOfNextPointFromCurrent = MouseDir::N;
+    else
+        dirOfNextPointFromCurrent = MouseDir::S;
+
+    // we can go forward
+    if (dirOfNextPointFromCurrent == mMouseDir)
+    {
+        Command cmd{};
+        cmd.type           = CommandType::Forward;
+        cmd.forward.length = wallLen;
+        return cmd;
+    }
+
+    // we must first rotate
+    Command cmd;
+    cmd.type = CommandType::Rotational;
+    if (mMouseDir == MouseDir::N)
+    {
+        if (dirOfNextPointFromCurrent == MouseDir::W)
+            cmd.rotational = RotationalCommand{RotationDir::Left};
+        else if (dirOfNextPointFromCurrent == MouseDir::S)
+            cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+        else if (dirOfNextPointFromCurrent == MouseDir::E)
+            cmd.rotational = RotationalCommand{RotationDir::Right};
+    }
+    else if (mMouseDir == MouseDir::W)
+    {
+        if (dirOfNextPointFromCurrent == MouseDir::N)
+            cmd.rotational = RotationalCommand{RotationDir::Right};
+        else if (dirOfNextPointFromCurrent == MouseDir::S)
+            cmd.rotational = RotationalCommand{RotationDir::Left};
+        else if (dirOfNextPointFromCurrent == MouseDir::E)
+            cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+    }
+    else if (mMouseDir == MouseDir::S)
+    {
+        if (dirOfNextPointFromCurrent == MouseDir::N)
+            cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+        else if (dirOfNextPointFromCurrent == MouseDir::E)
+            cmd.rotational = RotationalCommand{RotationDir::Left};
+        else if (dirOfNextPointFromCurrent == MouseDir::W)
+            cmd.rotational = RotationalCommand{RotationDir::Right};
+    }
+    // MouseDir::E
+    else
+    {
+        if (dirOfNextPointFromCurrent == MouseDir::N)
+            cmd.rotational = RotationalCommand{RotationDir::Left};
+        else if (dirOfNextPointFromCurrent == MouseDir::S)
+            cmd.rotational = RotationalCommand{RotationDir::Right};
+        else if (dirOfNextPointFromCurrent == MouseDir::W)
+            cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+    }
+
+    return cmd;
 }
 
 }  // namespace logic

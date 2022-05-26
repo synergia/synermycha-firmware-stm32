@@ -24,6 +24,14 @@ class Logic : public utils::Observer
         Rotational
     };
 
+    enum class MousePhase
+    {
+        SearchRun,
+        BackToStart,
+        FastRun,
+        RightHand
+    };
+
     void connectSignals();
     void onSetDrivingData(const mycha::DrivingData& data);
     void onSetDistancesData(const mycha::DistancesData& data);
@@ -59,10 +67,11 @@ class Logic : public utils::Observer
     controller::ForwardController mForwardController;
     controller::RotationalController mRotationalController;
     controller::CommandQueue mCommands;
-
     controller::Command mLastCommand{};
 
     Maze mMaze;
+
+    MousePhase mMousePhase;
 };
 
 }  // namespace logic

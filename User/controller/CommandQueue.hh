@@ -7,7 +7,7 @@
 namespace controller
 {
 
-constexpr uint32_t COMMAND_QUEUE_SIZE{10};
+constexpr uint32_t COMMAND_QUEUE_SIZE{200};
 
 // at this moment, inserting few commands is possible only when queue is empty
 // to insert next elems, all commands must be read

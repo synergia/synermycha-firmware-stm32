@@ -1,6 +1,7 @@
 #pragma once
 
 #include "controller/Command.hh"
+#include "controller/CommandQueue.hh"
 #include "mycha/MouseData.hh"
 #include "utils/AllSignals.hh"
 #include "utils/Stack.hh"
@@ -61,6 +62,9 @@ class Maze
     void drawMazeWeights();
     void drawMazeWalls();
     bool isMouseInFinishPoint();
+    bool isMouseInStartingPoint();
+    controller::Command generateCommandInSearchRun() const;
+    void generateCommandsToBackToStart(controller::CommandQueue& queue);
 
   private:
     void moveMouseForward();
@@ -77,6 +81,9 @@ class Maze
     void floodfill(Point floodP);
     uint8_t minValueFromNeighbours(Point p);
     void pushToStackAdjacentCells(const Point& p, StackType& stack);
+
+    Point findCellWithMinValueFromNeighbour() const;
+    controller::Command getCommandFromCurrentPointToNext(Point next) const;
 
     utils::AllSignals& mSignals;
 

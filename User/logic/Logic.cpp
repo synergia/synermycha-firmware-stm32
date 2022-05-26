@@ -27,6 +27,7 @@ Logic::Logic(utils::AllSignals& signals)
     , mRotationalController{signals}
     , mCommands{}
     , mMaze{signals}
+    , mMousePhase{MousePhase::SearchRun}
 {
     connectSignals();
 }
@@ -65,21 +66,18 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
-    static int targetCounter = 0;
-
     if (isTargetReached())
     {
-        targetCounter++;
-        mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
-        mMaze.drawMazeWeights();
-        // mMaze.drawMazeWalls();
-        mSignals.mazeReadyToShow.emit();
+        if (mMousePhase == MousePhase::SearchRun)
+        {
+            mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
+            mMaze.drawMazeWeights();
+            // mMaze.drawMazeWalls();
+            mSignals.mazeReadyToShow.emit();
+        }
         resetCurrentControllerAndLogicData();
-        if (not mMaze.isMouseInFinishPoint())
-            loadNewCommand();
+        loadNewCommand();
     }
-
-    // mSignals.displayLogValue.emit("R: %f", (float)targetCounter, 0, true);
 
     motorData = getDataFromController();
 }
@@ -220,39 +218,63 @@ void Logic::resetCurrentControllerAndLogicData()
 
 void Logic::generateNewCommands()
 {
-    const double oneCubeLen = mycha::mechanic::labyrinthCubeSize;
-    controller::Command cmd{};
-    if (sensors::isNoWall(mDistancesData.right))
+    if (mMousePhase == MousePhase::SearchRun)
     {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Right};
-        mCommands.addCommand(cmd);
+        if (mMaze.isMouseInFinishPoint())
+        {
+            mMousePhase = MousePhase::BackToStart;
+            return;
+        }
+        mCommands.addCommand(mMaze.generateCommandInSearchRun());
+    }
+    else if (mMousePhase == MousePhase::BackToStart)
+    {
+        if (mMaze.isMouseInStartingPoint())
+        {
+            mMousePhase = MousePhase::FastRun;
+            return;
+        }
+        mMaze.generateCommandsToBackToStart(mCommands);
+    }
+    else if (mMousePhase == MousePhase::FastRun)
+    {
+    }
+    else if (mMousePhase == MousePhase::RightHand)
+    {
+        const double oneCubeLen = mycha::mechanic::labyrinthCubeSize;
+        controller::Command cmd{};
+        if (sensors::isNoWall(mDistancesData.right))
+        {
+            cmd.type       = controller::CommandType::Rotational;
+            cmd.rotational = controller::RotationalCommand{controller::RotationDir::Right};
+            mCommands.addCommand(cmd);
 
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{oneCubeLen};
-        mCommands.addCommand(cmd);
-    }
-    else if (sensors::isNoWall(mDistancesData.front))
-    {
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{oneCubeLen};
-        mCommands.addCommand(cmd);
-    }
-    else if (sensors::isNoWall(mDistancesData.left))
-    {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{controller::RotationDir::Left};
-        mCommands.addCommand(cmd);
+            cmd.type    = controller::CommandType::Forward;
+            cmd.forward = controller::ForwardCommand{oneCubeLen};
+            mCommands.addCommand(cmd);
+        }
+        else if (sensors::isNoWall(mDistancesData.front))
+        {
+            cmd.type    = controller::CommandType::Forward;
+            cmd.forward = controller::ForwardCommand{oneCubeLen};
+            mCommands.addCommand(cmd);
+        }
+        else if (sensors::isNoWall(mDistancesData.left))
+        {
+            cmd.type       = controller::CommandType::Rotational;
+            cmd.rotational = controller::RotationalCommand{controller::RotationDir::Left};
+            mCommands.addCommand(cmd);
 
-        cmd.type    = controller::CommandType::Forward;
-        cmd.forward = controller::ForwardCommand{oneCubeLen};
-        mCommands.addCommand(cmd);
-    }
-    else
-    {
-        cmd.type       = controller::CommandType::Rotational;
-        cmd.rotational = controller::RotationalCommand{controller::RotationDir::TurnBack};
-        mCommands.addCommand(cmd);
+            cmd.type    = controller::CommandType::Forward;
+            cmd.forward = controller::ForwardCommand{oneCubeLen};
+            mCommands.addCommand(cmd);
+        }
+        else
+        {
+            cmd.type       = controller::CommandType::Rotational;
+            cmd.rotational = controller::RotationalCommand{controller::RotationDir::TurnBack};
+            mCommands.addCommand(cmd);
+        }
     }
 }
 

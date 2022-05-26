@@ -26,9 +26,24 @@ template <typename T, int N> class Stack
             return T{};
     }
 
-    bool isEmpty()
+    T peek() const
+    {
+        if (mNrOfElems > 0)
+        {
+            return mBuf[mNrOfElems - 1];
+        }
+        else
+            return T{};
+    }
+
+    bool isEmpty() const
     {
         return mNrOfElems == 0;
+    }
+
+    void reset()
+    {
+        mNrOfElems = 0;
     }
 
   private:
