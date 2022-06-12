@@ -11,6 +11,7 @@ namespace logic
 namespace
 {
 
+constexpr uint32_t msFromButtonEnterToSearchRunStart{3000};
 constexpr uint32_t msFromButtonEnterToFastRunStart{3000};
 
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
@@ -20,18 +21,39 @@ void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data
     signals.displayLogValue.emit("L: %f", (float)data.left, 2, true);
 }
 
+void logDistances(utils::LoggingSystem& logger, const mycha::DistancesData& data)
+{
+    logger.info("Distances: left=%u, front=%u, right=%u", data.left, data.front, data.right);
+}
+
+/// @note cmd stop is not logged - it can thrash logs
+void logCommand(const char* intro, utils::LoggingSystem& logger, const controller::Command& cmd)
+{
+    using namespace controller;
+    if (cmd.type == CommandType::Forward)
+    {
+        logger.info("%s forward:%f", intro, cmd.forward.length);
+    }
+    else if (cmd.type == CommandType::Rotational)
+    {
+        logger.info("%s rot:%f", intro, cmd.rotational.angle);
+    }
+}
+
 }  // namespace
 
-Logic::Logic(utils::AllSignals& signals)
+Logic::Logic(utils::AllSignals& signals, utils::LoggingSystem& logger)
     : mSignals(signals)
+    , mLogger{logger}
     , mActiveController{ControllerType::None}
     , mForwardController{signals}
     , mRotationalController{signals}
     , mCommands{}
     , mMaze{signals}
-    , mMousePhase{MousePhase::SearchRun}
+    , mMousePhase{MousePhase::WaitingForButtonEnterToSearchRun}
 {
     connectSignals();
+    mLogger.info("Logic is ready with mouse phase:%s", toCString(mMousePhase));
 }
 
 void Logic::connectSignals()
@@ -44,9 +66,9 @@ void Logic::connectSignals()
 
 void Logic::onButtonEnter()
 {
-    if (mMousePhase == MousePhase::WaitingForButtonEnter)
+    if (mMousePhase == MousePhase::WaitingForButtonEnterToFastRun)
     {
-        mMousePhase = MousePhase::WaitingForFastRunStart;
+        setNewPhase(MousePhase::WaitingForFastRunStart);
     }
 }
 
@@ -72,6 +94,7 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
         isFirstMazeUpdateDone = true;
     }
 
+    // logDistances(mLogger, mDistancesData);
     // printDistances(mSignals, data);
 }
 
@@ -169,7 +192,7 @@ void Logic::loadNewCommand()
         generateNewCommands();
         mLastCommand = mCommands.getNextCommand();
     }
-
+    logCommand("load:", mLogger, mLastCommand);
     mActiveController = executeCommand(mLastCommand);
 }
 
@@ -231,11 +254,20 @@ void Logic::resetCurrentControllerAndLogicData()
 
 void Logic::generateNewCommands()
 {
-    if (mMousePhase == MousePhase::SearchRun)
+    if (mMousePhase == MousePhase::WaitingForButtonEnterToSearchRun)
+    {
+        mSignals.displayLogValue.emit("Ready for start:%f", (double)0, 1, false);
+        mSignals.displayLogValue.emit("  Press enter:%f", (double)0, 2, true);
+        if (mDistancesData.front < 50)
+        {
+            setNewPhase(MousePhase::WaitingForSearchRunStart);
+        }
+    }
+    else if (mMousePhase == MousePhase::SearchRun)
     {
         if (mMaze.isMouseInFinishPoint())
         {
-            mMousePhase = MousePhase::BackToStart;
+            setNewPhase(MousePhase::BackToStart);
             mMaze.generateCommandsToBackToStart(mCommands);
             return;
         }
@@ -246,17 +278,17 @@ void Logic::generateNewCommands()
         // after succesfull finishing back to start, wait for button
         if (mCommands.isEmpty())
         {
-            mMousePhase = MousePhase::WaitingForButtonEnter;
+            setNewPhase(MousePhase::WaitingForButtonEnterToFastRun);
             mSignals.displayLogValue.emit("Ready for run:%f", (double)0, 1, false);
             mSignals.displayLogValue.emit("  Press enter:%f", (double)0, 2, true);
             return;
         }
     }
-    else if (mMousePhase == MousePhase::WaitingForButtonEnter)
+    else if (mMousePhase == MousePhase::WaitingForButtonEnterToFastRun)
     {
         if (mDistancesData.front < 50)
         {
-            mMousePhase = MousePhase::WaitingForFastRunStart;
+            setNewPhase(MousePhase::WaitingForFastRunStart);
         }
     }
     else if (mMousePhase == MousePhase::FastRun)
@@ -330,20 +362,72 @@ controller::Command Logic::getCommandToCompensateFrontDistance()
 
 void Logic::msCallback()
 {
-    if (mMousePhase == MousePhase::WaitingForFastRunStart)
+    if (mMousePhase == MousePhase::WaitingForSearchRunStart)
     {
         if (mMsFromClickEnter % 1000 == 0)
         {
             display::clearDisplayBuff();
-            mSignals.displayLogValue.emit("Time to start:%f", (double)(3000 - mMsFromClickEnter) / 1000.0, 1, true);
+            mSignals.displayLogValue.emit("Search run in:%f", (double)(3000 - mMsFromClickEnter) / 1000.0, 1, true);
+        }
+        if (mMsFromClickEnter >= msFromButtonEnterToSearchRunStart)
+        {
+            setNewPhase(MousePhase::SearchRun);
+            display::clearDisplayBuff();
+            mSignals.displayLogValue.emit("SEARCH RUN!!! %f", (double)0, 1, true);
+        }
+        ++mMsFromClickEnter;
+    }
+    else if (mMousePhase == MousePhase::WaitingForFastRunStart)
+    {
+        if (mMsFromClickEnter % 1000 == 0)
+        {
+            display::clearDisplayBuff();
+            mSignals.displayLogValue.emit("Fast run in:%f", (double)(3000 - mMsFromClickEnter) / 1000.0, 1, true);
         }
         if (mMsFromClickEnter >= msFromButtonEnterToFastRunStart)
         {
-            mMousePhase = MousePhase::FastRun;
+            setNewPhase(MousePhase::FastRun);
             display::clearDisplayBuff();
             mSignals.displayLogValue.emit("FAST RUN!!! %f", (double)0, 1, true);
         }
         ++mMsFromClickEnter;
+    }
+    else
+    {
+        mMsFromClickEnter = 0;
+    }
+}
+
+void Logic::setNewPhase(MousePhase newPhase)
+{
+    mLogger.info("Change phase from %s to %s", toCString(mMousePhase), toCString(newPhase));
+    mMousePhase = newPhase;
+}
+
+const char* Logic::toCString(MousePhase phase)
+{
+    switch (phase)
+    {
+    case MousePhase::WaitingForButtonEnterToSearchRun:
+        return "WaitingForButtonEnterToSearchRun";
+    case MousePhase::WaitingForSearchRunStart:
+        return "WaitingForSearchRunStart";
+    case MousePhase::SearchRun:
+        return "SearchRun";
+    case MousePhase::BackToStart:
+        return "BackToStart";
+    case MousePhase::WaitingForButtonEnterToFastRun:
+        return "WaitingForButtonEnterToFastRun";
+    case MousePhase::WaitingForFastRunStart:
+        return "WaitingForFastRunStart";
+    case MousePhase::FastRun:
+        return "FastRun";
+    case MousePhase::RightHand:
+        return "RightHand";
+    case MousePhase::TestMode:
+        return "TestMode";
+    default:
+        return "Unknown";
     }
 }
 

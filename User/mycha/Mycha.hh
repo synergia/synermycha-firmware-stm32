@@ -9,6 +9,7 @@
 #include "sensors/Encoder.hh"
 #include "sensors/Imu.hh"
 #include "utils/AllSignals.hh"
+#include "utils/LoggingSystem.hh"
 #include "utils/Observer.hh"
 #include <cmath>
 
@@ -64,7 +65,7 @@ constexpr double ticksToAngularSpeedMultipler = (2 * PI / tickPerRevolution) / c
 class Mycha : public utils::Observer
 {
   public:
-    explicit Mycha(utils::AllSignals& signals);
+    explicit Mycha(utils::AllSignals& signals, utils::LoggingSystem& logger);
     void motors(float pwmRight, float pwmLeft)
     {
         mMotorR.setPwm(pwmRight);
@@ -98,6 +99,7 @@ class Mycha : public utils::Observer
     bool isMychaInitalized();
 
     utils::AllSignals& mSignals;
+    utils::LoggingSystem& mLogger;
 
     sensors::DistanceTof mSensorL;
     sensors::DistanceTof mSensorFL;

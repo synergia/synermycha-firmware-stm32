@@ -20,8 +20,9 @@ inline bool areAllDistancesInitialized(const mycha::DistancesData& dist)
 namespace mycha
 {
 
-Mycha::Mycha(utils::AllSignals& signals)
+Mycha::Mycha(utils::AllSignals& signals, utils::LoggingSystem& logger)
     : mSignals(signals)
+    , mLogger{logger}
     , mSensorL(VC53L0x_XSHUT_LEFT_GPIO_Port, VC53L0x_XSHUT_LEFT_Pin, sensors::address::left,
                sensors::calibration::offsetLeft)
     , mSensorFL(VC53L0x_XSHUT_FRONT_LEFT_GPIO_Port, VC53L0x_XSHUT_FRONT_LEFT_Pin, sensors::address::frontLeft,
@@ -51,6 +52,7 @@ Mycha::Mycha(utils::AllSignals& signals)
 
     /// @note important thing, that connectSignal should be after initalization of mycha
     connectSignals();
+    mLogger.info("Mycha is ready");
 }
 
 void Mycha::connectSignals()

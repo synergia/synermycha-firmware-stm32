@@ -6,6 +6,8 @@
 namespace
 {
 char stringToPrint[utils::SAFE_BUF_LEN];
+
+constexpr bool isBlockingLogger = false;
 }  // namespace
 
 namespace utils
@@ -24,8 +26,16 @@ Logger::Logger(LoggingWorkerPtrType worker, const char* prefix, volatile bool& i
 
 void Logger::operator()(const char* str, ...)
 {
-    while (not mIsFreeForNextTx)
-        ;
+    if (isBlockingLogger)
+    {
+        while (not mIsFreeForNextTx)
+            ;
+    }
+    else
+    {
+        if (not mIsFreeForNextTx)
+            return;
+    }
     mIsFreeForNextTx = false;
 
     uint32_t totalStrLen = 0;
@@ -46,7 +56,9 @@ void Logger::operator()(const char* str, ...)
     // add NL to end of line to help PC logging
     if (stringToPrint[totalStrLen - 1] != '\n')
     {
-        stringToPrint[totalStrLen - 1] = '\n';
+        stringToPrint[totalStrLen]     = '\n';
+        stringToPrint[totalStrLen + 1] = 0;
+        totalStrLen += 1;
     }
 
     bool logOk = mWorker(stringToPrint, totalStrLen);

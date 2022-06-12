@@ -257,15 +257,15 @@ int main(void)
     utils::AllSignals allSignals;
 
     display::Display display(allSignals, &hi2c2, logo, font_8x5, 1);
-    HAL_Delay(1000);
+    // HAL_Delay(1000);
     // display.writeLine(0, STRINGIFY(GIT_TAG));
     // display.writeLine(1, "OLED     initialized");
     // display.show();
 
-    //  setupBLE();
-    //  HAL_NVIC_EnableIRQ(USART1_IRQn);
+    setupBLE();
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
     // delay is needed to proper set BT
-    // HAL_Delay(7000);
+    HAL_Delay(7000);
     // display.writeLine(2, "BLE      initialized");
     // display.show();
 
@@ -334,24 +334,21 @@ int main(void)
     HAL_TIM_Base_Start_IT(&htim14);
 
     // utils::Timer timer;
-
-    // utils::LoggingSystem logger(loggerWorker, isFreeForNextTx);
+    utils::LoggingSystem logger(loggerWorker, isFreeForNextTx);
     // int example          = 5;
     // double example2      = 3.1415;
     // const char* example3 = "mycha";
     // timer.start();
     // logger.info("tu jest duze %d info:%d, %f\n", 123456, example, example2);
+    // HAL_Delay(3);
+    // const char* phase = "FastRun";
+    // logger.info("enter to phase: %s\n", phase);
     // timer.stop();
-    // logger.info("time1:%d\n", timer.getTimeInUs());
+    // HAL_Delay(2);
+    // logger.error("DLUGO:%d\n", timer.getTimeInUs());
 
-    // timer.reset();
-    // timer.start();
-    // logger.error("a tu error:%s\n", example3);
-    // timer.stop();
-    // logger.info("time2:%d\n", timer.getTimeInUs());
-
-    logic::Logic logika(allSignals);
-    mycha::Mycha myszunia(allSignals);
+    logic::Logic logika(allSignals, logger);
+    mycha::Mycha myszunia(allSignals, logger);
     HAL_Delay(1000);
     mycha::EventHandler eventHandler(allSignals);
     eventHandler.HandleEvents();

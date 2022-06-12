@@ -75,4 +75,7 @@ struct Command
     RotationalCommand rotational;
 };
 
+const char* toCString(RotationDir dir);
+const char* toCString(CommandType type);
+
 }  // namespace controller

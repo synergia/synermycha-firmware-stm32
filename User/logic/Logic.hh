@@ -6,6 +6,7 @@
 #include "controller/RotationalController.hh"
 #include "mycha/MouseData.hh"
 #include "utils/AllSignals.hh"
+#include "utils/LoggingSystem.hh"
 #include "utils/Observer.hh"
 
 namespace logic
@@ -14,7 +15,7 @@ namespace logic
 class Logic : public utils::Observer
 {
   public:
-    explicit Logic(utils::AllSignals& signals);
+    explicit Logic(utils::AllSignals& signals, utils::LoggingSystem& logger);
 
   private:
     enum class ControllerType
@@ -26,9 +27,11 @@ class Logic : public utils::Observer
 
     enum class MousePhase
     {
+        WaitingForButtonEnterToSearchRun,
+        WaitingForSearchRunStart,
         SearchRun,
         BackToStart,
-        WaitingForButtonEnter,
+        WaitingForButtonEnterToFastRun,
         WaitingForFastRunStart,
         FastRun,
         RightHand,
@@ -58,10 +61,13 @@ class Logic : public utils::Observer
     controller::Command getCommandToCompensateFrontDistance();
 
     void msCallback();
+    void setNewPhase(MousePhase newPhase);
+    const char* toCString(MousePhase phase);
 
     mycha::DrivingData mDrivingData{};
     mycha::DistancesData mDistancesData{};
     utils::AllSignals& mSignals;
+    utils::LoggingSystem& mLogger;
 
     double mAllLeftRoad  = 0.0;
     double mAllRightRoad = 0.0;
