@@ -11,6 +11,8 @@ namespace logic
 namespace
 {
 
+constexpr uint32_t msFromButtonEnterToFastRunStart{3000};
+
 void printDistances(utils::AllSignals& signals, const mycha::DistancesData& data)
 {
     signals.displayLogValue.emit("R: %f", (float)data.right, 0, false);
@@ -37,6 +39,15 @@ void Logic::connectSignals()
     mSignals.setDrivingData.connect<Logic, &Logic::onSetDrivingData>(*this);
     mSignals.setDistancesData.connect<Logic, &Logic::onSetDistancesData>(*this);
     mSignals.getMotorSettings.connect<Logic, &Logic::onGetMotorSettings>(*this);
+    mSignals.buttonEnter.connect<Logic, &Logic::onButtonEnter>(*this);
+}
+
+void Logic::onButtonEnter()
+{
+    if (mMousePhase == MousePhase::WaitingForButtonEnter)
+    {
+        mMousePhase = MousePhase::WaitingForFastRunStart;
+    }
 }
 
 void Logic::onSetDrivingData(const mycha::DrivingData& data)
@@ -66,6 +77,8 @@ void Logic::onSetDistancesData(const mycha::DistancesData& data)
 
 void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
 {
+    msCallback();
+
     if (isTargetReached())
     {
         if (mMousePhase == MousePhase::SearchRun)
@@ -223,18 +236,28 @@ void Logic::generateNewCommands()
         if (mMaze.isMouseInFinishPoint())
         {
             mMousePhase = MousePhase::BackToStart;
+            mMaze.generateCommandsToBackToStart(mCommands);
             return;
         }
         mCommands.addCommand(mMaze.generateCommandInSearchRun());
     }
     else if (mMousePhase == MousePhase::BackToStart)
     {
-        if (mMaze.isMouseInStartingPoint())
+        // after succesfull finishing back to start, wait for button
+        if (mCommands.isEmpty())
         {
-            mMousePhase = MousePhase::FastRun;
+            mMousePhase = MousePhase::WaitingForButtonEnter;
+            mSignals.displayLogValue.emit("Ready for run:%f", (double)0, 1, false);
+            mSignals.displayLogValue.emit("  Press enter:%f", (double)0, 2, true);
             return;
         }
-        mMaze.generateCommandsToBackToStart(mCommands);
+    }
+    else if (mMousePhase == MousePhase::WaitingForButtonEnter)
+    {
+        if (mDistancesData.front < 50)
+        {
+            mMousePhase = MousePhase::WaitingForFastRunStart;
+        }
     }
     else if (mMousePhase == MousePhase::FastRun)
     {
@@ -276,6 +299,9 @@ void Logic::generateNewCommands()
             mCommands.addCommand(cmd);
         }
     }
+    else if (mMousePhase == MousePhase::TestMode)
+    {
+    }
 }
 
 bool Logic::needToCompensateFrontDistance()
@@ -300,6 +326,25 @@ controller::Command Logic::getCommandToCompensateFrontDistance()
     cmd.forward = controller::ForwardCommand{distanceToCompensate};
 
     return cmd;
+}
+
+void Logic::msCallback()
+{
+    if (mMousePhase == MousePhase::WaitingForFastRunStart)
+    {
+        if (mMsFromClickEnter % 1000 == 0)
+        {
+            display::clearDisplayBuff();
+            mSignals.displayLogValue.emit("Time to start:%f", (double)(3000 - mMsFromClickEnter) / 1000.0, 1, true);
+        }
+        if (mMsFromClickEnter >= msFromButtonEnterToFastRunStart)
+        {
+            mMousePhase = MousePhase::FastRun;
+            display::clearDisplayBuff();
+            mSignals.displayLogValue.emit("FAST RUN!!! %f", (double)0, 1, true);
+        }
+        ++mMsFromClickEnter;
+    }
 }
 
 }  // namespace logic

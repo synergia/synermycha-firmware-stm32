@@ -158,8 +158,8 @@ void setupBLE()
     HAL_GPIO_WritePin(RN4871_NON_GPIO_Port, RN4871_NON_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(RN4871_NFLASH_MODE_GPIO_Port, RN4871_NFLASH_MODE_Pin, GPIO_PIN_SET);
 
-    HAL_Delay(100);
-    uint8_t CMD[3] = {'$', '$', '$'};
+    // HAL_Delay(100);
+    // uint8_t CMD[3] = {'$', '$', '$'};
     // HAL_UART_Transmit(&huart1, CMD, 3, 10); // uncoment for CMD mode
     HAL_Delay(100);
     // // Flash update of RN487x
@@ -181,8 +181,15 @@ void debugPrintln(UART_HandleTypeDef* huart, char _out[])
     HAL_UART_Transmit_IT(huart, (uint8_t*)newline, 2);
 }
 
+static volatile bool isFreeForNextTx = true;
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
+{
+    isFreeForNextTx = true;
+}
+
 bool loggerWorker(char* buf, int len)
 {
+    HAL_UART_Transmit_IT(&huart1, (uint8_t*)buf, len);
     return true;
 }
 
@@ -244,19 +251,21 @@ int main(void)
     MX_TIM13_Init();
     MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
-    UARTDMA_Init(&huartdma, &huart1);
+
     uint8_t Received[3];
 
     utils::AllSignals allSignals;
 
     display::Display display(allSignals, &hi2c2, logo, font_8x5, 1);
     HAL_Delay(1000);
-
     // display.writeLine(0, STRINGIFY(GIT_TAG));
     // display.writeLine(1, "OLED     initialized");
     // display.show();
 
-    // setupBLE();
+    //  setupBLE();
+    //  HAL_NVIC_EnableIRQ(USART1_IRQn);
+    // delay is needed to proper set BT
+    // HAL_Delay(7000);
     // display.writeLine(2, "BLE      initialized");
     // display.show();
 
@@ -273,8 +282,8 @@ int main(void)
     // GFX_DrawString(0, 0, "Press OK to continue....", WHITE, BLACK);
     // SSD1306_Display();
 
-    // // while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) != GPIO_PIN_RESET)
-    // //     ;
+    // while (HAL_GPIO_ReadPin(BUTTON_OK_GPIO_Port, BUTTON_OK_Pin) != GPIO_PIN_RESET)
+    //     ;
 
     /* USER CODE END 2 */
     /* Infinite loop */
@@ -324,12 +333,22 @@ int main(void)
     HAL_NVIC_EnableIRQ(TIM8_TRG_COM_TIM14_IRQn);
     HAL_TIM_Base_Start_IT(&htim14);
 
-    // utils::LoggingSystem logger(loggerWorker);
+    // utils::Timer timer;
+
+    // utils::LoggingSystem logger(loggerWorker, isFreeForNextTx);
     // int example          = 5;
-    // float example2       = 3.1415;
+    // double example2      = 3.1415;
     // const char* example3 = "mycha";
-    // logger.info("tu jest info:%d, %f", example, example2);
-    // logger.error("a tu error:%s", example3);
+    // timer.start();
+    // logger.info("tu jest duze %d info:%d, %f\n", 123456, example, example2);
+    // timer.stop();
+    // logger.info("time1:%d\n", timer.getTimeInUs());
+
+    // timer.reset();
+    // timer.start();
+    // logger.error("a tu error:%s\n", example3);
+    // timer.stop();
+    // logger.info("time2:%d\n", timer.getTimeInUs());
 
     logic::Logic logika(allSignals);
     mycha::Mycha myszunia(allSignals);

@@ -88,6 +88,7 @@ class Mycha : public utils::Observer
 
     void onButtonUp();
     void onButtonDown();
+    void onButtonEnter();
     void onTim14Elapsed();
 
     void onGetGyroZ(double& gyroZ);

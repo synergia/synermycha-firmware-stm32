@@ -60,6 +60,7 @@ void Mycha::connectSignals()
 
     mSignals.buttonDown.connect<Mycha, &Mycha::onButtonDown>(*this);
     mSignals.buttonUp.connect<Mycha, &Mycha::onButtonUp>(*this);
+    mSignals.buttonEnter.connect<Mycha, &Mycha::onButtonEnter>(*this);
     mSignals.tim14Elapsed.connect<Mycha, &Mycha::onTim14Elapsed>(*this);
 
     mSignals.getGyroZ.connect<Mycha, &Mycha::onGetGyroZ>(*this);
@@ -176,6 +177,10 @@ void Mycha::onButtonUp()
 }
 
 void Mycha::onButtonDown()
+{
+}
+
+void Mycha::onButtonEnter()
 {
 }
 

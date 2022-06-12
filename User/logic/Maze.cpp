@@ -79,7 +79,7 @@ bool operator!=(const Point& lhs, const Point& rhs)
 Maze::Maze(utils::AllSignals& signals)
     : mSignals{signals}
     , mStart{4, 4}
-    , mFinish{2, 4}
+    , mFinish{2, 1}
     , mMouseDir{MouseDir::N}
 {
     mCurrentPos = mStart;
@@ -448,6 +448,11 @@ void Maze::generateCommandsToBackToStart(controller::CommandQueue& queue)
             queue.addCommand(cmd);
         }
     }
+
+    // add command to turn around to be ready to fast run
+    cmd.type       = CommandType::Rotational;
+    cmd.rotational = RotationalCommand{RotationDir::TurnBack};
+    queue.addCommand(cmd);
 
     mCurrentPos = originalCurrentPos;
     mMouseDir   = originalMouseDir;

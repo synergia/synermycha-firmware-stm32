@@ -12,7 +12,7 @@ constexpr double degreeOverSecondToMeterOverSecond = mycha::mechanic::mouseCircu
 RotationalController::RotationalController(utils::AllSignals& signals)
     : mSignals(signals)
     , mTransPid{100, 5, 10}
-    , mRotPid{100, 5, 10}
+    , mRotPid{100, 10, 10}
     , mRotTrajectory{}
     , mCurrentInput{}
 {

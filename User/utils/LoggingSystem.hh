@@ -9,7 +9,7 @@ namespace utils
 class LoggingSystem
 {
   public:
-    LoggingSystem(LoggingWorkerPtrType worker);
+    LoggingSystem(LoggingWorkerPtrType worker, volatile bool& isFreeForNextTx);
 
     Logger info;
     Logger error;

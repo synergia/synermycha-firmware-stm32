@@ -28,11 +28,15 @@ class Logic : public utils::Observer
     {
         SearchRun,
         BackToStart,
+        WaitingForButtonEnter,
+        WaitingForFastRunStart,
         FastRun,
-        RightHand
+        RightHand,
+        TestMode
     };
 
     void connectSignals();
+    void onButtonEnter();
     void onSetDrivingData(const mycha::DrivingData& data);
     void onSetDistancesData(const mycha::DistancesData& data);
     void onGetMotorSettings(mycha::MotorsSettings& motorData);
@@ -53,6 +57,8 @@ class Logic : public utils::Observer
     bool needToCompensateFrontDistance();
     controller::Command getCommandToCompensateFrontDistance();
 
+    void msCallback();
+
     mycha::DrivingData mDrivingData{};
     mycha::DistancesData mDistancesData{};
     utils::AllSignals& mSignals;
@@ -72,6 +78,8 @@ class Logic : public utils::Observer
     Maze mMaze;
 
     MousePhase mMousePhase;
+
+    uint32_t mMsFromClickEnter = 0;
 };
 
 }  // namespace logic

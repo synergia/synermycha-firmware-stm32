@@ -5,9 +5,9 @@
 namespace utils
 {
 
-LoggingSystem::LoggingSystem(LoggingWorkerPtrType worker)
-    : info{worker, "INF:"}
-    , error{worker, "ERR:"}
+LoggingSystem::LoggingSystem(LoggingWorkerPtrType worker, volatile bool& isFreeForNextTx)
+    : info{worker, "INF:", isFreeForNextTx}
+    , error{worker, "ERR:", isFreeForNextTx}
 {
 }
 
