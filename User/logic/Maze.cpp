@@ -10,6 +10,7 @@ namespace
 
 logic::StackType stack;
 utils::Stack<controller::Command, 255> cmdStack;
+static char bufMazeWalls[5][20];
 
 bool cmpEqual(double v1, double v2)
 {
@@ -61,6 +62,24 @@ void initMazeWallToDisplay(char buf[][20])
     }
 }
 
+const char* toCString(logic::MouseDir dir)
+{
+    using logic::MouseDir;
+    switch (dir)
+    {
+    case MouseDir::N:
+        return "N";
+    case MouseDir::W:
+        return "W";
+    case MouseDir::S:
+        return "S";
+    case MouseDir::E:
+        return "E";
+    default:
+        return "unknown";
+    }
+}
+
 }  // namespace
 
 namespace logic
@@ -79,7 +98,7 @@ bool operator!=(const Point& lhs, const Point& rhs)
 Maze::Maze(utils::AllSignals& signals)
     : mSignals{signals}
     , mStart{4, 4}
-    , mFinish{2, 1}
+    , mFinish{2, 4}
     , mMouseDir{MouseDir::N}
 {
     mCurrentPos = mStart;
@@ -339,7 +358,7 @@ void Maze::drawMazeWalls()
     static bool isMazeWallInit = false;
     if (not isMazeWallInit)
     {
-        initMazeWallToDisplay(display::displayMazeBuff);
+        initMazeWallToDisplay(bufMazeWalls);
         isMazeWallInit = true;
     }
 
@@ -351,24 +370,55 @@ void Maze::drawMazeWalls()
     {
         if (y > 0)
         {
-            display::displayMazeBuff[y - 1][x * 2 + 1] = '_';
+            bufMazeWalls[y - 1][x * 2 + 1] = '_';
         }
     }
     // west
     if (mMaze[y][x].isWallW)
     {
-        display::displayMazeBuff[y][x * 2] = '|';
+        bufMazeWalls[y][x * 2] = '|';
     }
     // south
     if (mMaze[y][x].isWallS)
     {
-        display::displayMazeBuff[y][x * 2 + 1] = '_';
+        bufMazeWalls[y][x * 2 + 1] = '_';
     }
     // east
     if (mMaze[y][x].isWallE)
     {
-        display::displayMazeBuff[y][x * 2 + 2] = '|';
+        bufMazeWalls[y][x * 2 + 2] = '|';
     }
+}
+
+void Maze::logMouseAndMaze(utils::LoggingSystem& logger)
+{
+    // 5 rows and 20 columns + null
+    static constexpr uint32_t bufSize = 5 * 20 + 1;
+    static char bufWeights[bufSize];
+    static char bufWalls[bufSize];
+
+    memset(bufWeights, 0, sizeof(bufWeights));
+    memset(bufWalls, 0, sizeof(bufWalls));
+
+    // print weights
+    memset(display::displayMazeBuff, 0, sizeof(display::displayMazeBuff));
+    drawMazeWeights();
+    // to have null at the end
+    for (int i = 0; i < 5; i++)
+        display::displayMazeBuff[i][19] = 0;
+    sprintf(bufWeights, "%s\n%s\n%s\n%s\n%s\n", display::displayMazeBuff[0], display::displayMazeBuff[1],
+            display::displayMazeBuff[2], display::displayMazeBuff[3], display::displayMazeBuff[4]);
+
+    // print walls
+    drawMazeWalls();
+    // to have null at the end
+    for (int i = 0; i < 5; i++)
+        bufMazeWalls[i][19] = 0;
+    sprintf(bufWalls, "%s\n%s\n%s\n%s\n%s\n", bufMazeWalls[0], bufMazeWalls[1], bufMazeWalls[2], bufMazeWalls[3],
+            bufMazeWalls[4]);
+
+    logger.info("X=%d, Y=%d, dir=%s\nWeights:\n%s\nWalls:\n%s\n\n", mCurrentPos.x, mCurrentPos.y, toCString(mMouseDir),
+                bufWeights, bufWalls);
 }
 
 bool Maze::isMouseInFinishPoint()

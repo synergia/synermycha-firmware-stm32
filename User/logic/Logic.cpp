@@ -107,9 +107,10 @@ void Logic::onGetMotorSettings(mycha::MotorsSettings& motorData)
         if (mMousePhase == MousePhase::SearchRun)
         {
             mMaze.updateMouseAndMazeState(mLastCommand, mDistancesData);
-            mMaze.drawMazeWeights();
+            mMaze.logMouseAndMaze(mLogger);
+            // mMaze.drawMazeWeights();
             // mMaze.drawMazeWalls();
-            mSignals.mazeReadyToShow.emit();
+            // mSignals.mazeReadyToShow.emit();
         }
         resetCurrentControllerAndLogicData();
         loadNewCommand();
@@ -192,7 +193,7 @@ void Logic::loadNewCommand()
         generateNewCommands();
         mLastCommand = mCommands.getNextCommand();
     }
-    logCommand("load:", mLogger, mLastCommand);
+    // logCommand("load:", mLogger, mLastCommand);
     mActiveController = executeCommand(mLastCommand);
 }
 
@@ -400,7 +401,7 @@ void Logic::msCallback()
 
 void Logic::setNewPhase(MousePhase newPhase)
 {
-    mLogger.info("Change phase from %s to %s", toCString(mMousePhase), toCString(newPhase));
+    // mLogger.info("Change phase from %s to %s", toCString(mMousePhase), toCString(newPhase));
     mMousePhase = newPhase;
 }
 

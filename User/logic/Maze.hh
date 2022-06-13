@@ -4,6 +4,7 @@
 #include "controller/CommandQueue.hh"
 #include "mycha/MouseData.hh"
 #include "utils/AllSignals.hh"
+#include "utils/LoggingSystem.hh"
 #include "utils/Stack.hh"
 #include <cstdint>
 #include <utility>
@@ -61,6 +62,7 @@ class Maze
     void updateWallsAtStartup(const mycha::DistancesData& distances);
     void drawMazeWeights();
     void drawMazeWalls();
+    void logMouseAndMaze(utils::LoggingSystem& logger);
     bool isMouseInFinishPoint();
     bool isMouseInStartingPoint();
     controller::Command generateCommandInSearchRun() const;

@@ -5,8 +5,8 @@
 namespace utils
 {
 // better to have bigger buffer to not overwrite memory
-constexpr int SAFE_BUF_LEN   = 150;
-constexpr int MAX_LEN_LOG    = 100;
+constexpr int SAFE_BUF_LEN   = 300;
+constexpr int MAX_LEN_LOG    = 250;
 constexpr int MAX_LEN_PREFIX = 4;
 
 class Logger
