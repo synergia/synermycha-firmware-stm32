@@ -4,7 +4,7 @@ namespace display
 {
 
 char displayBuff[maxRows][maxColumns];
-char displayMazeBuff[5][maxColumns];
+char displayMazeBuff[16][70];
 
 void clearDisplayBuff()
 {

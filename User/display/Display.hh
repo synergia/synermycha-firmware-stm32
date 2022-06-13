@@ -17,7 +17,7 @@ constexpr int maxRows    = 4;
 constexpr int maxColumns = 20;
 
 extern char displayBuff[maxRows][maxColumns];
-extern char displayMazeBuff[5][maxColumns];
+extern char displayMazeBuff[16][70];
 
 void clearDisplayBuff();
 void clearDisplayBuffLine(const uint32_t line);

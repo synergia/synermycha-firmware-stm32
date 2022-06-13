@@ -90,6 +90,10 @@ class Mycha : public utils::Observer
     void onButtonUp();
     void onButtonDown();
     void onButtonEnter();
+    void onSetLed1(bool isOn);
+    void onSetLed2(bool isOn);
+    void onSetLed3(bool isOn);
+    void onSetLed4(bool isOn);
     void onTim14Elapsed();
 
     void onGetGyroZ(double& gyroZ);

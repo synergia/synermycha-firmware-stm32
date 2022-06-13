@@ -11,7 +11,7 @@
 
 namespace logic
 {
-constexpr uint8_t mazeLen = 5;
+constexpr uint8_t mazeLen = 16;
 
 /*
           X
@@ -70,6 +70,7 @@ class Maze
 
   private:
     void moveMouseForward();
+    void markConnectionBetweenCells(const Point& p1, const Point& p2);
     void rotateMouse(controller::RotationDir dir);
     void updateWalls(const mycha::DistancesData& distances);
 
@@ -78,6 +79,7 @@ class Maze
     void updateWallW(const Point& point);
     void updateWallS(const Point& point);
     void updateWallE(const Point& point);
+    bool isConnectionBetweenCells(const Point& p1, const Point& p2);
 
     void initFloodfill();
     void floodfill(Point floodP);
@@ -89,11 +91,27 @@ class Maze
 
     utils::AllSignals& mSignals;
 
-    Point mStart;
-    Point mFinish;
+    const Point mStart;
+    const Point mFinish;
+    const MouseDir mMouseInitDir;
     Point mCurrentPos;
-    Cell mMaze[mazeLen][mazeLen];
     MouseDir mMouseDir;
+    Cell mMaze[mazeLen][mazeLen];
+    // prevents errors when mouse pass through cells and then sensor perceives wall in this place
+    // so it's not normal
+    // used to help marking walls. So when first mouse passes through two cells,
+    // and then it sees there walls, wall won't be inserted.
+    // coordination same as in maze, but represents present of transitions between two cells
+    // for maze 5x5, cells follows patter
+    // 1 2 3 4 5
+    // 6 7 8 9 10
+    // ..........
+    // ........25
+    // when cells 6 and 7 are connected, then:
+    // mIsCellsConnected[5][6] = true;
+    // mIsCellsConnected[6][5] = true;
+    // since cells start from 0 in array
+    // bool mIsCellsConnected[mazeLen * mazeLen][mazeLen * mazeLen];
 };
 
 }  // namespace logic

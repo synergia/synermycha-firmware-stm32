@@ -63,6 +63,10 @@ void Mycha::connectSignals()
     mSignals.buttonDown.connect<Mycha, &Mycha::onButtonDown>(*this);
     mSignals.buttonUp.connect<Mycha, &Mycha::onButtonUp>(*this);
     mSignals.buttonEnter.connect<Mycha, &Mycha::onButtonEnter>(*this);
+    mSignals.setLed1.connect<Mycha, &Mycha::onSetLed1>(*this);
+    mSignals.setLed2.connect<Mycha, &Mycha::onSetLed2>(*this);
+    mSignals.setLed3.connect<Mycha, &Mycha::onSetLed3>(*this);
+    mSignals.setLed4.connect<Mycha, &Mycha::onSetLed4>(*this);
     mSignals.tim14Elapsed.connect<Mycha, &Mycha::onTim14Elapsed>(*this);
 
     mSignals.getGyroZ.connect<Mycha, &Mycha::onGetGyroZ>(*this);
@@ -159,7 +163,7 @@ void Mycha::setDrivingData()
     static int i = 0;
     if (++i == 100)
     {
-        mLed1.toggle();
+        // mLed1.toggle();
         i = 0;
     }
 
@@ -186,9 +190,29 @@ void Mycha::onButtonEnter()
 {
 }
 
+void Mycha::onSetLed1(bool isOn)
+{
+    mLed1.set(isOn);
+}
+
+void Mycha::onSetLed2(bool isOn)
+{
+    mLed2.set(isOn);
+}
+
+void Mycha::onSetLed3(bool isOn)
+{
+    mLed3.set(isOn);
+}
+
+void Mycha::onSetLed4(bool isOn)
+{
+    mLed4.set(isOn);
+}
+
 void Mycha::onTim14Elapsed()
 {
-    mLed3.toggle();
+    // mLed3.toggle();
 
     DistancesData data;
     data.left       = mSensorL.readDistance();

@@ -7,7 +7,7 @@ namespace sensors
 namespace
 {
 // empiric value, in milimeters
-constexpr uint16_t noWallDistance{120};
+constexpr uint16_t noWallDistance{90};
 }  // namespace
 
 bool isNoWall(uint16_t sensorData)

@@ -41,6 +41,11 @@ template <typename T, int N> class Stack
         return mNrOfElems == 0;
     }
 
+    bool isFull() const
+    {
+        return mNrOfElems == N;
+    }
+
     void reset()
     {
         mNrOfElems = 0;

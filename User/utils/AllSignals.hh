@@ -12,6 +12,11 @@ struct AllSignals
     signal<void(void)> buttonDown;
     signal<void(void)> buttonEnter;
 
+    signal<void(bool)> setLed1;
+    signal<void(bool)> setLed2;
+    signal<void(bool)> setLed3;
+    signal<void(bool)> setLed4;
+
     signal<void(void)> displayBuffor;
     // used in controll loop to not delay it. Only set displayBuffor, call displayBuffReadyPararell
     // and then in EventHandler displayBuffPararell is always called to check if new draw is needed or not

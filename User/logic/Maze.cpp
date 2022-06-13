@@ -9,7 +9,7 @@ namespace
 {
 
 logic::StackType stack;
-utils::Stack<controller::Command, 255> cmdStack;
+utils::Stack<controller::Command, 1000> cmdStack;
 static char bufMazeWalls[5][20];
 
 bool cmpEqual(double v1, double v2)
@@ -97,11 +97,12 @@ bool operator!=(const Point& lhs, const Point& rhs)
 
 Maze::Maze(utils::AllSignals& signals)
     : mSignals{signals}
-    , mStart{4, 4}
-    , mFinish{2, 4}
-    , mMouseDir{MouseDir::N}
+    , mStart{15, 15}
+    , mFinish{12, 15}  // , mIsCellsConnected{}
+    , mMouseInitDir{MouseDir::N}
 {
     mCurrentPos = mStart;
+    mMouseDir   = mMouseInitDir;
     initFloodfill();
 }
 
@@ -157,12 +158,23 @@ void Maze::moveMouseForward()
     if (x < 0 || x >= mazeLen || y < 0 || y >= mazeLen)
         return;
 
+    // markConnectionBetweenCells(mCurrentPos, Point{x, y});
+
     mCurrentPos.x = x;
     mCurrentPos.y = y;
 
     // mSignals.displayLogValue.emit("x: %f", (float)mCurrentPos.x, 0, false);
     // mSignals.displayLogValue.emit("y: %f", (float)mCurrentPos.y, 1, false);
     // mSignals.displayLogValue.emit("cnt: %f", (float)cntForward, 2, true);
+}
+
+void Maze::markConnectionBetweenCells(const Point& p1, const Point& p2)
+{
+    // const uint32_t cell1Number = p1.y * mazeLen + (p1.x + 1);
+    // const uint32_t cell2Number = p2.y * mazeLen + (p2.x + 1);
+
+    // mIsCellsConnected[cell1Number - 1][cell2Number - 1] = true;
+    // mIsCellsConnected[cell2Number - 1][cell1Number - 1] = true;
 }
 
 void Maze::rotateMouse(controller::RotationDir dir)
@@ -293,6 +305,9 @@ void Maze::updateWalls(const mycha::DistancesData& distances)
 
 void Maze::updateWallN(const Point& point)
 {
+    if (isConnectionBetweenCells(point, Point{point.x, point.y - 1}))
+        return;
+
     mMaze[point.y][point.x].isWallN = true;
     if (point.y - 1 >= 0)
     {
@@ -302,6 +317,9 @@ void Maze::updateWallN(const Point& point)
 
 void Maze::updateWallW(const Point& point)
 {
+    if (isConnectionBetweenCells(point, Point{point.x - 1, point.y}))
+        return;
+
     mMaze[point.y][point.x].isWallW = true;
     if (point.x - 1 >= 0)
     {
@@ -311,6 +329,9 @@ void Maze::updateWallW(const Point& point)
 
 void Maze::updateWallS(const Point& point)
 {
+    if (isConnectionBetweenCells(point, Point{point.x, point.y + 1}))
+        return;
+
     mMaze[point.y][point.x].isWallS = true;
     if (point.y + 1 < mazeLen)
     {
@@ -320,6 +341,9 @@ void Maze::updateWallS(const Point& point)
 
 void Maze::updateWallE(const Point& point)
 {
+    if (isConnectionBetweenCells(point, Point{point.x + 1, point.y}))
+        return;
+
     mMaze[point.y][point.x].isWallE = true;
     if (point.x + 1 < mazeLen)
     {
@@ -327,22 +351,36 @@ void Maze::updateWallE(const Point& point)
     }
 }
 
+bool Maze::isConnectionBetweenCells(const Point& p1, const Point& p2)
+{
+    // if (p1.x < 0 || p1.x >= mazeLen || p1.y < 0 || p1.y >= mazeLen)
+    //     return false;
+    // if (p2.x < 0 || p2.x >= mazeLen || p2.y < 0 || p2.y >= mazeLen)
+    //     return false;
+
+    // const uint32_t cell1Number = p1.y * mazeLen + (p1.x + 1);
+    // const uint32_t cell2Number = p2.y * mazeLen + (p2.x + 1);
+
+    // return mIsCellsConnected[cell1Number - 1][cell2Number - 1];
+    return false;
+}
+
 void Maze::drawMazeWeights()
 {
-    if (mazeLen != 5)
-        return;
+    // if (mazeLen != 5)
+    //     return;
 
     char buf[3];
-    for (int row = 0; row < 5; ++row)
+    for (int row = 0; row < mazeLen; ++row)
     {
         char* rowPtr = display::displayMazeBuff[row];
-        for (int col = 0; col < 5; ++col)
+        for (int col = 0; col < mazeLen; ++col)
         {
             valueToCharBuf(mMaze[row][col].value, buf);
             *rowPtr++ = buf[0];
             *rowPtr++ = buf[1];
             *rowPtr++ = buf[2];
-            if (col < 4)
+            if (col < 15)
             {
                 *rowPtr++ = '|';
             }
@@ -392,8 +430,8 @@ void Maze::drawMazeWalls()
 
 void Maze::logMouseAndMaze(utils::LoggingSystem& logger)
 {
-    // 5 rows and 20 columns + null
-    static constexpr uint32_t bufSize = 5 * 20 + 1;
+    // 16 rows and 70 columns + null
+    static constexpr uint32_t bufSize = 16 * 70 + 1;
     static char bufWeights[bufSize];
     static char bufWalls[bufSize];
 
@@ -404,21 +442,29 @@ void Maze::logMouseAndMaze(utils::LoggingSystem& logger)
     memset(display::displayMazeBuff, 0, sizeof(display::displayMazeBuff));
     drawMazeWeights();
     // to have null at the end
-    for (int i = 0; i < 5; i++)
-        display::displayMazeBuff[i][19] = 0;
-    sprintf(bufWeights, "%s\n%s\n%s\n%s\n%s\n", display::displayMazeBuff[0], display::displayMazeBuff[1],
-            display::displayMazeBuff[2], display::displayMazeBuff[3], display::displayMazeBuff[4]);
+    for (int i = 0; i < 16; i++)
+        display::displayMazeBuff[i][69] = 0;
+    sprintf(bufWeights, "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n", display::displayMazeBuff[0],
+            display::displayMazeBuff[1], display::displayMazeBuff[2], display::displayMazeBuff[3],
+            display::displayMazeBuff[4], display::displayMazeBuff[5], display::displayMazeBuff[6],
+            display::displayMazeBuff[7], display::displayMazeBuff[8], display::displayMazeBuff[9],
+            display::displayMazeBuff[10], display::displayMazeBuff[11], display::displayMazeBuff[12],
+            display::displayMazeBuff[13], display::displayMazeBuff[14], display::displayMazeBuff[15]);
 
-    // print walls
-    drawMazeWalls();
-    // to have null at the end
-    for (int i = 0; i < 5; i++)
-        bufMazeWalls[i][19] = 0;
-    sprintf(bufWalls, "%s\n%s\n%s\n%s\n%s\n", bufMazeWalls[0], bufMazeWalls[1], bufMazeWalls[2], bufMazeWalls[3],
-            bufMazeWalls[4]);
+    logger.info("X=%d, Y=%d, dir=%s\nWeights:\n%s\n\n", mCurrentPos.x, mCurrentPos.y, toCString(mMouseDir), bufWeights,
+                bufWalls);
 
-    logger.info("X=%d, Y=%d, dir=%s\nWeights:\n%s\nWalls:\n%s\n\n", mCurrentPos.x, mCurrentPos.y, toCString(mMouseDir),
-                bufWeights, bufWalls);
+    // // print walls
+    // drawMazeWalls();
+    // // to have null at the end
+    // for (int i = 0; i < 5; i++)
+    //     bufMazeWalls[i][19] = 0;
+    // sprintf(bufWalls, "%s\n%s\n%s\n%s\n%s\n", bufMazeWalls[0], bufMazeWalls[1], bufMazeWalls[2], bufMazeWalls[3],
+    //         bufMazeWalls[4]);
+
+    // logger.info("X=%d, Y=%d, dir=%s\nWeights:\n%s\nWalls:\n%s\n\n", mCurrentPos.x, mCurrentPos.y,
+    // toCString(mMouseDir),
+    //             bufWeights, bufWalls);
 }
 
 bool Maze::isMouseInFinishPoint()
@@ -445,9 +491,11 @@ void Maze::generateCommandsToBackToStart(controller::CommandQueue& queue)
     const MouseDir originalMouseDir = mMouseDir;
 
     mCurrentPos = mStart;
-    mMouseDir   = MouseDir::N;
+    mMouseDir   = mMouseInitDir;
 
     // simulate run from start to finish
+
+    mSignals.setLed2.emit(true);
     while (not isMouseInFinishPoint())
     {
         auto cmd = Maze::generateCommandInSearchRun();
@@ -456,7 +504,10 @@ void Maze::generateCommandsToBackToStart(controller::CommandQueue& queue)
         else if (cmd.type == CommandType::Rotational)
             rotateMouse(cmd.rotational.rotDir);
         cmdStack.push(cmd);
+        if (cmdStack.isFull())
+            mSignals.setLed3.emit(true);
     }
+    mSignals.setLed4.emit(true);
 
     // insert first command, turn back from finish
     Command cmd{};

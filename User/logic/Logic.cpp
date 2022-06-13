@@ -269,6 +269,7 @@ void Logic::generateNewCommands()
         if (mMaze.isMouseInFinishPoint())
         {
             setNewPhase(MousePhase::BackToStart);
+            mSignals.setLed1.emit(true);
             mMaze.generateCommandsToBackToStart(mCommands);
             return;
         }
